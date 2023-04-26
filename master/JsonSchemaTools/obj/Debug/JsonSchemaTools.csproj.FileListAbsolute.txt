@@ -1,0 +1,17 @@
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\bin\Debug\JsonSchemaTools.dll
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\bin\Debug\JsonSchemaTools.pdb
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\bin\Debug\JsonSchemaTools.pkgdef
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\bin\Debug\JsonSchemaTools.vsix
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\bin\Debug\extension.vsixmanifest
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.csproj.AssemblyReference.cache
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\_EmptyResource.resources
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.csproj.GenerateResource.cache
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.GeneratedMSBuildEditorConfig.editorconfig
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.csproj.CoreCompileInputs.cache
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.dll
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.pdb
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.pkgdef
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\JsonSchemaTools.latest.pkgdef
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\extension.vsixmanifest
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\files.json
+H:\Projects\JsonSchemaTools\master\JsonSchemaTools\obj\Debug\createTemplateManifests.cache
