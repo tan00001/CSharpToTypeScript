@@ -1,3 +1,2 @@
-# JsonSchemaTools
-1. Generate C# code from a JSON Schema file.
-2. Generate Typescript code from a JSON Schema file.
+# CSharpToTypeScript
+Generate Typescript code from a C# class definition.
