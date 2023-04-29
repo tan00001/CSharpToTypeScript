@@ -1,0 +1,18 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/master/CSharpToTypeScript/bin
+/master/CSharpToTypeScript/obj
+/master/.vs/CSharpToTypeScript
+/master/CSharpToTypeScript.Test/bin
+/master/CSharpToTypeScript.Test/obj
+
+/master/.vs/ProjectEvaluation/csharptotypescript.projects.v6.1
+/master/.vs/ProjectEvaluation/csharptotypescript.metadata.v6.1
+/master/CSharpToTypeScript.vsix/bin/Debug
+/master/CSharpToTypeScript.vsix/obj
+/master/TestResults
+/master/CSharpToTypeScript.vsix/VSCommandTable.vsct.bak
+/master/CSharpToTypeScript.vsix/source.extension.vsixmanifest.bak
+/master/CSharpToTypeScript.vsix/CSharpToTypeScript.vsix.csproj.bak

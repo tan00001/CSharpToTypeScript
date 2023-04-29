@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<Extern href="stdidcmd.h"/>
+	<Extern href="vsshlids.h"/>
+	<Include href="KnownImageIds.vsct"/>
+	<Include href="VSGlobals.vsct"/>
+
+	<Commands package="CSharpToTypeScriptPackage">
+		<Groups>
+			<Group guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID" priority="0x0600">
+				<Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
+			</Group>
+		</Groups>
+		<Bitmaps>
+			<Bitmap guid="GenerateTypeScriptCommandIcon" href="Resources\Icon.png" usedList="GenerateTypeScriptCommandIconID"/>
+		</Bitmaps>
+		<Buttons>
+			<Button guid="GenerateTypeScriptCommand" id="GenerateTypeScriptCommandID" priority="0x0100" type="Button">
+				<Parent guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID"/>
+				<Icon guid="GenerateTypeScriptCommandIcon" id="GenerateTypeScriptCommandIconID"/>
+				<Strings>
+					<ButtonText>Generate TypeScript...</ButtonText>
+				</Strings>
+			</Button>
+		</Buttons>
+	</Commands>
+
+	<Symbols>
+		<GuidSymbol name="CSharpToTypeScriptPackage" value="{6b09e960-199a-4025-9920-d2355ce65333}">
+		</GuidSymbol>
+		<GuidSymbol name="CSharpToTypeScriptGroup" value="{B060FB8F-7D33-4CE1-B645-968BE8E80811}">
+			<IDSymbol name="CSharpToTypeScriptGroupID" value="0x0001" />
+		</GuidSymbol>
+		<GuidSymbol name="GenerateTypeScriptCommand" value="{133C2224-68D4-4B27-85BB-E19D8BB1DA7D}">
+			<IDSymbol name="GenerateTypeScriptCommandID" value="0x0100" />
+		</GuidSymbol>
+		<GuidSymbol name="GenerateTypeScriptCommandIcon" value="{4768922B-48C6-4C55-9BAE-03DD8B34A9AF}">
+			<IDSymbol name="GenerateTypeScriptCommandIconID" value="1"/>
+		</GuidSymbol>
+	</Symbols>
+
+	<CommandPlacements>
+		<CommandPlacement guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID" priority="0x0600">
+			<Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+		</CommandPlacement>
+	</CommandPlacements>
+</CommandTable>
