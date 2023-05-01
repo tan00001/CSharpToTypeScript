@@ -1,28 +1,65 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace CSharpToTypeScript.Models
 {
     public class TsModule
     {
-        private readonly ISet<TsModuleMember> _members;
-
         public string Name { get; set; }
 
-        public IEnumerable<TsClass> Classes => this._members.OfType<TsClass>();
+        public IDictionary<string, TsNamespace> Namespaces { get; private set; }
 
-        public IEnumerable<TsEnum> Enums => this._members.OfType<TsEnum>();
-
-        public IEnumerable<TsModuleMember> Members => this._members;
+        public TsNamespace DefaultNamespace { get; private set; }
 
         public TsModule(string name)
         {
-            this._members = new HashSet<TsModuleMember>();
+            DefaultNamespace = new TsNamespace(name);
+
+            this.Namespaces = new SortedList<string, TsNamespace>()
+            {
+                { name, DefaultNamespace }
+            };
+
             this.Name = name;
         }
 
-        internal void Add(TsModuleMember toAdd) => this._members.Add(toAdd);
+        internal void Add(TsModuleMember toAdd)
+        {
+            toAdd.Module = this;
 
-        internal void Remove(TsModuleMember toRemove) => this._members.Remove(toRemove);
+            var memberNamespace = toAdd.NamespaceName;
+            if (string.IsNullOrEmpty(memberNamespace))
+            {
+                DefaultNamespace.Add(toAdd);
+                return;
+            }
+
+            if (Namespaces.TryGetValue(memberNamespace, out var @namespace))
+            {
+                @namespace.Add(toAdd);
+                return;
+            }
+
+            @namespace = new TsNamespace(memberNamespace);
+            Namespaces.Add(memberNamespace, @namespace);
+            @namespace.Add(toAdd);
+        }
+
+        internal void Remove(TsModuleMember toRemove)
+        {
+            var memberNamespace = toRemove.NamespaceName;
+            if (string.IsNullOrEmpty(memberNamespace))
+            {
+                DefaultNamespace.Remove(toRemove);
+                return;
+            }
+
+            if (Namespaces.TryGetValue(memberNamespace, out var @namespace))
+            {
+                @namespace.Remove(toRemove);
+            }
+        }
     }
 }

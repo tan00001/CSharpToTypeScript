@@ -7,12 +7,12 @@ using Microsoft.VisualStudio.Shell;
 
 namespace CSharpToTypeScript.Commands
 {
-    [Command(PackageGuids.GenerateTypeScriptCommandString, PackageIds.GenerateTypeScriptCommandID)]
-    internal sealed class GenerateTypeScriptCommand : BaseCommand<GenerateTypeScriptCommand>
+    [Command(PackageGuids.GenerateReactFormResolverCommandString, PackageIds.GenerateReactFormResolverCommandID)]
+    internal sealed class GenerateReactFormResolverCommand : BaseCommand<GenerateReactFormResolverCommand>
     {
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
-            await CSharpToTypeScriptPackage.ExecuteCommandAsync("default");
+            await CSharpToTypeScriptPackage.ExecuteCommandAsync("withresolver");
         }
     }
 }

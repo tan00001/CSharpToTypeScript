@@ -9,6 +9,10 @@ namespace CSharpToTypeScript
         {
         }
 
+        public void AppendInterfaceDoc(ScriptBuilder sb, TsInterface interfaceModel, string? className)
+        {
+        }
+
         public void AppendPropertyDoc(
           ScriptBuilder sb,
           TsProperty property,

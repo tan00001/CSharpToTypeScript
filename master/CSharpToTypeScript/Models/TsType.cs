@@ -25,6 +25,8 @@ namespace CSharpToTypeScript.Models
 
         internal static TsTypeFamily GetTypeFamily(Type type)
         {
+            if (type.IsInterface)
+                return TsTypeFamily.Interface;
             if (type.IsNullableValueType())
                 return TsType.GetTypeFamily(type.GetNullableValueType());
             int num = type == typeof(string) ? 1 : 0;
@@ -48,6 +50,8 @@ namespace CSharpToTypeScript.Models
                     return new TsCollection(type);
                 case TsTypeFamily.Class:
                     return new TsClass(type);
+                case TsTypeFamily.Interface:
+                    return new TsInterface(type);
                 case TsTypeFamily.Enum:
                     return new TsEnum(type);
                 default:

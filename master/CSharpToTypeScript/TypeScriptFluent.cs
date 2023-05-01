@@ -15,10 +15,9 @@ namespace CSharpToTypeScript
 
         public TsGenerator ScriptGenerator => this._scriptGenerator;
 
-        public TypeScriptFluent()
+        public TypeScriptFluent(bool enableNamespace)
+            : this(new TsGenerator(enableNamespace))
         {
-            this._modelBuilder = new TsModelBuilder();
-            this._scriptGenerator = new TsGenerator();
         }
 
         public TypeScriptFluent(TsGenerator scriptGenerator)
@@ -88,12 +87,6 @@ namespace CSharpToTypeScript
         public TypeScriptFluent WithConvertor<TFor>(TypeConvertor convertor)
         {
             this._scriptGenerator.RegisterTypeConvertor<TFor>(convertor);
-            return this;
-        }
-
-        public TypeScriptFluent WithReference(string reference)
-        {
-            this._scriptGenerator.AddReference(reference);
             return this;
         }
 

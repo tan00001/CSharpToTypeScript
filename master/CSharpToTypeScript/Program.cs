@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Reflection;
 using CSharpToTypeScript;
+using CSharpToTypeScript.AlternateGenerators;
 
 if (args.Length < 3)
 {
@@ -8,6 +9,13 @@ if (args.Length < 3)
         "\tFor example: csharptotypescript \"myassembly.dll\" \"MyNamespace.MyClass\" \"ClientApp\\Models\\MyClass.ts\"");
     return;
 }
+
+#if DEBUG
+if (args.Length > 4 && args[4] == "LaunchDebugger")
+{
+    Console.ReadLine();
+}
+#endif
 
 var assembly = Assembly.LoadFrom(args[0]);
 if (assembly == null)
@@ -23,8 +31,15 @@ if (typeToExport == null)
     return;
 }
 
-var ts = TypeScript.Definitions()
-    .WithReference(args[2])
+bool enableNamespace = args.Length > 4 && StringComparer.OrdinalIgnoreCase.Equals(args[5], "true");
+
+TsGenerator tsGenerator = args switch
+{
+    _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[4], "withresolver") => new TsGeneratorWithResolver(enableNamespace),
+    _ => new TsGenerator(enableNamespace)
+};
+
+var ts = TypeScript.Definitions(tsGenerator)
     .For(typeToExport);
 
 string script = ts.Generate();

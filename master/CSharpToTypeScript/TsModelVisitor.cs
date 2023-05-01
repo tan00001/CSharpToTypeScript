@@ -16,6 +16,10 @@ namespace CSharpToTypeScript
     {
     }
 
+    public virtual void VisitInterface(TsInterface interfaceModel)
+    {
+    }
+
     public virtual void VisitProperty(TsProperty property)
     {
     }

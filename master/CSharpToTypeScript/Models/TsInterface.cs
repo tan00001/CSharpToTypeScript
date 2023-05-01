@@ -10,37 +10,21 @@ using System.Text.Json.Serialization;
 namespace CSharpToTypeScript.Models
 {
     [DebuggerDisplay("TsClass - Name: {Name}")]
-    public class TsClass : TsModuleMemberWithPropertiesAndGenericArguments
+    public class TsInterface : TsModuleMemberWithPropertiesAndGenericArguments
     {
         public override ICollection<TsProperty> Properties { get; protected set; }
 
-        public ICollection<TsProperty> Fields { get; private set; }
-
         public override IList<TsType> GenericArguments { get; protected set; }
-
-        public ICollection<TsProperty> Constants { get; private set; }
 
         public TsType? BaseType { get; internal set; }
 
-        public IList<TsInterface> Interfaces { get; internal set; }
+        public IList<TsType> Interfaces { get; internal set; }
 
-        public TsClass(Type type)
+        public TsInterface(Type type)
           : base(type)
         {
             this.Properties = this.Type.GetProperties().Where(pi => pi.DeclaringType == this.Type)
                 .Select(pi => new TsProperty(pi)).ToList();
-            this.Fields = this.Type.GetFields().Where(fi =>
-                {
-                    if (fi.DeclaringType != this.Type)
-                        return false;
-                    return !fi.IsLiteral || fi.IsInitOnly;
-                })
-                .Select(fi => new TsProperty(fi))
-                .ToList();
-
-            this.Constants = this.Type.GetFields().Where(fi => fi.DeclaringType == this.Type && fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => new TsProperty(fi))
-                .ToList();
 
             if (type.IsGenericType)
             {
@@ -55,11 +39,13 @@ namespace CSharpToTypeScript.Models
                 this.GenericArguments = new TsType[0];
             }
 
-            if (this.Type.BaseType != null && this.Type.BaseType != typeof(object) && this.Type.BaseType != typeof(ValueType))
+            if (this.Type.BaseType != null && this.Type.BaseType.IsInterface)
                 this.BaseType = new TsType(this.Type.BaseType);
 
-            this.Interfaces = this.Type.GetInterfaces().Where(@interface => @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null)
-                .Select(t => new TsInterface(t)).ToList();
+            Type[] interfaces = this.Type.GetInterfaces();
+
+            this.Interfaces = interfaces.Where(@interface => @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null)
+                .Select(t => TsType.Create(t)).ToList();
         }
     }
 }

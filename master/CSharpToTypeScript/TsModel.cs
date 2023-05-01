@@ -8,6 +8,8 @@ namespace CSharpToTypeScript
     {
         public ISet<TsClass> Classes { get; private set; }
 
+        public ISet<TsInterface> Interfaces { get; private set; }
+
         public ISet<TsEnum> Enums { get; private set; }
 
         public ISet<string> References { get; private set; }
@@ -20,16 +22,24 @@ namespace CSharpToTypeScript
         }
 
         public TsModel(IEnumerable<TsClass> classes)
+            : this(classes, Array.Empty<TsInterface>())
         {
-            this.Classes = new HashSet<TsClass>(classes);
-            this.References = new HashSet<string>();
-            this.Modules = new HashSet<TsModule>();
-            this.Enums = new HashSet<TsEnum>();
+        }
+
+        public TsModel(IEnumerable<TsClass> classes, IEnumerable<TsInterface> interfaces)
+            : this(classes, interfaces, Array.Empty<TsEnum>())
+        {
         }
 
         public TsModel(IEnumerable<TsClass> classes, IEnumerable<TsEnum> enums)
+            : this(classes, Array.Empty<TsInterface>(), enums)
+        {
+        }
+
+        public TsModel(IEnumerable<TsClass> classes, IEnumerable<TsInterface> interfaces, IEnumerable<TsEnum> enums)
         {
             this.Classes = new HashSet<TsClass>(classes);
+            this.Interfaces = new HashSet<TsInterface>(interfaces);
             this.References = new HashSet<string>();
             this.Modules = new HashSet<TsModule>();
             this.Enums = new HashSet<TsEnum>(enums);
@@ -48,6 +58,14 @@ namespace CSharpToTypeScript
                 foreach (TsProperty property in classModel.Properties.Union(classModel.Fields).Union(classModel.Constants))
                     visitor.VisitProperty(property);
             }
+
+            foreach (TsInterface interfaceModel in this.Interfaces)
+            {
+                visitor.VisitInterface(interfaceModel);
+                foreach (TsProperty property in interfaceModel.Properties)
+                    visitor.VisitProperty(property);
+            }
+
             foreach (TsEnum enumModel in this.Enums)
                 visitor.VisitEnum(enumModel);
         }

@@ -16,30 +16,51 @@ namespace CSharpToTypeScript
             this._model = model;
             foreach (TsClass tsClass in model.Classes)
                 this._knownTypes[tsClass.Type] = tsClass;
+            foreach (TsInterface tsInterface in model.Interfaces)
+                this._knownTypes[tsInterface.Type] = tsInterface;
             foreach (TsEnum tsEnum in model.Enums)
                 this._knownTypes[tsEnum.Type] = tsEnum;
         }
 
         public override void VisitClass(TsClass classModel)
         {
-            if (classModel.Module != null)
-                classModel.Module = this.ResolveModule(classModel.Module.Name);
+            classModel.Module = this.ResolveModule(classModel.ModuleName);
 
             if (classModel.BaseType != null && classModel.BaseType != TsType.Any)
                 classModel.BaseType = this.ResolveType(classModel.BaseType, false);
 
             for (int index = 0; index < classModel.Interfaces.Count; ++index)
             {
-                var resolvedType = this.ResolveType(classModel.Interfaces[index], false) ?? throw new Exception("Cannot resolve type \"" + classModel.Interfaces[index] + "\".");
-                classModel.Interfaces[index] = resolvedType;
+                var resolvedType = this.ResolveType(classModel.Interfaces[index], false);
+                if (resolvedType is not TsInterface tsInterface)
+                {
+                    throw new Exception("Cannot resolve type \"" + classModel.Interfaces[index] + "\".");
+                }
+                classModel.Interfaces[index] = tsInterface;
+            }
+        }
+
+        public override void VisitInterface(TsInterface interfaceModel)
+        {
+            interfaceModel.Module = this.ResolveModule(interfaceModel.ModuleName);
+
+            if (interfaceModel.BaseType != null && interfaceModel.BaseType != TsType.Any)
+                interfaceModel.BaseType = this.ResolveType(interfaceModel.BaseType, false);
+
+            for (int index = 0; index < interfaceModel.Interfaces.Count; ++index)
+            {
+                var resolvedType = this.ResolveType(interfaceModel.Interfaces[index], false);
+                if (resolvedType is not TsInterface tsInterface)
+                {
+                    throw new Exception("Cannot resolve type \"" + interfaceModel.Interfaces[index] + "\".");
+                }
+                interfaceModel.Interfaces[index] = tsInterface;
             }
         }
 
         public override void VisitEnum(TsEnum enumModel)
         {
-            if (enumModel.Module == null)
-                return;
-            enumModel.Module = this.ResolveModule(enumModel.Module.Name);
+            enumModel.Module = this.ResolveModule(enumModel.ModuleName);
         }
 
         public override void VisitProperty(TsProperty property)

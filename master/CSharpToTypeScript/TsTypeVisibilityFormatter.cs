@@ -3,5 +3,5 @@ using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
 {
-    public delegate bool TsTypeVisibilityFormatter(TsClass tsClass, string? typeName);
+    public delegate bool TsTypeVisibilityFormatter(TsType tsType, string? typeName);
 }

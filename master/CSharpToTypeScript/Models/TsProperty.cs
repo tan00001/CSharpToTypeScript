@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.Extensions;
 using System.Text.Json.Serialization;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 namespace CSharpToTypeScript.Models
 {
@@ -25,24 +26,20 @@ namespace CSharpToTypeScript.Models
         public object? ConstantValue { get; set; }
 
         public bool IsNullable { get; set; }
+        public bool IsRequired { get; set; }
 
-        public CompareAttribute? Compare { get; set; }
-        public CreditCardAttribute? CreditCard { get; set; }
+        public List<ITsValidationRule> ValidationRules { get; private set; }
+        public DataMemberAttribute? DataMember { get; set; }
         public DisplayAttribute? Display { get; set; }
-        public EmailAddressAttribute? EmailAddress { get; set; }
         public JsonIgnoreAttribute? JsonIgnore { get; set; }
         public JsonPropertyNameAttribute? JsonPropertyName { get; set; }
-        public PhoneAttribute? Phone { get; set; }
-        public RangeAttribute? Range { get; set; }
-        public RegularExpressionAttribute? RegularExpression { get; set; }
-        public RequiredAttribute? Required { get; set; }
-        public StringLengthAttribute? StringLength { get; set; }
-        public UrlAttribute? Url { get; set; }
 
         public TsProperty(PropertyInfo propertyInfo)
         {
             this.MemberInfo = propertyInfo;
             this.Name = propertyInfo.Name;
+            this.ValidationRules = new List<ITsValidationRule>();
+
             Type type = propertyInfo.PropertyType;
             if (type.IsNullableValueType())
             {
@@ -57,18 +54,65 @@ namespace CSharpToTypeScript.Models
             this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => new TsType(o)).ToArray() : new TsType[0];
             this.PropertyType = type.IsEnum ? new TsEnum(type) : new TsType(type);
 
-            Compare = propertyInfo.GetCustomAttribute<CompareAttribute>(false);
-            CreditCard = propertyInfo.GetCustomAttribute<CreditCardAttribute>(false);
+            DataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>(false);
             Display = propertyInfo.GetCustomAttribute<DisplayAttribute>(false);
-            EmailAddress = propertyInfo.GetCustomAttribute<EmailAddressAttribute>(false);
             JsonIgnore = propertyInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
             JsonPropertyName = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
-            Phone = propertyInfo.GetCustomAttribute<PhoneAttribute>(false);
-            Range = propertyInfo.GetCustomAttribute<RangeAttribute>(false);
-            RegularExpression = propertyInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
-            Required = propertyInfo.GetCustomAttribute<RequiredAttribute>(false);
-            StringLength = propertyInfo.GetCustomAttribute<StringLengthAttribute>(false);
-            Url = propertyInfo.GetCustomAttribute<UrlAttribute>(false);
+
+            var compare = propertyInfo.GetCustomAttribute<CompareAttribute>(false);
+            if (compare != null)
+            {
+                ValidationRules.Add(new CompareRule(compare));
+            }
+
+            var creditCard = propertyInfo.GetCustomAttribute<CreditCardAttribute>(false);
+            if (creditCard != null)
+            {
+                ValidationRules.Add(new CreditCardRule(creditCard));
+            }
+
+            var emailAddress = propertyInfo.GetCustomAttribute<EmailAddressAttribute>(false);
+            if (emailAddress != null)
+            {
+                ValidationRules.Add(new EmailAddressRule(emailAddress));
+            }
+
+            var phone = propertyInfo.GetCustomAttribute<PhoneAttribute>(false);
+            if (phone != null)
+            {
+                ValidationRules.Add(new PhoneNumberRule(phone));
+            }
+
+            var range = propertyInfo.GetCustomAttribute<RangeAttribute>(false);
+            if (range != null)
+            {
+                ValidationRules.Add(new RangeRule(range));
+            }
+
+            var regularExpression = propertyInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
+            if (regularExpression != null)
+            {
+                ValidationRules.Add(new RegularExpressionRule(regularExpression));
+            }
+
+            var required = propertyInfo.GetCustomAttribute<RequiredAttribute>(false);
+            if (required != null)
+            {
+                IsRequired = true;
+                ValidationRules.Add(new RequiredRule(required));
+            }
+
+            var stringLength = propertyInfo.GetCustomAttribute<StringLengthAttribute>(false);
+            if (stringLength != null)
+            {
+                ValidationRules.Add(new StringLengthRule(stringLength));
+            }
+
+            var url = propertyInfo.GetCustomAttribute<UrlAttribute>(false);
+            if (url != null)
+            {
+                ValidationRules.Add(new UrlRule(url));
+            }
 
             this.ConstantValue = null;
         }
@@ -77,6 +121,8 @@ namespace CSharpToTypeScript.Models
         {
             this.MemberInfo = fieldInfo;
             this.Name = fieldInfo.Name;
+            this.ValidationRules = new List<ITsValidationRule>();
+
             if (fieldInfo.ReflectedType?.IsGenericType == true)
             {
                 this.PropertyType = !fieldInfo.ReflectedType?.GetGenericTypeDefinition()?.GetProperty(fieldInfo.Name)?.PropertyType.IsGenericParameter == true ?
@@ -97,23 +143,74 @@ namespace CSharpToTypeScript.Models
             }
             this.GenericArguments = new TsType[0];
 
-            Compare = fieldInfo.GetCustomAttribute<CompareAttribute>(false);
-            CreditCard = fieldInfo.GetCustomAttribute<CreditCardAttribute>(false);
+            DataMember = fieldInfo.GetCustomAttribute<DataMemberAttribute>(false);
             Display = fieldInfo.GetCustomAttribute<DisplayAttribute>(false);
-            EmailAddress = fieldInfo.GetCustomAttribute<EmailAddressAttribute>(false);
             JsonIgnore = fieldInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
             JsonPropertyName = fieldInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
-            Phone = fieldInfo.GetCustomAttribute<PhoneAttribute>(false);
-            Range = fieldInfo.GetCustomAttribute<RangeAttribute>(false);
-            RegularExpression = fieldInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
-            Required = fieldInfo.GetCustomAttribute<RequiredAttribute>(false);
-            StringLength = fieldInfo.GetCustomAttribute<StringLengthAttribute>(false);
-            Url = fieldInfo.GetCustomAttribute<UrlAttribute>(false);
+
+            var compare = fieldInfo.GetCustomAttribute<CompareAttribute>(false);
+            if (compare != null)
+            {
+                ValidationRules.Add(new CompareRule(compare));
+            }
+
+            var creditCard = fieldInfo.GetCustomAttribute<CreditCardAttribute>(false);
+            if (creditCard != null)
+            {
+                ValidationRules.Add(new CreditCardRule(creditCard));
+            }
+
+            var emailAddress = fieldInfo.GetCustomAttribute<EmailAddressAttribute>(false);
+            if (emailAddress != null)
+            {
+                ValidationRules.Add(new EmailAddressRule(emailAddress));
+            }
+
+            var phone = fieldInfo.GetCustomAttribute<PhoneAttribute>(false);
+            if (phone != null)
+            {
+                ValidationRules.Add(new PhoneNumberRule(phone));
+            }
+
+            var range = fieldInfo.GetCustomAttribute<RangeAttribute>(false);
+            if (range != null)
+            {
+                ValidationRules.Add(new RangeRule(range));
+            }
+
+            var regularExpression = fieldInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
+            if (regularExpression != null)
+            {
+                ValidationRules.Add(new RegularExpressionRule(regularExpression));
+            }
+
+            var required = fieldInfo.GetCustomAttribute<RequiredAttribute>(false);
+            if (required != null)
+            {
+                ValidationRules.Add(new RequiredRule(required));
+            }
+
+            var stringLength = fieldInfo.GetCustomAttribute<StringLengthAttribute>(false);
+            if (stringLength != null)
+            {
+                ValidationRules.Add(new StringLengthRule(stringLength));
+            }
+
+            var url = fieldInfo.GetCustomAttribute<UrlAttribute>(false);
+            if (url != null)
+            {
+                ValidationRules.Add(new UrlRule(url));
+            }
 
             if (fieldInfo.IsLiteral && !fieldInfo.IsInitOnly)
                 this.ConstantValue = fieldInfo.GetValue(null);
             else
                 this.ConstantValue = null;
+        }
+
+        public string GetDisplayName()
+        {
+            return Display?.Name ?? this.Name;
         }
     }
 }

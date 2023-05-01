@@ -10,6 +10,8 @@ namespace CSharpToTypeScript
 
         void VisitClass(TsClass classModel);
 
+        void VisitInterface(TsInterface interfaceModel);
+
         void VisitProperty(TsProperty property);
 
         void VisitEnum(TsEnum enumModel);

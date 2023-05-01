@@ -3,8 +3,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CSharpToTypeScript.Test
 {
+    public enum Gender
+    {
+        Unknown = 0,
+        Male = 1,
+        Female = 2
+    }
+
+    public class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime DateOfBirth { get; set; }
+    }
+
+    public class PersonWithGender : Person
+    {
+        public Gender Gender { get; set; }
+    }
+
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClasses : IDisposable
+    public class TestGenerateTypeScriptFileUsingExeFromSimpleClasses : IDisposable
     {
         private bool disposedValue;
 
@@ -25,15 +44,14 @@ namespace CSharpToTypeScript.Test
         {
             var filePath = Path.Combine(this.TestContext.TestRunDirectory, "Person.d.ts");
 
-            var ts = TypeScript.Definitions()
-               .For<Person>();
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.Person", filePath, string.Empty);
 
-            string personTypeScript = ts.Generate();
+            var personTypeScript = File.ReadAllText(filePath);
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
             Assert.AreEqual("class Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n",
-                personTypeScript.Replace(filePath, ""));
+                personTypeScript);
 
         }
 
@@ -41,15 +59,15 @@ namespace CSharpToTypeScript.Test
         public void TestGenerateTypeScriptFileForSimpleClassWithEnum()
         {
             var filePath = Path.Combine(this.TestContext.TestRunDirectory, "PersonWithGender.d.ts");
-            var ts = TypeScript.Definitions()
-               .For<PersonWithGender>();
 
-            string script = ts.Generate();
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGender", filePath, string.Empty);
 
-            Assert.IsTrue(!string.IsNullOrEmpty(script));
+            var personTypeScript = File.ReadAllText(filePath);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
             Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\nclass Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\nclass PersonWithGender extends Person {\r\n\tgender?: Gender;\r\n}\r\n",
-                script);
+                personTypeScript);
         }
 
         protected virtual void Dispose(bool disposing)

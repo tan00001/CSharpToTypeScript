@@ -12,19 +12,32 @@
 			</Group>
 		</Groups>
 		<Bitmaps>
-			<Bitmap guid="GenerateTypeScriptCommandIcon" href="Resources\Icon.png" usedList="GenerateTypeScriptCommandIconID"/>
+			<Bitmap guid="GenerateReactFormResolverIcon" href="Resources\react16.png" usedList="GenerateReactFormResolverIconID"/>		
 		</Bitmaps>
 		<Buttons>
 			<Button guid="GenerateTypeScriptCommand" id="GenerateTypeScriptCommandID" priority="0x0100" type="Button">
 				<Parent guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID"/>
-				<Icon guid="GenerateTypeScriptCommandIcon" id="GenerateTypeScriptCommandIconID"/>
+				<Icon guid="ImageCatalogGuid" id="TSFileNode"/>
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>IconIsMoniker</CommandFlag>
 				<Strings>
 					<ButtonText>Generate TypeScript...</ButtonText>
 				</Strings>
 			</Button>
+			<Button guid="GenerateReactFormResolverCommand" id="GenerateReactFormResolverCommandID" priority="0x0100" type="Button">
+				<Parent guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID"/>
+				<Icon guid="GenerateReactFormResolverIcon" id="GenerateReactFormResolverIconID" />
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<Strings>
+					<ButtonText>Generate React Hook Form Resolver...</ButtonText>
+				</Strings>
+			</Button>
 		</Buttons>
 	</Commands>
-
+	<VisibilityConstraints>
+		<VisibilityItem guid="GenerateTypeScriptCommand" id="GenerateTypeScriptCommandID" context="guidCSharpEditorContext" />
+	</VisibilityConstraints>
+	
 	<Symbols>
 		<GuidSymbol name="CSharpToTypeScriptPackage" value="{6b09e960-199a-4025-9920-d2355ce65333}">
 		</GuidSymbol>
@@ -34,9 +47,13 @@
 		<GuidSymbol name="GenerateTypeScriptCommand" value="{133C2224-68D4-4B27-85BB-E19D8BB1DA7D}">
 			<IDSymbol name="GenerateTypeScriptCommandID" value="0x0100" />
 		</GuidSymbol>
-		<GuidSymbol name="GenerateTypeScriptCommandIcon" value="{4768922B-48C6-4C55-9BAE-03DD8B34A9AF}">
-			<IDSymbol name="GenerateTypeScriptCommandIconID" value="1"/>
+		<GuidSymbol name="GenerateReactFormResolverIcon" value="{D10A7AF3-AB4A-479A-A319-42083237CAB7}">
+			<IDSymbol name="GenerateReactFormResolverIconID" value="1" />
 		</GuidSymbol>
+		<GuidSymbol name="GenerateReactFormResolverCommand" value="{775109EB-85CC-473F-8D2F-32837B114BA6}">
+			<IDSymbol name="GenerateReactFormResolverCommandID" value="0x0101" />
+		</GuidSymbol>
+		<GuidSymbol name="guidCSharpEditorContext" value="{694DD9B6-B865-4C5B-AD85-86356E9C88DC}" />
 	</Symbols>
 
 	<CommandPlacements>

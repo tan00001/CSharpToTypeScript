@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CSharpToTypeScript": {
+      "commandName": "Project",
+      "commandLineArgs": "\"H:\\Projects\\ConsoleApp1\\DotNetCoreConsoleApp\\bin\\Debug\\net5.0\\DotNetCoreConsoleApp.dll\" ConsoleApplication5.Program \"H:\\Projects\\ConsoleApp1\\DotNetCoreConsoleApp\\bin\\Debug\\net5.0\\Program.ts\""
+    }
+  }
+}

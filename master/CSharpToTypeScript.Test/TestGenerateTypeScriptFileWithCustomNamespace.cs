@@ -1,10 +1,17 @@
 using System;
-using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace CSharpToTypeScript.Test
 {
+
+    [DataContract(Namespace = "CSharpToTypeScript.TestNamespace")]
+    public class PersonWithNamespace : PersonWithNullableName
+    {
+        public Gender? Gender { get; set; }
+    }
+
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClasses : IDisposable
+    public class TestGenerateTypeScriptFileWithCustomNamespace : IDisposable
     {
         private bool disposedValue;
 
@@ -21,34 +28,18 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClass()
+        public void TestGenerateTypeScriptFileForPersonWithCustomNamespace()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory, "Person.d.ts");
-
-            var ts = TypeScript.Definitions()
-               .For<Person>();
-
-            string personTypeScript = ts.Generate();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
-
-            Assert.AreEqual("class Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n",
-                personTypeScript.Replace(filePath, ""));
-
-        }
-
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassWithEnum()
-        {
+            Dictionary<string, string> test = new();
             var filePath = Path.Combine(this.TestContext.TestRunDirectory, "PersonWithGender.d.ts");
             var ts = TypeScript.Definitions()
-               .For<PersonWithGender>();
+               .For<PersonWithNamespace>();
 
             string script = ts.Generate();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\nclass Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\nclass PersonWithGender extends Person {\r\n\tgender?: Gender;\r\n}\r\n",
+            Assert.AreEqual("namespace CSharpToTypeScript.Test {\r\n\texport const enum Gender {\r\n\t\tUnknown = 0,\r\n\t\tMale = 1,\r\n\t\tFemale = 2\r\n\t}\r\n\tclass PersonWithNullableName {\r\n\t\tage?: number | null;\r\n\t\tdateOfBirth?: number;\r\n\t\tid?: number;\r\n\t\tname?: string | null;\r\n\t}\r\n}\r\nnamespace CSharpToTypeScript.TestNamespace {\r\n\tclass PersonWithNamespace extends CSharpToTypeScript.Test.PersonWithNullableName {\r\n\t\tgender?: CSharpToTypeScript.Test.Gender | null;\r\n\t}\r\n}\r\n",
                 script);
         }
 

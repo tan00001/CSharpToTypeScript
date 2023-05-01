@@ -21,8 +21,14 @@ namespace CSharpToTypeScript
         public const string GenerateTypeScriptCommandString = "133c2224-68d4-4b27-85bb-e19d8bb1da7d";
         public static Guid GenerateTypeScriptCommand = new Guid(GenerateTypeScriptCommandString);
 
-        public const string GenerateTypeScriptCommandIconString = "4768922b-48c6-4c55-9bae-03dd8b34a9af";
-        public static Guid GenerateTypeScriptCommandIcon = new Guid(GenerateTypeScriptCommandIconString);
+        public const string GenerateReactFormResolverIconString = "d10a7af3-ab4a-479a-a319-42083237cab7";
+        public static Guid GenerateReactFormResolverIcon = new Guid(GenerateReactFormResolverIconString);
+
+        public const string GenerateReactFormResolverCommandString = "775109eb-85cc-473f-8d2f-32837b114ba6";
+        public static Guid GenerateReactFormResolverCommand = new Guid(GenerateReactFormResolverCommandString);
+
+        public const string guidCSharpEditorContextString = "694dd9b6-b865-4c5b-ad85-86356e9c88dc";
+        public static Guid guidCSharpEditorContext = new Guid(guidCSharpEditorContextString);
     }
     /// <summary>
     /// Helper class that encapsulates all CommandIDs uses across VS Package.
@@ -31,6 +37,7 @@ namespace CSharpToTypeScript
     {
         public const int CSharpToTypeScriptGroupID = 0x0001;
         public const int GenerateTypeScriptCommandID = 0x0100;
-        public const int GenerateTypeScriptCommandIconID = 0x0001;
+        public const int GenerateReactFormResolverIconID = 0x0001;
+        public const int GenerateReactFormResolverCommandID = 0x0101;
     }
 }
