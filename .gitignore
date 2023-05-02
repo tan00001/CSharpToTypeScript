@@ -17,3 +17,7 @@
 /master/CSharpToTypeScript.vsix/source.extension.vsixmanifest.bak
 /master/CSharpToTypeScript.vsix/CSharpToTypeScript.vsix.csproj.bak
 /master/CSharpToTypeScript.vsix/CSharpToTypeScript.vsix.csproj.user
+/master/CSharpToTypeScript.Test/TestResults
+/master/CSharpToTypeScript.vsix/bin/Release
+*.log
+*.bak
