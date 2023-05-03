@@ -29,14 +29,14 @@ this tool can generate the following TypeScript:
 ```
 import { Resolver, FieldError } from 'react-hook-form';
 
-class PersonWithValidation {
+export class PersonWithValidation {
 	age?: number | null;
 	id?: number;
 	location?: string | null;
 	name: string;
 }
 
-const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (values) => {
+export const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (values) => {
 	const errorBuffer = {
 		age: FieldError[]
 		location: FieldError[]

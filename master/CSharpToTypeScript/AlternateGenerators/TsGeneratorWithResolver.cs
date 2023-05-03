@@ -8,9 +8,12 @@ namespace CSharpToTypeScript.AlternateGenerators
 {
     public class TsGeneratorWithResolver : TsGenerator
     {
+        public bool DefaultTypeVisibilityFormatterForResolver(TsType tsType, string? typeName) => tsType is TsClass || tsType is TsInterface ;
+
         public TsGeneratorWithResolver(bool enableNamespace)
             : base(enableNamespace)
         {
+            SetTypeVisibilityFormatter(DefaultTypeVisibilityFormatterForResolver);
         }
 
         protected override void AppendModule(
@@ -41,7 +44,7 @@ namespace CSharpToTypeScript.AlternateGenerators
 
             string? typeName = this.GetTypeName(classModel);
             string str = this.GetTypeVisibility(classModel, typeName) ? "export " : "";
-            sb.AppendLineIndented(str + "const " + typeName + "Resolver: Resolver<" + typeName  + "> = async (values) => {");
+            sb.AppendLineIndented(str + "export const " + typeName + "Resolver: Resolver<" + typeName  + "> = async (values) => {");
 
             using (sb.IncreaseIndentation())
             {
