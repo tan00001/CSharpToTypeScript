@@ -42,7 +42,7 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileUsingExeForSimpleClasses()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory, "Person.d.ts");
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "Person.d.ts");
 
             CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.Person", filePath, string.Empty);
 
@@ -58,7 +58,7 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileUsingExeForSimpleClassesWithEnum()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory, "PersonWithGender.d.ts");
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGender.d.ts");
 
             CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGender", filePath, string.Empty);
 

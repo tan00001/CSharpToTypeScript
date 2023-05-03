@@ -18,34 +18,36 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
-            sb.AppendLine("if (values." + propertyName + " && ([...values." + propertyName + "].filter(c => c >= '0' && c <= '9')");
-            sb.AppendLineIndented(".reduce((checksum, c, index) => {");
+            sb.AppendLineIndented("if (values." + propertyName + " && ([...values." + propertyName + "].filter(c => c >= '0' && c <= '9')");
             using (sb.IncreaseIndentation())
             { 
-                sb.AppendLineIndented("var digitValue = (digit - '0') * (index & 2) !== 0 ? 2 : 1);");
-                sb.AppendLineIndented("while (digitValue > 0) {");
+                sb.AppendLineIndented(".reduce((checksum, c, index) => {");
                 using (sb.IncreaseIndentation())
-                { 
-                    sb.AppendLineIndented("checksum += digitValue % 10;");
-                    sb.AppendLineIndented("digitValue /= 10;");
-                    sb.AppendLine("}");
+                {
+                    sb.AppendLineIndented("var digitValue = (digit - '0') * ((index & 2) !== 0 ? 2 : 1);");
+                    sb.AppendLineIndented("while (digitValue > 0) {");
+                    using (sb.IncreaseIndentation())
+                    {
+                        sb.AppendLineIndented("checksum += digitValue % 10;");
+                        sb.AppendLineIndented("digitValue /= 10;");
+                    }
+                    sb.AppendLineIndented("}");
+                    sb.AppendLineIndented("return checksum;");
                 }
-                sb.AppendLineIndented("return checksum;");
-                sb.AppendLine("}, 0) % 10) === 0) {");
+                sb.AppendLineIndented("}, 0) % 10) !== 0) {");
             }
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLine("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
                 using (sb.IncreaseIndentation())
                 {
-                    sb.AppendLine("type: 'pattern',");
-                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_CreditCard.ErrorMessage) ? _CreditCard.ErrorMessage
-                        : property.GetDisplayName() + " is invalid.") + "'");
-                    sb.AppendLine("});");
+                    sb.AppendLineIndented("type: 'pattern',");
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_CreditCard.ErrorMessage) ? string.Format(_CreditCard.ErrorMessage, property.GetDisplayName())
+                        : (property.GetDisplayName() + " is invalid.") + "'"));
                 }
-                sb.AppendLine("}");
+                sb.AppendLineIndented("});");
             }
-            sb.AppendLine("}");
+            sb.AppendLineIndented("}");
         }
     }
 }

@@ -18,20 +18,19 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
-            sb.AppendLine("if (values." + propertyName + @" && !/^(http:\/\/|https:\/\/|ftp:\/\/)/.test(values." + propertyName + ") {");
+            sb.AppendLineIndented("if (values." + propertyName + @" && !/^(http:\/\/|https:\/\/|ftp:\/\/)/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLine("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
                 using (sb.IncreaseIndentation())
                 {
-                    sb.AppendLine("type: 'pattern',");
-                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Url.ErrorMessage) ? _Url.ErrorMessage
-                        : property.GetDisplayName() + " is invalid.") + "'");
-                    sb.AppendLine("});");
+                    sb.AppendLineIndented("type: 'pattern',");
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Url.ErrorMessage) ? string.Format(_Url.ErrorMessage, property.GetDisplayName())
+                        : (property.GetDisplayName() + " is invalid.") + "'"));
                 }
-                sb.AppendLine("}");
+                sb.AppendLineIndented("});");
             }
-            sb.AppendLine("}");
+            sb.AppendLineIndented("}");
         }
     }
 }

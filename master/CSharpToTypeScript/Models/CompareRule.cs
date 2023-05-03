@@ -18,31 +18,32 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
-            var otherPropertyName = FindOrderPropertyName(allProperties);
+            FindOrderPropertyName(allProperties, out var otherPropertyName, out var otherPropertyDisplayName);
 
-            sb.AppendLine("if (values." + propertyName + " !== values." + otherPropertyName + ") {");
+            sb.AppendLineIndented("if (values." + propertyName + " !== values." + otherPropertyName + ") {");
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLine("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
                 using (sb.IncreaseIndentation())
                 {
-                    sb.AppendLine("type: 'pattern',");
+                    sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Compare.ErrorMessage) ? _Compare.ErrorMessage
-                        : property.GetDisplayName() + " is invalid.") + "'");
-                    sb.AppendLine("});");
+                        : otherPropertyDisplayName + " does not match.") + "'");
                 }
-                sb.AppendLine("}");
+                sb.AppendLineIndented("});");
             }
-            sb.AppendLine("}");
+            sb.AppendLineIndented("}");
         }
 
-        private string FindOrderPropertyName(IReadOnlyDictionary<string, TsProperty> allProperties)
+        private void FindOrderPropertyName(IReadOnlyDictionary<string, TsProperty> allProperties, out string otherPropertyName, out string otherPropertyDisplayName)
         {
             foreach (var property in allProperties)
             {
                 if (property.Value.Name == _Compare.OtherProperty)
                 {
-                    return property.Key;
+                    otherPropertyName = property.Key;
+                    otherPropertyDisplayName = property.Value.GetDisplayName();
+                    return;
                 }
             }
 

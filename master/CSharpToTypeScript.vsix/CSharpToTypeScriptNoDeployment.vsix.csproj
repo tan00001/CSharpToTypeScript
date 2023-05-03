@@ -159,13 +159,18 @@
   </Target>
   <Target Name="DeployVsixExtensionFiles">
   </Target>
-  <Target Name="VSCTCompile">
-  </Target>
   <Target Name="MergeCtoResource">
+  </Target>
+  <Target Name="BeforeBuild">
+    <Message Text="Project: $(MSBuildProjectFullPath)" />
+    <Message Text="PackageReference: %(PackageReference.Identity) Version: %(PackageReference.Version)" Condition="'%(PackageReference.Identity)' != ''" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
+    <Message Text="$(SolutionDir).vs\$(SolutionName)\*\.suo" />
+    <Message Text="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Importance="high" />
+    <Message Text="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)" Importance="high" />
   </Target>
   <Target Name="AfterBuild">
   </Target>

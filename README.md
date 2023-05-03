@@ -81,7 +81,7 @@ const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (valu
 		});
 	}
 
-	let returnValues:PersonWithValidation = {};
+	let returnValues: PersonWithValidation = {};
 	let returnErrors = {};
 
 	if (errorBuffer.age.length == 0) {
@@ -112,4 +112,6 @@ This tool can be launched from the command line, or from Visual Studio via its p
 
 ![alt text](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
 
-CSharpToTypeScript is under MIT License.
+I would like to express my gratitude to Mr. Lukas Kabrt for his inspiring TypeLITE project, which is the basis of this open source project. I greatly appreciate his dedication to creating valuable open source tools and encourage everyone to explore TypeLITE at http://type.litesolutions.net/.
+
+CSharpToTypeScript is under the <a href="https://opensource.org/license/mit/">MIT License</a>.

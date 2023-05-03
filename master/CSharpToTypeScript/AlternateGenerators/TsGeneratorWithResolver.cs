@@ -66,8 +66,17 @@ namespace CSharpToTypeScript.AlternateGenerators
                 }
 
                 sb.AppendLine();
-                sb.AppendLineIndented("let returnValues:" + typeName + " = {};");
-                sb.AppendLineIndented("let returnErrors = {};");
+                if (classModel.BaseType is TsClass baseClass)
+                {
+                    sb.AppendLineIndented("const baseResults = await " + this.GetTypeName(baseClass) + "Resolver(values);");
+                    sb.AppendLineIndented("let returnValues: " + typeName + " = { ...baseResults.Values };");
+                    sb.AppendLineIndented("let returnErrors = { ...baseResults.Errors };");
+                }
+                else
+                {
+                    sb.AppendLineIndented("let returnValues: " + typeName + " = {};");
+                    sb.AppendLineIndented("let returnErrors = {};");
+                }
                 sb.AppendLine();
 
                 foreach (var property in sortedSourceList)

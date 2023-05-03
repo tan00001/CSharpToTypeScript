@@ -30,8 +30,6 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileForPersonWithCustomNamespace()
         {
-            Dictionary<string, string> test = new();
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory, "PersonWithGender.d.ts");
             var ts = TypeScript.Definitions()
                .For<PersonWithNamespace>();
 

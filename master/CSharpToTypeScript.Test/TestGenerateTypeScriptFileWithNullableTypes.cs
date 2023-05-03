@@ -36,8 +36,6 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileForPersonWithNullableName()
         {
-            Dictionary<string, string> test = new ();
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory, "Person.d.ts");
             var ts = TypeScript.Definitions()
                .For<PersonWithNullableName>();
 
@@ -52,8 +50,6 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileForPersonWithNullableGender()
         {
-            Dictionary<string, string> test = new();
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory, "PersonWithGender.d.ts");
             var ts = TypeScript.Definitions()
                .For<PersonWithNullableGender>();
 
