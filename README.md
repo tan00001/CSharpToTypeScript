@@ -52,7 +52,7 @@ const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (valu
 		}
 		if (values.age.Length < 20) {
 			errorBuffer.age.push({
-				type: 'minLength',
+				type: 'min',
 				message: 'Age cannot be less than 20.'
 			});
 		}

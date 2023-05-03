@@ -46,7 +46,7 @@ namespace CSharpToTypeScript.Models
                         sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
                         using (sb.IncreaseIndentation())
                         {
-                            sb.AppendLineIndented("type: 'minLength',");
+                            sb.AppendLineIndented("type: 'min',");
                             sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
                                 : property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".") + "'");
                         }
