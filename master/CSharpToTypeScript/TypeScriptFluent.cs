@@ -103,9 +103,9 @@ namespace CSharpToTypeScript
             return this;
         }
 
-        public string Generate() => this._scriptGenerator.Generate(this._modelBuilder.TsModuleService, this._modelBuilder.Build());
+        public string Generate() => this._scriptGenerator.Generate(this._modelBuilder);
 
-        public string Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder.TsModuleService, this._modelBuilder.Build(), output);
+        public string Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder, output);
 
         public override string ToString() => this.Generate();
     }

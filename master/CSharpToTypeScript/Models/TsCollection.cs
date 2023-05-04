@@ -12,14 +12,14 @@ namespace CSharpToTypeScript.Models
 
         public int Dimension { get; set; }
 
-        public TsCollection(Type type)
+        public TsCollection(ITsModuleService tsModuleService, Type type)
           : base(type)
         {
             Type? enumerableType = TsType.GetEnumerableType(this.Type);
             if (enumerableType == this.Type)
                 this.ItemsType = TsType.Any;
             else if (enumerableType != null)
-                this.ItemsType = TsType.Create(enumerableType);
+                this.ItemsType = TsType.Create(tsModuleService, enumerableType);
             else if (typeof(IEnumerable).IsAssignableFrom(this.Type))
                 this.ItemsType = TsType.Any;
             else
@@ -30,7 +30,10 @@ namespace CSharpToTypeScript.Models
         private static int GetCollectionDimension(Type t)
         {
             if (t.IsArray)
-                return TsCollection.GetCollectionDimension(t.GetElementType()) + 1;
+            {
+                return TsCollection.GetCollectionDimension(t.GetElementType()!) + 1;
+            }
+
             Type? enumerableType;
             return t != typeof(string) && (enumerableType = TsType.GetEnumerableType(t)) != null && enumerableType != t ? TsCollection.GetCollectionDimension(enumerableType) + 1 : 0;
         }

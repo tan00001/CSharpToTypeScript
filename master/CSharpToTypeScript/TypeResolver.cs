@@ -8,12 +8,10 @@ namespace CSharpToTypeScript
 {
     internal class TypeResolver : TsModelVisitor
     {
-        private readonly TsModel _model;
         private readonly Dictionary<Type, TsType> _knownTypes = new();
 
         public TypeResolver(TsModel model)
         {
-            this._model = model;
             foreach (TsClass tsClass in model.Classes)
                 this._knownTypes[tsClass.Type] = tsClass;
             foreach (TsInterface tsInterface in model.Interfaces)
@@ -27,11 +25,11 @@ namespace CSharpToTypeScript
             classModel.Module = tsModuleService.GetModule(classModel.ModuleName);
 
             if (classModel.BaseType != null && classModel.BaseType != TsType.Any)
-                classModel.BaseType = this.ResolveType(classModel.BaseType, false);
+                classModel.BaseType = this.ResolveType(tsModuleService, classModel.BaseType, false);
 
             for (int index = 0; index < classModel.Interfaces.Count; ++index)
             {
-                var resolvedType = this.ResolveType(classModel.Interfaces[index], false);
+                var resolvedType = this.ResolveType(tsModuleService, classModel.Interfaces[index], false);
                 if (resolvedType is not TsInterface tsInterface)
                 {
                     throw new Exception("Cannot resolve type \"" + classModel.Interfaces[index] + "\".");
@@ -45,11 +43,11 @@ namespace CSharpToTypeScript
             interfaceModel.Module = tsModuleService.GetModule(interfaceModel.ModuleName);
 
             if (interfaceModel.BaseType != null && interfaceModel.BaseType != TsType.Any)
-                interfaceModel.BaseType = this.ResolveType(interfaceModel.BaseType, false);
+                interfaceModel.BaseType = this.ResolveType(tsModuleService, interfaceModel.BaseType, false);
 
             for (int index = 0; index < interfaceModel.Interfaces.Count; ++index)
             {
-                var resolvedType = this.ResolveType(interfaceModel.Interfaces[index], false);
+                var resolvedType = this.ResolveType(tsModuleService, interfaceModel.Interfaces[index], false);
                 if (resolvedType is not TsInterface tsInterface)
                 {
                     throw new Exception("Cannot resolve type \"" + interfaceModel.Interfaces[index] + "\".");
@@ -68,55 +66,57 @@ namespace CSharpToTypeScript
             if (property.JsonIgnore != null)
                 return;
 
-            property.PropertyType = this.ResolveType(property.PropertyType);
+            property.PropertyType = this.ResolveType(tsModuleService, property.PropertyType);
+
             if (property.GenericArguments == null)
                 return;
 
             for (int index = 0; index < property.GenericArguments.Count; ++index)
-                property.GenericArguments[index] = this.ResolveType(property.GenericArguments[index]);
+            {
+                property.GenericArguments[index] = this.ResolveType(tsModuleService, property.GenericArguments[index]);
+            }
         }
 
-        private TsType? ResolveType(TsType? toResolve, bool useOpenGenericDefinition = true)
+        private TsType ResolveType(ITsModuleService tsModuleService, TsType toResolve, bool useOpenGenericDefinition = true)
         {
-            if (toResolve == null)
-                return toResolve;
-            if (_knownTypes.TryGetValue(toResolve.Type, out TsType? value))
-                return value;
+            if (_knownTypes.TryGetValue(toResolve.Type, out TsType? tsType))
+                return tsType;
+
             if (toResolve.Type.IsGenericType & useOpenGenericDefinition)
             {
-                if (this._knownTypes.TryGetValue(toResolve.Type.GetGenericTypeDefinition(), out var tsType))
+                if (this._knownTypes.TryGetValue(toResolve.Type.GetGenericTypeDefinition(), out tsType))
                     return tsType;
             }
             else if (toResolve.Type.IsGenericType)
             {
-                TsType tsType = TsType.Create(toResolve.Type);
+                tsType = TsType.Create(tsModuleService, toResolve.Type);
                 this._knownTypes[toResolve.Type] = tsType;
                 return tsType;
             }
-            TsType tsType1;
+
             switch (TsType.GetTypeFamily(toResolve.Type))
             {
                 case TsTypeFamily.System:
-                    tsType1 = (TsType)new TsSystemType(toResolve.Type);
+                    tsType = new TsSystemType(toResolve.Type);
                     break;
                 case TsTypeFamily.Collection:
-                    tsType1 = (TsType)this.CreateCollectionType(toResolve);
+                    tsType = this.CreateCollectionType(tsModuleService, toResolve);
                     break;
                 case TsTypeFamily.Enum:
-                    tsType1 = (TsType)new TsEnum(toResolve.Type);
+                    tsType = tsModuleService.GetOrAddTsEnum(toResolve.Type);
                     break;
                 default:
-                    tsType1 = TsType.Any;
+                    tsType = TsType.Any;
                     break;
             }
-            this._knownTypes[toResolve.Type] = tsType1;
-            return tsType1;
+            this._knownTypes[toResolve.Type] = tsType;
+            return tsType;
         }
 
-        private TsCollection CreateCollectionType(TsType type)
+        private TsCollection CreateCollectionType(ITsModuleService tsModuleService, TsType type)
         {
-            TsCollection collectionType = new (type.Type);
-            collectionType.ItemsType = this.ResolveType(collectionType.ItemsType, false);
+            TsCollection collectionType = new (tsModuleService, type.Type);
+            collectionType.ItemsType = this.ResolveType(tsModuleService, collectionType.ItemsType, false);
             return collectionType;
         }
     }

@@ -17,14 +17,8 @@ namespace CSharpToTypeScript
 
         public ProjectSettings(string projectFilePath)
         {
-            var project = ProjectCollection.GlobalProjectCollection.LoadedProjects.FirstOrDefault(p => string.Compare(p.FullPath, projectFilePath, true) == 0);
-
-            if (project == null)
-            {
-                project = new Project(projectFilePath);
-            }
-
-            Project = project;
+            Project = ProjectCollection.GlobalProjectCollection.LoadedProjects.FirstOrDefault(p => string.Compare(p.FullPath, projectFilePath, true) == 0)
+                ?? new Project(projectFilePath);
         }
 
         public string GetScriptOutputFolder()

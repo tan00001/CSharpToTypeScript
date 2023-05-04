@@ -50,28 +50,28 @@ namespace CSharpToTypeScript
                     + string.Join(", ", tsClass.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsSystemType>((type, formatter) => ((TsSystemType)type).Kind.ToTypeScriptString());
-            this._typeFormatters.RegisterTypeFormatter<TsCollection>((type, formatter) => this.GetTypeName(((TsCollection)type).ItemsType));
+            this._typeFormatters.RegisterTypeFormatter<TsCollection>((type, formatter) => this.GetTypeName(((TsCollection)type).ItemsType) ?? throw new Exception("Invalid collection: item type has no name.") );
             this._typeFormatters.RegisterTypeFormatter<TsEnum>((type, formatter) => ((TsModuleMember)type).Name);
             this._typeConvertors = new TypeConvertorCollection();
             this._docAppender = new NullDocAppender();
-            this._memberFormatter = new TsMemberIdentifierFormatter(this.DefaultMemberFormatter);
-            this._memberTypeFormatter = new TsMemberTypeFormatter(this.DefaultMemberTypeFormatter);
-            this._typeVisibilityFormatter = new TsTypeVisibilityFormatter(this.DefaultTypeVisibilityFormatter);
-            this._moduleNameFormatter = new TsModuleNameFormatter(this.DefaultModuleNameFormatter);
-            this._namespaceNameFormatter = new TsNamespaceNameFormatter(this.DefaultNamespaceNameFormatter);
+            this._memberFormatter = new TsMemberIdentifierFormatter(DefaultMemberFormatter);
+            this._memberTypeFormatter = new TsMemberTypeFormatter(DefaultMemberTypeFormatter);
+            this._typeVisibilityFormatter = new TsTypeVisibilityFormatter(DefaultTypeVisibilityFormatter);
+            this._moduleNameFormatter = new TsModuleNameFormatter(DefaultModuleNameFormatter);
+            this._namespaceNameFormatter = new TsNamespaceNameFormatter(DefaultNamespaceNameFormatter);
             this.IndentationString = "\t";
             this.GenerateConstEnums = true;
         }
 
-        public bool DefaultTypeVisibilityFormatter(TsType tsType, string? typeName) => false;
+        public static bool DefaultTypeVisibilityFormatter(TsType tsType, string? typeName) => false;
 
-        public string DefaultModuleNameFormatter(TsModule module) => module.Name;
+        public static string DefaultModuleNameFormatter(TsModule module) => module.Name;
 
-        public string DefaultNamespaceNameFormatter(TsNamespace @namespace) => @namespace.Name;
+        public static string DefaultNamespaceNameFormatter(TsNamespace @namespace) => @namespace.Name;
 
-        public string DefaultMemberFormatter(TsProperty identifier) => identifier.Name.Length > 0 ? (char.ToLower(identifier.Name[0]) + identifier.Name.Substring(1)) : identifier.Name;
+        public static string DefaultMemberFormatter(TsProperty identifier) => identifier.Name.Length > 0 ? (char.ToLower(identifier.Name[0]) + identifier.Name.Substring(1)) : identifier.Name;
 
-        public string DefaultMemberTypeFormatter(TsProperty tsProperty, string? memberTypeName)
+        public static string DefaultMemberTypeFormatter(TsProperty tsProperty, string? memberTypeName)
         {
             if (string.IsNullOrEmpty(memberTypeName))
             {
@@ -107,10 +107,12 @@ namespace CSharpToTypeScript
 
         public void SetDocAppender(IDocAppender appender) => this._docAppender = appender;
 
-        public string Generate(ITsModuleService tsModuleService, TsModel model) => this.Generate(tsModuleService, model, TsGeneratorOutput.Properties | TsGeneratorOutput.Enums);
+        public string Generate(TsModelBuilder tsModelBuilder) => this.Generate(tsModelBuilder, TsGeneratorOutput.Properties | TsGeneratorOutput.Enums);
 
-        public string Generate(ITsModuleService tsModuleService, TsModel model, TsGeneratorOutput generatorOutput)
+        public string Generate(TsModelBuilder tsModelBuilder, TsGeneratorOutput generatorOutput)
         {
+            tsModelBuilder.Build();
+
             ScriptBuilder sb = new (this.IndentationString);
             if ((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties || (generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields)
             {
@@ -118,7 +120,7 @@ namespace CSharpToTypeScript
                     throw new InvalidOperationException("Cannot generate constants together with properties or fields");
             }
 
-            foreach (TsModule module in tsModuleService.GetModules().OrderBy(m => this.FormatModuleName(m)))
+            foreach (TsModule module in tsModelBuilder.TsModuleService.GetModules().OrderBy(m => this.FormatModuleName(m)))
                 this.AppendModule(module, sb, generatorOutput);
 
             return sb.ToString();
@@ -252,11 +254,7 @@ namespace CSharpToTypeScript
 
         private string FormatTypeName(string namespaceName, TsType type)
         {
-            var typeName = GetFullyQualifiedTypeName(type);
-            if (typeName == null)
-            {
-                throw new ArgumentException("Type name cannot be blank.", nameof(type));
-            }
+            var typeName = GetFullyQualifiedTypeName(type) ?? throw new ArgumentException("Type name cannot be blank.", nameof(type));
 
             if (typeName.StartsWith(namespaceName + '.'))
             {
@@ -342,7 +340,7 @@ namespace CSharpToTypeScript
                         this._docAppender.AppendConstantModuleDoc(sb, constant, this.FormatPropertyNameWithOptionalModifier(constant),
                             FormatPropertyType(classModel.NamespaceName, constant));
                         sb.AppendFormatIndented("export const {0}: {1} = {2};", this.FormatPropertyNameWithOptionalModifier(constant),
-                            FormatPropertyType(classModel.NamespaceName, constant), this.GetPropertyConstantValue(constant));
+                            FormatPropertyType(classModel.NamespaceName, constant), GetPropertyConstantValue(constant));
                         sb.AppendLine();
                     }
                 }
@@ -427,7 +425,7 @@ namespace CSharpToTypeScript
         public string? GetTypeName(TsType type) => this._typeConvertors.IsConvertorRegistered(type.Type) ? this._typeConvertors.ConvertType(type.Type)
             : this._typeFormatters.FormatType(type);
 
-        public string GetPropertyConstantValue(TsProperty property)
+        public static string GetPropertyConstantValue(TsProperty property)
         {
             string str = property.PropertyType.Type == typeof(string) ? "\"" : "";
             return str + property.ConstantValue?.ToString() + str;

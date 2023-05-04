@@ -28,16 +28,12 @@ namespace CSharpToTypeScript.Models
                 {
                     return;
                 }
-                if (_Module != null)
-                {
-                    _Module.Remove(this);
-                }
+
+                _Module?.Remove(this);
 
                 _Module = value;
-                if (_Module != null)
-                {
-                    _Module.Add(this);
-                }
+
+                _Module?.Add(this);
             }
         }
 

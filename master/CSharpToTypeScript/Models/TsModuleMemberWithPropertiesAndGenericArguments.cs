@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
     {
         public abstract ICollection<TsProperty> Properties { get; protected set; }
 
-        public abstract IList<TsType> GenericArguments { get; protected set; }
+        public abstract IReadOnlyList<TsType> GenericArguments { get; protected set; }
 
         protected TsModuleMemberWithPropertiesAndGenericArguments(Type type)
           : base(type)

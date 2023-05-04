@@ -8,7 +8,7 @@ namespace CSharpToTypeScript.AlternateGenerators
 {
     public class TsGeneratorWithResolver : TsGenerator
     {
-        public bool DefaultTypeVisibilityFormatterForResolver(TsType tsType, string? typeName) => tsType is TsClass || tsType is TsInterface ;
+        public static bool DefaultTypeVisibilityFormatterForResolver(TsType tsType, string? typeName) => tsType is TsClass || tsType is TsInterface ;
 
         public TsGeneratorWithResolver(bool enableNamespace)
             : base(enableNamespace)

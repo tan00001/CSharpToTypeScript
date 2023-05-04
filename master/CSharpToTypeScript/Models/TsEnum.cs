@@ -16,10 +16,10 @@ namespace CSharpToTypeScript.Models
             if (!this.Type.IsEnum)
                 throw new ArgumentException("ClrType isn't enum.");
 
-            this.Values = new List<TsEnumValue>(this.GetEnumValues(type));
+            this.Values = new List<TsEnumValue>(GetEnumValues(type));
         }
 
-        protected IEnumerable<TsEnumValue> GetEnumValues(Type enumType) => enumType.GetFields()
+        protected static IEnumerable<TsEnumValue> GetEnumValues(Type enumType) => enumType.GetFields()
             .Where(fieldInfo => fieldInfo.IsLiteral && !string.IsNullOrEmpty(fieldInfo.Name))
             .Select(fieldInfo => new TsEnumValue(fieldInfo));
     }

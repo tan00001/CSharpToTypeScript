@@ -34,7 +34,7 @@ namespace CSharpToTypeScript.Models
         public JsonIgnoreAttribute? JsonIgnore { get; set; }
         public JsonPropertyNameAttribute? JsonPropertyName { get; set; }
 
-        public TsProperty(PropertyInfo propertyInfo)
+        public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo)
         {
             this.MemberInfo = propertyInfo;
             this.Name = propertyInfo.Name;
@@ -51,8 +51,8 @@ namespace CSharpToTypeScript.Models
                 IsNullable = propertyInfo.IsNullableReferenceType();
             }
 
-            this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => new TsType(o)).ToArray() : new TsType[0];
-            this.PropertyType = type.IsEnum ? new TsEnum(type) : new TsType(type);
+            this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => new TsType(o)).ToArray() : Array.Empty<TsType>();
+            this.PropertyType = TsType.Create(tsModuleService, type);
 
             DataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>(false);
             Display = propertyInfo.GetCustomAttribute<DisplayAttribute>(false);
@@ -117,7 +117,7 @@ namespace CSharpToTypeScript.Models
             this.ConstantValue = null;
         }
 
-        public TsProperty(FieldInfo fieldInfo)
+        public TsProperty(ITsModuleService tsModuleService, FieldInfo fieldInfo)
         {
             this.MemberInfo = fieldInfo;
             this.Name = fieldInfo.Name;
@@ -126,7 +126,7 @@ namespace CSharpToTypeScript.Models
             if (fieldInfo.ReflectedType?.IsGenericType == true)
             {
                 this.PropertyType = !fieldInfo.ReflectedType?.GetGenericTypeDefinition()?.GetProperty(fieldInfo.Name)?.PropertyType.IsGenericParameter == true ?
-                    (fieldInfo.FieldType.IsEnum ? new TsEnum(fieldInfo.FieldType) : new TsType(fieldInfo.FieldType)) : TsType.Any;
+                    TsType.Create(tsModuleService, fieldInfo.FieldType) : TsType.Any;
             }
             else
             {
@@ -139,9 +139,9 @@ namespace CSharpToTypeScript.Models
                 {
                     IsNullable = fieldInfo.IsNullableReferenceType();
                 }
-                this.PropertyType = type.IsEnum ? new TsEnum(type) : new TsType(type);
+                this.PropertyType = TsType.Create(tsModuleService, type);
             }
-            this.GenericArguments = new TsType[0];
+            this.GenericArguments = Array.Empty<TsType>();
 
             DataMember = fieldInfo.GetCustomAttribute<DataMemberAttribute>(false);
             Display = fieldInfo.GetCustomAttribute<DisplayAttribute>(false);

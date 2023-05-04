@@ -33,7 +33,7 @@ namespace CSharpToTypeScript.Models
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
                 clrType.Name, out TsModuleMember? tsModuleMember))
             {
-                tsModuleMember = new TsClass(clrType);
+                tsModuleMember = new TsClass(this, clrType);
                 module.Add(tsModuleMember);
                 return (TsClass)tsModuleMember;
             }
@@ -54,7 +54,7 @@ namespace CSharpToTypeScript.Models
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
                 clrType.Name, out TsModuleMember? tsModuleMember))
             {
-                tsModuleMember = new TsInterface(clrType);
+                tsModuleMember = new TsInterface(this, clrType);
                 module.Add(tsModuleMember);
                 return (TsInterface)tsModuleMember;
             }

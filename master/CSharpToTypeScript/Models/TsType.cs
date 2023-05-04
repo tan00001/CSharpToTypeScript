@@ -40,20 +40,20 @@ namespace CSharpToTypeScript.Models
             return type.IsClass && type.FullName != "System.Object" || type.IsValueType || type.IsInterface ? TsTypeFamily.Class : TsTypeFamily.Type;
         }
 
-        internal static TsType Create(Type type)
+        internal static TsType Create(ITsModuleService tsModuleService, Type type)
         {
             switch (TsType.GetTypeFamily(type))
             {
                 case TsTypeFamily.System:
                     return new TsSystemType(type);
                 case TsTypeFamily.Collection:
-                    return new TsCollection(type);
+                    return new TsCollection(tsModuleService, type);
                 case TsTypeFamily.Class:
-                    return new TsClass(type);
+                    return tsModuleService.GetOrAddTsClass(type);
                 case TsTypeFamily.Interface:
-                    return new TsInterface(type);
+                    return tsModuleService.GetOrAddTsInterface(type);
                 case TsTypeFamily.Enum:
-                    return new TsEnum(type);
+                    return tsModuleService.GetOrAddTsEnum(type);
                 default:
                     return new TsType(type);
             }

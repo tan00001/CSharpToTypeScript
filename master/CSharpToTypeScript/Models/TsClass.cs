@@ -16,7 +16,7 @@ namespace CSharpToTypeScript.Models
 
         public ICollection<TsProperty> Fields { get; private set; }
 
-        public override IList<TsType> GenericArguments { get; protected set; }
+        public override IReadOnlyList<TsType> GenericArguments { get; protected set; }
 
         public ICollection<TsProperty> Constants { get; private set; }
 
@@ -24,42 +24,42 @@ namespace CSharpToTypeScript.Models
 
         public IList<TsInterface> Interfaces { get; internal set; }
 
-        public TsClass(Type type)
+        public TsClass(ITsModuleService tsModuleService, Type type)
           : base(type)
         {
             this.Properties = this.Type.GetProperties().Where(pi => pi.DeclaringType == this.Type)
-                .Select(pi => new TsProperty(pi)).ToList();
+                .Select(pi => new TsProperty(tsModuleService, pi)).ToList();
             this.Fields = this.Type.GetFields().Where(fi =>
                 {
                     if (fi.DeclaringType != this.Type)
                         return false;
                     return !fi.IsLiteral || fi.IsInitOnly;
                 })
-                .Select(fi => new TsProperty(fi))
+                .Select(fi => new TsProperty(tsModuleService, fi))
                 .ToList();
 
             this.Constants = this.Type.GetFields().Where(fi => fi.DeclaringType == this.Type && fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => new TsProperty(fi))
+                .Select(fi => new TsProperty(tsModuleService, fi))
                 .ToList();
 
             if (type.IsGenericType)
             {
                 this.Name = type.Name.Remove(type.Name.IndexOf('`'));
                 this.GenericArguments = type.GetGenericArguments()
-                    .Select(t => TsType.Create(t))
+                    .Select(t => TsType.Create(tsModuleService, t))
                     .ToList();
             }
             else
             {
                 this.Name = type.Name;
-                this.GenericArguments = new TsType[0];
+                this.GenericArguments = Array.Empty<TsType>();
             }
 
             if (this.Type.BaseType != null && this.Type.BaseType != typeof(object) && this.Type.BaseType != typeof(ValueType))
                 this.BaseType = new TsType(this.Type.BaseType);
 
             this.Interfaces = this.Type.GetInterfaces().Where(@interface => @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null)
-                .Select(t => new TsInterface(t)).ToList();
+                .Select(t => tsModuleService.GetOrAddTsInterface(t)).ToList();
         }
 
         public Int32 GetDerivationDepth()
