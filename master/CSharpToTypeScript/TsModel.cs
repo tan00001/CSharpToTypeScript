@@ -16,8 +16,8 @@ namespace CSharpToTypeScript
 
         public TsModelBuilder Builder { get; private set; }
 
-        public TsModel()
-          : this(new TsModelBuilder(), Array.Empty<TsClass>())
+        public TsModel(ITsModuleService? tsModuleService = null)
+          : this(new TsModelBuilder(tsModuleService), Array.Empty<TsClass>())
         {
         }
 
@@ -45,29 +45,29 @@ namespace CSharpToTypeScript
             this.Enums = new HashSet<TsEnum>(enums);
         }
 
-        public void RunVisitor(ITsModuleService tsModuleService, ITsModelVisitor visitor)
+        public void RunVisitor(ITsModelVisitor visitor)
         {
-            visitor.VisitModel(tsModuleService, this);
+            visitor.VisitModel(this.Builder.TsModuleService, this);
 
             foreach (TsModule module in this.Builder.TsModuleService.GetModules())
-                visitor.VisitModule(tsModuleService, module);
+                visitor.VisitModule(this.Builder.TsModuleService, module);
 
             foreach (TsInterface interfaceModel in this.Interfaces)
             {
-                visitor.VisitInterface(tsModuleService, interfaceModel);
+                visitor.VisitInterface(this.Builder.TsModuleService, interfaceModel);
                 foreach (TsProperty property in interfaceModel.Properties)
-                    visitor.VisitProperty(tsModuleService, property);
+                    visitor.VisitProperty(this.Builder.TsModuleService, property);
             }
 
             foreach (TsClass classModel in this.Classes)
             {
-                visitor.VisitClass(tsModuleService, classModel);
+                visitor.VisitClass(this.Builder.TsModuleService, classModel);
                 foreach (TsProperty property in classModel.Properties.Union(classModel.Fields).Union(classModel.Constants))
-                    visitor.VisitProperty(tsModuleService, property);
+                    visitor.VisitProperty(this.Builder.TsModuleService, property);
             }
 
             foreach (TsEnum enumModel in this.Enums)
-                visitor.VisitEnum(tsModuleService, enumModel);
+                visitor.VisitEnum(this.Builder.TsModuleService, enumModel);
         }
     }
 }

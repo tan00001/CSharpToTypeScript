@@ -44,7 +44,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
                .For<PersonWithPasswordAndSSN>();
 
-            string personTypeScript = ts.Generate();
+            string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 

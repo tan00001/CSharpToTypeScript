@@ -17,5 +17,30 @@ namespace CSharpToTypeScript.Models
           : base(type)
         {
         }
+
+        public override HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace)
+        {
+            var dependentTypes = base.GetDependentTypes(tsNamespace);
+
+            foreach (var porperty in Properties)
+            {
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == porperty.PropertyType.Type);
+                if (dependentMember != null)
+                {
+                    dependentTypes.Add(dependentMember);
+                }
+            }
+
+            foreach (var argument in GenericArguments)
+            {
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == argument.Type);
+                if (dependentMember != null)
+                {
+                    dependentTypes.Add(dependentMember);
+                }
+            }
+
+            return dependentTypes;
+        }
     }
 }

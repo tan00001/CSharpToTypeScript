@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CSharpToTypeScript.Models
 {
@@ -10,12 +11,24 @@ namespace CSharpToTypeScript.Models
     {
         private readonly Dictionary<string, TsModule> Modules = new();
 
+        public IDictionary<string, TsNamespace> Namespaces { get; private set; }
+
+        public TsModuleService(string? defaultNamespaceName = null) 
+        {
+            this.Namespaces = new SortedList<string, TsNamespace>();
+
+            if (!string.IsNullOrEmpty(defaultNamespaceName))
+            {
+                this.Namespaces.Add(defaultNamespaceName, new TsNamespace(defaultNamespaceName));
+            };
+        }
+
         #region IModuleService
         public TsModule GetModule(string name)
         {
             if (Modules.TryGetValue(name, out TsModule? value))
                 return value;
-            TsModule tsModule = new(name);
+            TsModule tsModule = new(name, Namespaces);
             Modules[name] = tsModule;
             return tsModule;
         }
@@ -23,6 +36,17 @@ namespace CSharpToTypeScript.Models
         public IEnumerable<TsModule> GetModules()
         {
             return Modules.Values;
+        }
+
+        public IEnumerable<TsNamespace> GetNamespaces()
+        {
+            return Namespaces.Values;
+        }
+
+        public IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> GetDependentNamespaces(TsNamespace tsNamespace)
+        {
+            return Namespaces.Where(n => n.Key != tsNamespace.Name).ToDictionary(n => n.Key, n => tsNamespace.GetDependentMembers(n.Value))
+                .Where(n => n.Value.Count > 0).ToDictionary(n => n.Key, n => n.Value);
         }
 
         public TsClass GetOrAddTsClass(Type clrType)

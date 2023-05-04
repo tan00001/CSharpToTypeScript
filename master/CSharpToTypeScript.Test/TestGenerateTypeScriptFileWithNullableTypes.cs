@@ -39,7 +39,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions()
                .For<PersonWithNullableName>();
 
-            string script = ts.Generate();
+            string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
@@ -53,7 +53,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions()
                .For<PersonWithNullableGender>();
 
-            string script = ts.Generate();
+            string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 

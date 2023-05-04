@@ -47,34 +47,5 @@ namespace CSharpToTypeScript.Models
             this.Interfaces = interfaces.Where(@interface => @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null)
                 .Select(t => TsType.Create(tsModuleService, t)).ToList();
         }
-
-        public Int32 GetDerivationDepth()
-        {
-            return GetDerivationDepth(this.Interfaces);
-        }
-
-        public Int32 GetDerivationDepth(IList<TsType> interfaces)
-        {
-            if (interfaces.Count == 0)
-            {
-                return 0;
-            }
-
-            int depth = 0;
-
-            foreach (var parent in this.Interfaces)
-            {
-                if (parent is TsInterface tsInterface)
-                {
-                    var parentDepth = GetDerivationDepth(tsInterface.Interfaces);
-                    if (depth < parentDepth)
-                    {
-                        depth = parentDepth;
-                    }
-                }
-            }
-
-            return depth + 1; // +1 for the current depth
-        }
     }
 }

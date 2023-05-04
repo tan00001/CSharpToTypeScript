@@ -15,6 +15,10 @@ namespace CSharpToTypeScript.Models
 
         IEnumerable<TsModule> GetModules();
 
+        IEnumerable<TsNamespace> GetNamespaces();
+
+        IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> GetDependentNamespaces(TsNamespace tsNamespace);
+
         TsClass GetOrAddTsClass(Type clrType);
 
         TsInterface GetOrAddTsInterface(Type clrType);

@@ -56,6 +56,36 @@ namespace CSharpToTypeScript.Models
             private set;
         }
 
+        public virtual HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace)
+        {
+            var dependentTypes = new HashSet<TsModuleMember>();
+
+            for (var parent = this.Type.BaseType; parent != null; parent = parent.BaseType)
+            {
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == parent);
+                if (dependentMember != null)
+                {
+                    dependentTypes.Add(dependentMember);
+                }
+            }
+
+            GetDependentTypes(dependentTypes, this.Type.GetInterfaces(), tsNamespace);
+
+            return dependentTypes;
+        }
+
+        private static void GetDependentTypes(HashSet<TsModuleMember> dependentTypes, IList<Type> interfaces, TsNamespace tsNamespace)
+        {
+            foreach (var @interface in interfaces)
+            {
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == @interface);
+                if (dependentMember != null)
+                {
+                    dependentTypes.Add(dependentMember);
+                }
+            }
+        }
+
         public static string GetModuleName(Type type)
         {
             return Path.GetFileNameWithoutExtension(type.Module.Name);

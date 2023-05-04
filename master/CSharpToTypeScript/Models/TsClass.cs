@@ -62,14 +62,29 @@ namespace CSharpToTypeScript.Models
                 .Select(t => tsModuleService.GetOrAddTsInterface(t)).ToList();
         }
 
-        public Int32 GetDerivationDepth()
+        public override HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace)
         {
-            int depth = 0;
-            for (var parent = this.Type.BaseType; parent != null; parent = parent.BaseType)
+            var dependentTypes = base.GetDependentTypes(tsNamespace);
+
+            foreach (var field in Fields)
             {
-                ++depth;
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == field.PropertyType.Type);
+                if (dependentMember != null)
+                {
+                    dependentTypes.Add(dependentMember);
+                }
             }
-            return depth;
+
+            foreach (var constant in Constants)
+            {
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == constant.PropertyType.Type);
+                if (dependentMember != null)
+                {
+                    dependentTypes.Add(dependentMember);
+                }
+            }
+
+            return dependentTypes;
         }
     }
 }

@@ -42,6 +42,23 @@ TsGenerator tsGenerator = args switch
 var ts = TypeScript.Definitions(tsGenerator)
     .For(typeToExport);
 
-string script = ts.Generate();
+var scriptsByNamespaces = ts.Generate();
 
-File.WriteAllText(args[2], script);
+if (scriptsByNamespaces.Count == 1)
+{
+    File.WriteAllText(args[2], scriptsByNamespaces.Values.First());
+    return;
+}
+
+var directoryName = Path.GetDirectoryName(args[2]) ?? string.Empty;
+foreach (var script in scriptsByNamespaces)
+{
+    if (ts.Member.NamespaceName == script.Key)
+    {
+        File.WriteAllText(args[2], script.Value);
+    }
+    else
+    {
+        File.WriteAllText(Path.Combine(directoryName, script.Key + ".ts"), script.Value);
+    }
+}

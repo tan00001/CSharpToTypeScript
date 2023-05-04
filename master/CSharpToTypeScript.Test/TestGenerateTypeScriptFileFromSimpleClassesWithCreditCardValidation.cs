@@ -39,7 +39,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
                .For<PersonWithCreditCardNumber>();
 
-            string personTypeScript = ts.Generate();
+            string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 

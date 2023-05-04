@@ -16,22 +16,32 @@ namespace CSharpToTypeScript.AlternateGenerators
             SetTypeVisibilityFormatter(DefaultTypeVisibilityFormatterForResolver);
         }
 
-        protected override void AppendModule(
-          TsModule module,
+        protected override void AppendNamespace(
+          TsNamespace @namespace,
           ScriptBuilder sb,
-          TsGeneratorOutput generatorOutput)
+          TsGeneratorOutput generatorOutput,
+          IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
-            sb.AppendLine("import { Resolver, FieldError } from 'react-hook-form';");
-            sb.AppendLine();
-            base.AppendModule(module, sb, generatorOutput);
+            if (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored))
+            {
+                sb.AppendLine("import { Resolver, FieldError } from 'react-hook-form';");
+
+                if (dependencies.Count == 0)
+                {
+                    sb.AppendLine();
+                }
+            }
+
+            base.AppendNamespace(@namespace, sb, generatorOutput, dependencies);
         }
 
         protected override void AppendClassDefinition(
-          TsClass classModel,
-          ScriptBuilder sb,
-          TsGeneratorOutput generatorOutput)
+            TsClass classModel,
+            ScriptBuilder sb,
+            TsGeneratorOutput generatorOutput,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            base.AppendClassDefinition(classModel, sb, generatorOutput);
+            base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
             sb.AppendLine();
 
             List<TsProperty> source = new();
@@ -121,11 +131,12 @@ namespace CSharpToTypeScript.AlternateGenerators
         }
 
         protected override void AppendInterfaceDefinition(
-          TsInterface interfaceModel,
-          ScriptBuilder sb,
-          TsGeneratorOutput generatorOutput)
+            TsInterface interfaceModel,
+            ScriptBuilder sb,
+            TsGeneratorOutput generatorOutput,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            base.AppendInterfaceDefinition(interfaceModel, sb, generatorOutput);
+            base.AppendInterfaceDefinition(interfaceModel, sb, generatorOutput, importNames);
         }
     }
 }

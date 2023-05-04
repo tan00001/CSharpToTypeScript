@@ -10,18 +10,11 @@ namespace CSharpToTypeScript.Models
     {
         public string Name { get; set; }
 
-        public IDictionary<string, TsNamespace> Namespaces { get; private set; }
+        private readonly IDictionary<string, TsNamespace> Namespaces;
 
-        public TsNamespace DefaultNamespace { get; private set; }
-
-        public TsModule(string name)
+        public TsModule(string name, IDictionary<string, TsNamespace> namespaces)
         {
-            DefaultNamespace = new TsNamespace(name);
-
-            this.Namespaces = new SortedList<string, TsNamespace>()
-            {
-                { name, DefaultNamespace }
-            };
+            this.Namespaces = namespaces;
 
             this.Name = name;
         }
@@ -33,8 +26,7 @@ namespace CSharpToTypeScript.Models
             var memberNamespace = toAdd.NamespaceName;
             if (string.IsNullOrEmpty(memberNamespace))
             {
-                DefaultNamespace.Add(toAdd);
-                return;
+                memberNamespace = this.Name;
             }
 
             if (Namespaces.TryGetValue(memberNamespace, out var @namespace))
@@ -53,8 +45,7 @@ namespace CSharpToTypeScript.Models
             var memberNamespace = toRemove.NamespaceName;
             if (string.IsNullOrEmpty(memberNamespace))
             {
-                DefaultNamespace.Remove(toRemove);
-                return;
+                memberNamespace = this.Name;
             }
 
             if (Namespaces.TryGetValue(memberNamespace, out var @namespace))

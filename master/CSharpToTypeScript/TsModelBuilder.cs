@@ -20,8 +20,10 @@ namespace CSharpToTypeScript
 
         internal Dictionary<Type, TsEnum> Enums { get; set; }
 
-        public TsModelBuilder()
+        public TsModelBuilder(ITsModuleService? tsModuleService = null)
         {
+            TsModuleService = tsModuleService ?? new TsModuleService();
+
             this.Classes = new Dictionary<Type, TsClass>();
             this.Interfaces = new Dictionary<Type, TsInterface>();
             this.Enums = new Dictionary<Type, TsEnum>();
@@ -185,7 +187,7 @@ namespace CSharpToTypeScript
         public TsModel Build()
         {
             TsModel model = new (this, this.Classes.Values, this.Interfaces.Values, this.Enums.Values);
-            model.RunVisitor(TsModuleService, new TypeResolver(model));
+            model.RunVisitor(new TypeResolver(model));
             return model;
         }
 

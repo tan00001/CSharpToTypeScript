@@ -74,7 +74,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
                .For<PersonWithValidationAndInterface>();
 
-            string personTypeScript = ts.Generate();
+            string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
@@ -88,7 +88,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
                .For<PersonWithGenderAndValidationInterface>();
 
-            string script = ts.Generate();
+            string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
@@ -102,7 +102,7 @@ namespace CSharpToTypeScript.Test
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
                .For<PersonWithGenderAndValidationInterface2>();
 
-            string script = ts.Generate();
+            string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 

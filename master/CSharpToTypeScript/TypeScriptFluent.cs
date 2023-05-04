@@ -103,10 +103,21 @@ namespace CSharpToTypeScript
             return this;
         }
 
-        public string Generate() => this._scriptGenerator.Generate(this._modelBuilder);
+        public IReadOnlyDictionary<string, string> Generate() => this._scriptGenerator.Generate(this._modelBuilder);
 
-        public string Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder, output);
+        public IReadOnlyDictionary<string, string> Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder, output);
 
-        public override string ToString() => this.Generate();
+        public override string ToString()
+        {
+            var results = this.Generate();
+            if (results.Count == 1 || this._scriptGenerator.EnableNamespaceInTypeScript)
+            {
+                return string.Join("\r\n", results.Values);
+            }
+
+            return string.Join("\r\n", results.Select(r => "namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value) + "\r\n}\r\n"));
+        }
+
+        private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n").Select(l => this._scriptGenerator.IndentationString + l)).TrimEnd();
     }
 }

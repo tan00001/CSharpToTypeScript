@@ -32,6 +32,31 @@ namespace CSharpToTypeScript.Models
             toAdd.Namespace = this;
         }
 
+        internal IReadOnlyCollection<TsModuleMember> GetDependentMembers(TsNamespace tsNamespace)
+        {
+            HashSet<TsModuleMember>? dependentTypes = null;
+
+            foreach (var member in this._members)
+            {
+                var memberDependentTypes = member.GetDependentTypes(tsNamespace);
+                if (memberDependentTypes.Count == 0)
+                {
+                    continue;
+                }
+
+                if (dependentTypes == null)
+                {
+                    dependentTypes = memberDependentTypes;
+                }
+                else
+                {
+                    dependentTypes.UnionWith(memberDependentTypes);
+                }
+            }
+
+            return dependentTypes ?? (IReadOnlyCollection<TsModuleMember>)Array.Empty<TsModuleMember>();
+        }
+
         internal void Remove(TsModuleMember toRemove) => this._members.Remove(toRemove);
     }
 }
