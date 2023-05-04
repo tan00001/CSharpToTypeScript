@@ -61,5 +61,15 @@ namespace CSharpToTypeScript.Models
             this.Interfaces = this.Type.GetInterfaces().Where(@interface => @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null)
                 .Select(t => new TsInterface(t)).ToList();
         }
+
+        public Int32 GetDerivationDepth()
+        {
+            int depth = 0;
+            for (var parent = this.Type.BaseType; parent != null; parent = parent.BaseType)
+            {
+                ++depth;
+            }
+            return depth;
+        }
     }
 }

@@ -3,8 +3,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CSharpToTypeScript.Test
 {
+    public interface IPerson
+    {
+        int Id { get; set; }
+        string Name { get; set; }
+        DateTime DateOfBirth { get; set; }
+    }
+
+    public interface IPersonWithGender : IPerson
+    {
+        Gender Gender { get; set; }
+    }
+
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClasses : IDisposable
+    public class TestGenerateTypeScriptFileFromSimpleInterfaces : IDisposable
     {
         private bool disposedValue;
 
@@ -21,31 +33,31 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClass()
+        public void TestGenerateTypeScriptFileForSimpleInterface()
         {
             var ts = TypeScript.Definitions()
-               .For<Person>();
+               .For<IPerson>();
 
             string personTypeScript = ts.Generate();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            Assert.AreEqual("class Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n",
+            Assert.AreEqual("interface IPerson {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n\r\n",
                 personTypeScript);
 
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassWithEnum()
+        public void TestGenerateTypeScriptFileForSimpleInterfaceWithEnum()
         {
             var ts = TypeScript.Definitions()
-               .For<PersonWithGender>();
+               .For<IPersonWithGender>();
 
             string script = ts.Generate();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\n\r\nclass Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\nclass PersonWithGender extends Person {\r\n\tgender?: Gender;\r\n}\r\n",
+            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\n\r\ninterface IPerson {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n\r\ninterface IPersonWithGender extends IPerson {\r\n\tgender?: Gender;\r\n}\r\n\r\n",
                 script);
         }
 

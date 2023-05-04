@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
@@ -9,7 +10,6 @@ namespace CSharpToTypeScript
     {
         private readonly TsModel _model;
         private readonly Dictionary<Type, TsType> _knownTypes = new();
-        private readonly Dictionary<string, TsModule> _modules = new ();
 
         public TypeResolver(TsModel model)
         {
@@ -22,9 +22,9 @@ namespace CSharpToTypeScript
                 this._knownTypes[tsEnum.Type] = tsEnum;
         }
 
-        public override void VisitClass(TsClass classModel)
+        public override void VisitClass(ITsModuleService tsModuleService, TsClass classModel)
         {
-            classModel.Module = this.ResolveModule(classModel.ModuleName);
+            classModel.Module = tsModuleService.GetModule(classModel.ModuleName);
 
             if (classModel.BaseType != null && classModel.BaseType != TsType.Any)
                 classModel.BaseType = this.ResolveType(classModel.BaseType, false);
@@ -40,9 +40,9 @@ namespace CSharpToTypeScript
             }
         }
 
-        public override void VisitInterface(TsInterface interfaceModel)
+        public override void VisitInterface(ITsModuleService tsModuleService, TsInterface interfaceModel)
         {
-            interfaceModel.Module = this.ResolveModule(interfaceModel.ModuleName);
+            interfaceModel.Module = tsModuleService.GetModule(interfaceModel.ModuleName);
 
             if (interfaceModel.BaseType != null && interfaceModel.BaseType != TsType.Any)
                 interfaceModel.BaseType = this.ResolveType(interfaceModel.BaseType, false);
@@ -58,12 +58,12 @@ namespace CSharpToTypeScript
             }
         }
 
-        public override void VisitEnum(TsEnum enumModel)
+        public override void VisitEnum(ITsModuleService tsModuleService, TsEnum enumModel)
         {
-            enumModel.Module = this.ResolveModule(enumModel.ModuleName);
+            enumModel.Module = tsModuleService.GetModule(enumModel.ModuleName);
         }
 
-        public override void VisitProperty(TsProperty property)
+        public override void VisitProperty(ITsModuleService tsModuleService, TsProperty property)
         {
             if (property.JsonIgnore != null)
                 return;
@@ -118,17 +118,6 @@ namespace CSharpToTypeScript
             TsCollection collectionType = new (type.Type);
             collectionType.ItemsType = this.ResolveType(collectionType.ItemsType, false);
             return collectionType;
-        }
-
-        private TsModule ResolveModule(string? name)
-        {
-            name ??= string.Empty;
-            if (_modules.TryGetValue(name, out TsModule? value))
-                return value;
-            TsModule tsModule = new (name);
-            this._modules[name] = tsModule;
-            this._model.Modules.Add(tsModule);
-            return tsModule;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -60,6 +61,18 @@ namespace CSharpToTypeScript.Models
             {
                 @namespace.Remove(toRemove);
             }
+        }
+
+        public bool TryGetMember(string namespaceName, string name, [MaybeNullWhen(false)] out TsModuleMember? member)
+        {
+            if (!Namespaces.TryGetValue(namespaceName, out var @namespace))
+            {
+                member = null;
+                return false;
+            }
+
+            member = @namespace.Members.FirstOrDefault(m => m.Name == name);
+            return member != null;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace CSharpToTypeScript
 
         public TypeScriptFluentModuleMember ToModule(string moduleName)
         {
-            this.Member.Module = new TsModule(moduleName);
+            this.Member.Module = this.ModelBuilder.TsModuleService.GetModule(moduleName);
             return this;
         }
 

@@ -37,7 +37,7 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            Assert.AreEqual("namespace CSharpToTypeScript.Test {\r\n\texport const enum Gender {\r\n\t\tUnknown = 0,\r\n\t\tMale = 1,\r\n\t\tFemale = 2\r\n\t}\r\n\tclass PersonWithNullableName {\r\n\t\tage?: number | null;\r\n\t\tdateOfBirth?: number;\r\n\t\tid?: number;\r\n\t\tname?: string | null;\r\n\t}\r\n}\r\nnamespace CSharpToTypeScript.TestNamespace {\r\n\tclass PersonWithNamespace extends CSharpToTypeScript.Test.PersonWithNullableName {\r\n\t\tgender?: CSharpToTypeScript.Test.Gender | null;\r\n\t}\r\n}\r\n",
+            Assert.AreEqual("namespace CSharpToTypeScript.Test {\r\n\texport const enum Gender {\r\n\t\tUnknown = 0,\r\n\t\tMale = 1,\r\n\t\tFemale = 2\r\n\t}\r\n\r\n\tclass PersonWithNullableName {\r\n\t\tage?: number | null;\r\n\t\tdateOfBirth?: number;\r\n\t\tid?: number;\r\n\t\tname?: string | null;\r\n\t}\r\n}\r\nnamespace CSharpToTypeScript.TestNamespace {\r\n\tclass PersonWithNamespace extends CSharpToTypeScript.Test.PersonWithNullableName {\r\n\t\tgender?: CSharpToTypeScript.Test.Gender | null;\r\n\t}\r\n}\r\n",
                 script);
         }
 

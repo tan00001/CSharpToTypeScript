@@ -17,15 +17,5 @@ namespace CSharpToTypeScript.Models
           : base(type)
         {
         }
-
-        public Int32 GetDerivationDepth()
-        {
-            int depth = 0;
-            for (var parent = this.Type.BaseType; parent != null; parent = parent.BaseType)
-            {
-                ++depth;
-            }
-            return depth;
-        }
     }
 }

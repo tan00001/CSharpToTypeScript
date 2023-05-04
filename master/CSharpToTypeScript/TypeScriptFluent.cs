@@ -40,6 +40,7 @@ namespace CSharpToTypeScript
             TsModuleMember member = this._modelBuilder.Add(type, true, convertors);
             switch (member)
             {
+                case TsInterface _:
                 case TsClass _:
                 case TsEnum _:
                     return new TypeScriptFluentModuleMember(this, member);
@@ -102,9 +103,9 @@ namespace CSharpToTypeScript
             return this;
         }
 
-        public string Generate() => this._scriptGenerator.Generate(this._modelBuilder.Build());
+        public string Generate() => this._scriptGenerator.Generate(this._modelBuilder.TsModuleService, this._modelBuilder.Build());
 
-        public string Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder.Build(), output);
+        public string Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder.TsModuleService, this._modelBuilder.Build(), output);
 
         public override string ToString() => this.Generate();
     }

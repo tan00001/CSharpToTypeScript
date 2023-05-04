@@ -6,11 +6,14 @@ using System.Reflection;
 using CSharpToTypeScript.Models;
 using CSharpToTypeScript.Extensions;
 using System.Runtime.Serialization;
+using Microsoft.VisualBasic;
 
 namespace CSharpToTypeScript
 {
     public class TsModelBuilder
     {
+        public readonly ITsModuleService TsModuleService = new TsModuleService();
+
         internal Dictionary<Type, TsClass> Classes { get; set; }
 
         internal Dictionary<Type, TsInterface> Interfaces { get; set; }
@@ -38,102 +41,132 @@ namespace CSharpToTypeScript
             TsTypeFamily typeFamily = TsType.GetTypeFamily(clrType);
             switch (typeFamily)
             {
-                case TsTypeFamily.Class:
                 case TsTypeFamily.Enum:
                     if (clrType.IsNullableValueType())
                         return this.Add(clrType.GetNullableValueType(), includeReferences, typeConvertors);
-                    if (typeFamily == TsTypeFamily.Enum)
+
+                    if (this.Enums.TryGetValue(clrType, out TsEnum? enumType))
                     {
-                        TsEnum tsEnum = new (clrType);
-                        this.AddEnum(tsEnum);
-                        return tsEnum;
+                        return enumType;
                     }
+                    enumType = TsModuleService.GetOrAddTsEnum(clrType);
+                    this.Enums[clrType] = enumType;
+                    return enumType;
+
+                case TsTypeFamily.Class:
+                    if (clrType.IsNullableValueType())
+                        return this.Add(clrType.GetNullableValueType(), includeReferences, typeConvertors);
+
+                    if (Classes.TryGetValue(clrType, out TsClass? classType))
+                        return classType;
+
                     if (clrType.IsGenericType)
                     {
-                        if (clrType.IsInterface)
-                        {
-                            if (!this.Interfaces.ContainsKey(clrType))
-                            {
-                                Type genericTypeDefinition = clrType.GetGenericTypeDefinition();
-                                TsInterface interfaceModel = new(genericTypeDefinition);
-                                this.Interfaces[genericTypeDefinition] = interfaceModel;
-                                if (includeReferences)
-                                {
-                                    this.AddReferences(interfaceModel, typeConvertors);
-                                    foreach (TsProperty tsProperty in interfaceModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
-                                        this.AddEnum((TsEnum)tsProperty.PropertyType);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (!this.Classes.ContainsKey(clrType))
-                            {
-                                Type genericTypeDefinition = clrType.GetGenericTypeDefinition();
-                                TsClass classModel = new(genericTypeDefinition);
-                                this.Classes[genericTypeDefinition] = classModel;
-                                if (includeReferences)
-                                {
-                                    this.AddReferences(classModel, typeConvertors);
-                                    foreach (TsProperty tsProperty in classModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
-                                        this.AddEnum((TsEnum)tsProperty.PropertyType);
-                                }
-                            }
-                        }
+                        ProcessGenericDefinitions(clrType, includeReferences, typeConvertors);
                     }
 
-                    if (clrType.IsInterface)
+                    classType = TsModuleService.GetOrAddTsClass(clrType);
+                    this.Classes[clrType] = classType;
+                    if (clrType.IsGenericParameter)
+                        classType.IsIgnored = true;
+                    if (clrType.IsGenericType)
+                        classType.IsIgnored = true;
+                    if (classType.BaseType != null)
+                        this.Add(classType.BaseType.Type);
+                    if (includeReferences)
                     {
-                        if (Interfaces.TryGetValue(clrType, out TsInterface? interfaceType))
-                            return interfaceType;
+                        this.AddReferences(classType, typeConvertors);
+                        foreach (TsProperty tsProperty in classType.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                            this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
+                    }
+                    foreach (TsType tsType in classType.Interfaces)
+                        this.Add(tsType.Type);
+                    return classType;
 
-                        interfaceType = new(clrType);
-                        this.Interfaces[clrType] = interfaceType;
-                        if (clrType.IsGenericParameter)
-                            interfaceType.IsIgnored = true;
-                        if (clrType.IsGenericType)
-                            interfaceType.IsIgnored = true;
-                        if (interfaceType.BaseType != null)
-                            this.Add(interfaceType.BaseType.Type);
-                        if (includeReferences)
-                        {
-                            this.AddReferences(interfaceType, typeConvertors);
-                            foreach (TsProperty tsProperty in interfaceType.Properties.Where(p => p.PropertyType.Type.IsEnum))
-                                this.AddEnum((TsEnum)tsProperty.PropertyType);
-                        }
-                        foreach (TsType tsType in interfaceType.Interfaces)
-                            this.Add(tsType.Type);
+                case TsTypeFamily.Interface:
+                    if (clrType.IsNullableValueType())
+                        return this.Add(clrType.GetNullableValueType(), includeReferences, typeConvertors);
+
+                    if (Interfaces.TryGetValue(clrType, out TsInterface? interfaceType))
                         return interfaceType;
-                    }
-                    else
-                    {
-                        if (Classes.TryGetValue(clrType, out TsClass? classType))
-                            return classType;
 
-                        classType = new(clrType);
-                        this.Classes[clrType] = classType;
-                        if (clrType.IsGenericParameter)
-                            classType.IsIgnored = true;
-                        if (clrType.IsGenericType)
-                            classType.IsIgnored = true;
-                        if (classType.BaseType != null)
-                            this.Add(classType.BaseType.Type);
-                        if (includeReferences)
-                        {
-                            this.AddReferences(classType, typeConvertors);
-                            foreach (TsProperty tsProperty in classType.Properties.Where(p => p.PropertyType.Type.IsEnum))
-                                this.AddEnum((TsEnum)tsProperty.PropertyType);
-                        }
-                        foreach (TsType tsType in classType.Interfaces)
-                            this.Add(tsType.Type);
-                        return classType;
+                    if (clrType.IsGenericType)
+                    {
+                        ProcessGenericDefinitions(clrType, includeReferences, typeConvertors);
                     }
+
+                    interfaceType = TsModuleService.GetOrAddTsInterface(clrType);
+                    this.Interfaces[clrType] = interfaceType;
+                    if (clrType.IsGenericParameter)
+                        interfaceType.IsIgnored = true;
+                    if (clrType.IsGenericType)
+                        interfaceType.IsIgnored = true;
+                    if (interfaceType.BaseType != null)
+                        this.Add(interfaceType.BaseType.Type);
+                    if (includeReferences)
+                    {
+                        this.AddReferences(interfaceType, typeConvertors);
+                        foreach (TsProperty tsProperty in interfaceType.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                            this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
+                    }
+                    foreach (TsType tsType in interfaceType.Interfaces)
+                        this.Add(tsType.Type);
+                    return interfaceType;
+
                 default:
                     throw new ArgumentException(string.Format("Type '{0}' isn't class or struct. Only classes and structures can be added to the model", clrType.FullName));
             }
         }
 
-        private void AddEnum(TsEnum tsEnum)
+        private void ProcessGenericDefinitions(Type clrType, bool includeReferences, Dictionary<Type, TypeConvertor>? typeConvertors)
+        {
+            Type genericTypeDefinition = clrType.GetGenericTypeDefinition();
+
+            TsTypeFamily typeFamily = TsType.GetTypeFamily(genericTypeDefinition);
+            switch (typeFamily)
+            {
+                case TsTypeFamily.Enum:
+                    if (!this.Enums.ContainsKey(genericTypeDefinition))
+                    {
+                        TsEnum enumModel = TsModuleService.GetOrAddTsEnum(genericTypeDefinition);
+                        this.Enums[genericTypeDefinition] = enumModel;
+                    }
+                    break;
+
+                case TsTypeFamily.Class:
+                    if (!this.Classes.ContainsKey(genericTypeDefinition))
+                    {
+                        TsClass classModel = TsModuleService.GetOrAddTsClass(genericTypeDefinition);
+                        this.Classes[genericTypeDefinition] = classModel;
+                        if (includeReferences)
+                        {
+                            this.AddReferences(classModel, typeConvertors);
+                            foreach (TsProperty tsProperty in classModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                                this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
+                        }
+                    }
+                    break;
+
+                case TsTypeFamily.Interface:
+                    if (!this.Interfaces.ContainsKey(genericTypeDefinition))
+                    {
+                        TsInterface interfaceModel = TsModuleService.GetOrAddTsInterface(genericTypeDefinition);
+                        this.Interfaces[genericTypeDefinition] = interfaceModel;
+                        if (includeReferences)
+                        {
+                            this.AddReferences(interfaceModel, typeConvertors);
+                            foreach (TsProperty tsProperty in interfaceModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                                this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
+                        }
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentException(string.Format("Type '{0}' isn't class or struct. Only classes and structures can be added to the model", clrType.FullName));
+            }
+        }
+
+        private void AddEnumIfNotAdded(TsEnum tsEnum)
         {
             if (this.Enums.ContainsKey(tsEnum.Type))
                 return;
@@ -151,8 +184,8 @@ namespace CSharpToTypeScript
 
         public TsModel Build()
         {
-            TsModel model = new (this.Classes.Values, this.Enums.Values);
-            model.RunVisitor(new TypeResolver(model));
+            TsModel model = new (this, this.Classes.Values, this.Interfaces.Values, this.Enums.Values);
+            model.RunVisitor(TsModuleService, new TypeResolver(model));
             return model;
         }
 
@@ -182,7 +215,7 @@ namespace CSharpToTypeScript
                                     enumerableType = null;
                                     continue;
                                 case TsTypeFamily.Enum:
-                                    this.AddEnum(new TsEnum(enumerableType));
+                                    this.AddEnumIfNotAdded(TsModuleService.GetOrAddTsEnum(enumerableType));
                                     enumerableType = null;
                                     continue;
                                 default:
@@ -204,6 +237,7 @@ namespace CSharpToTypeScript
                         continue;
                 }
             }
+
             foreach (TsType genericArgument in model.GenericArguments)
             {
                 switch (TsType.GetTypeFamily(genericArgument.Type))
@@ -218,7 +252,7 @@ namespace CSharpToTypeScript
                                     this.Add(enumerableType);
                                     continue;
                                 case TsTypeFamily.Enum:
-                                    this.AddEnum(new TsEnum(enumerableType));
+                                    this.AddEnumIfNotAdded(TsModuleService.GetOrAddTsEnum(enumerableType));
                                     continue;
                                 default:
                                     continue;

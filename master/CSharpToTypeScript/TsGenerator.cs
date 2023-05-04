@@ -107,9 +107,9 @@ namespace CSharpToTypeScript
 
         public void SetDocAppender(IDocAppender appender) => this._docAppender = appender;
 
-        public string Generate(TsModel model) => this.Generate(model, TsGeneratorOutput.Properties | TsGeneratorOutput.Enums);
+        public string Generate(ITsModuleService tsModuleService, TsModel model) => this.Generate(tsModuleService, model, TsGeneratorOutput.Properties | TsGeneratorOutput.Enums);
 
-        public string Generate(TsModel model, TsGeneratorOutput generatorOutput)
+        public string Generate(ITsModuleService tsModuleService, TsModel model, TsGeneratorOutput generatorOutput)
         {
             ScriptBuilder sb = new (this.IndentationString);
             if ((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties || (generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields)
@@ -118,7 +118,7 @@ namespace CSharpToTypeScript
                     throw new InvalidOperationException("Cannot generate constants together with properties or fields");
             }
 
-            foreach (TsModule module in (IEnumerable<TsModule>)model.Modules.OrderBy(m => this.FormatModuleName(m)))
+            foreach (TsModule module in tsModuleService.GetModules().OrderBy(m => this.FormatModuleName(m)))
                 this.AppendModule(module, sb, generatorOutput);
 
             return sb.ToString();
@@ -155,18 +155,17 @@ namespace CSharpToTypeScript
                 .OrderBy(e => this.GetTypeName(e))
                 .ToList();
 
-            if (generatorOutput == TsGeneratorOutput.Enums && moduleEnums.Count == 0 || generatorOutput == TsGeneratorOutput.Properties && moduleClasses.Count == 0
-                || moduleEnums.Count == 0 && moduleClasses.Count == 0 || generatorOutput == TsGeneratorOutput.Properties 
-                    && !moduleClasses.Any(c => c.Fields.Any() || c.Properties.Any()) 
-                        || generatorOutput == TsGeneratorOutput.Constants 
-                            && !moduleClasses.Any(c => c.Constants.Any()))
+            if (generatorOutput == TsGeneratorOutput.Enums && moduleEnums.Count == 0 
+                || moduleEnums.Count == 0 && moduleClasses.Count == 0 && moduleInterfaces.Count == 0
+                || generatorOutput == TsGeneratorOutput.Properties && !moduleClasses.Any(c => c.Fields.Any() || c.Properties.Any()) && !moduleInterfaces.Any(i => i.Properties.Any())
+                || generatorOutput == TsGeneratorOutput.Constants && !moduleClasses.Any(c => c.Constants.Any()))
                 return;
 
-            string moduleName = this.FormatNamespaceName(@namespace);
-            bool hasNameSpace = includeNamespace && moduleName != string.Empty;
+            string namespaceName = this.FormatNamespaceName(@namespace);
+            bool hasNameSpace = includeNamespace && namespaceName != string.Empty;
             if (hasNameSpace)
             {
-                sb.AppendLine(string.Format("namespace {0} {{", moduleName));
+                sb.AppendLine(string.Format("namespace {0} {{", namespaceName));
                 using (sb.IncreaseIndentation())
                 {
                     AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces, moduleEnums);
@@ -229,7 +228,7 @@ namespace CSharpToTypeScript
             {
                 string?[] array = classModel.Interfaces.Select(t => FormatTypeName(classModel.NamespaceName, t)).ToArray();
                 string format = classModel.BaseType is TsInterface ? ", {0}" : " implements {0}";
-                sb.AppendFormat(format, string.Join(" ,", array));
+                sb.AppendFormat(format, string.Join(", ", array));
             }
 
             sb.AppendLine(" {");
@@ -299,6 +298,7 @@ namespace CSharpToTypeScript
                 }
             }
             sb.AppendLineIndented("}");
+            sb.AppendLine();
             this._generatedInterfaces.Add(interfaceModel);
         }
 
@@ -323,6 +323,7 @@ namespace CSharpToTypeScript
                 }
             }
             sb.AppendLineIndented("}");
+            sb.AppendLine();
             this._generatedEnums.Add(enumModel);
         }
 

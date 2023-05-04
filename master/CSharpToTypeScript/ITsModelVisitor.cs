@@ -4,16 +4,16 @@ namespace CSharpToTypeScript
 {
     public interface ITsModelVisitor
     {
-        void VisitModel(TsModel model);
+        void VisitModel(ITsModuleService tsModuleService, TsModel model);
 
-        void VisitModule(TsModule module);
+        void VisitModule(ITsModuleService tsModuleService, TsModule module);
 
-        void VisitClass(TsClass classModel);
+        void VisitClass(ITsModuleService tsModuleService, TsClass classModel);
 
-        void VisitInterface(TsInterface interfaceModel);
+        void VisitInterface(ITsModuleService tsModuleService, TsInterface interfaceModel);
 
-        void VisitProperty(TsProperty property);
+        void VisitProperty(ITsModuleService tsModuleService, TsProperty property);
 
-        void VisitEnum(TsEnum enumModel);
+        void VisitEnum(ITsModuleService tsModuleService, TsEnum enumModel);
     }
 }

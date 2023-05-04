@@ -66,7 +66,7 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\nclass Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\nclass PersonWithGender extends Person {\r\n\tgender?: Gender;\r\n}\r\n",
+            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\n\r\nclass Person {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\nclass PersonWithGender extends Person {\r\n\tgender?: Gender;\r\n}\r\n",
                 personTypeScript);
         }
 

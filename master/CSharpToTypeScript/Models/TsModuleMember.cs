@@ -60,6 +60,23 @@ namespace CSharpToTypeScript.Models
             private set;
         }
 
+        public static string GetModuleName(Type type)
+        {
+            return Path.GetFileNameWithoutExtension(type.Module.Name);
+        }
+
+        public static string GetNamespaceName(Type type)
+        {
+            var dataContract = type.GetCustomAttribute<DataContractAttribute>(false);
+
+            string str = string.Empty;
+
+            for (Type? declaringType = type.DeclaringType; declaringType != null; declaringType = declaringType.DeclaringType)
+                str = "." + declaringType.Name + str;
+
+            return (dataContract?.Namespace ?? type.Namespace) + str;
+        }
+
         protected TsModuleMember(Type type)
           : base(type)
         {
@@ -79,7 +96,7 @@ namespace CSharpToTypeScript.Models
 
             IsIgnored = Ignore != null;
 
-            ModuleName = Path.GetFileNameWithoutExtension(type.Module.Name);
+            ModuleName = GetModuleName(type);
 
             string str = string.Empty;
 
