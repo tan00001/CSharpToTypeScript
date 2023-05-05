@@ -24,7 +24,7 @@ namespace CSharpToTypeScript.Models
                 sb.AppendLineIndented(".reduce((checksum, c, index) => {");
                 using (sb.IncreaseIndentation())
                 {
-                    sb.AppendLineIndented("var digitValue = (digit - '0') * ((index & 2) !== 0 ? 2 : 1);");
+                    sb.AppendLineIndented("let digitValue = (c.charCodeAt(0) - 48) * ((index & 2) !== 0 ? 2 : 1);");
                     sb.AppendLineIndented("while (digitValue > 0) {");
                     using (sb.IncreaseIndentation())
                     {
@@ -38,14 +38,14 @@ namespace CSharpToTypeScript.Models
             }
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_CreditCard.ErrorMessage) ? string.Format(_CreditCard.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName() + " is invalid.") + "'"));
+                        : (property.GetDisplayName() + " is invalid.")) + "'");
                 }
-                sb.AppendLineIndented("});");
+                sb.AppendLineIndented("};");
             }
             sb.AppendLineIndented("}");
         }

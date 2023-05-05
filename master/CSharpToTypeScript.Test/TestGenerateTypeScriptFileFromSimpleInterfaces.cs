@@ -42,8 +42,9 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            Assert.AreEqual("interface IPerson {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n\r\n",
-                personTypeScript);
+            var expectedData = Utilities.GetTestDataFileContents(nameof(IPerson));
+
+            Assert.AreEqual(expectedData, personTypeScript);
 
         }
 
@@ -57,8 +58,9 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\n\r\ninterface IPerson {\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string;\r\n}\r\n\r\ninterface IPersonWithGender extends IPerson {\r\n\tgender?: Gender;\r\n}\r\n\r\n",
-                script);
+            var expectedData = Utilities.GetTestDataFileContents(nameof(IPersonWithGender));
+
+            Assert.AreEqual(expectedData, script);
         }
 
         protected virtual void Dispose(bool disposing)

@@ -21,14 +21,14 @@ namespace CSharpToTypeScript.Models
             sb.AppendLineIndented("if (values." + propertyName + @" && !/^(http:\/\/|https:\/\/|ftp:\/\/)/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Url.ErrorMessage) ? string.Format(_Url.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName() + " is invalid.") + "'"));
+                        : (property.GetDisplayName() + " is invalid.")) + "'");
                 }
-                sb.AppendLineIndented("});");
+                sb.AppendLineIndented("};");
             }
             sb.AppendLineIndented("}");
         }

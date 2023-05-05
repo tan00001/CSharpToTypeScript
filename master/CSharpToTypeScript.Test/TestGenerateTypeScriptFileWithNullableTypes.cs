@@ -43,8 +43,9 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            Assert.AreEqual("class PersonWithNullableName {\r\n\tage?: number | null;\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string | null;\r\n}\r\n",
-                script);
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithNullableName));
+
+            Assert.AreEqual(expectedData, script);
         }
 
         [TestMethod]
@@ -57,8 +58,9 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            Assert.AreEqual("export const enum Gender {\r\n\tUnknown = 0,\r\n\tMale = 1,\r\n\tFemale = 2\r\n}\r\n\r\nclass PersonWithNullableName {\r\n\tage?: number | null;\r\n\tdateOfBirth?: number;\r\n\tid?: number;\r\n\tname?: string | null;\r\n}\r\nclass PersonWithNullableGender extends PersonWithNullableName {\r\n\tgender?: Gender | null;\r\n}\r\n",
-                script);
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithNullableGender));
+
+            Assert.AreEqual(expectedData, script);
         }
 
         protected virtual void Dispose(bool disposing)

@@ -21,3 +21,5 @@
 /master/CSharpToTypeScript.vsix/bin/Release
 *.log
 *.bak
+/master/CSharpToTypeScript.Test/TestData/node_modules
+/master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj.user

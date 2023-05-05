@@ -118,6 +118,8 @@ namespace CSharpToTypeScript
             return string.Join("\r\n", results.Select(r => "namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value) + "\r\n}\r\n"));
         }
 
-        private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n").Select(l => this._scriptGenerator.IndentationString + l)).TrimEnd();
+        private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n")
+            .Select(l => string.IsNullOrWhiteSpace(l) ? l : (this._scriptGenerator.IndentationString + l)))
+            .TrimEnd();
     }
 }

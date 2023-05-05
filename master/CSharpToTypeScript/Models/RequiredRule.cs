@@ -21,11 +21,16 @@ namespace CSharpToTypeScript.Models
             sb.AppendLineIndented("if (!values." + propertyName + ") {");
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
-                sb.AppendLineIndented("type: 'required',");
-                sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Required.ErrorMessage) ? _Required.ErrorMessage : property.GetDisplayName() + " is required.") + "'");
+                sb.AppendLineIndented("errors." + propertyName + " = {");
+                using (sb.IncreaseIndentation())
+                {
+                    sb.AppendLineIndented("type: 'required',");
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Required.ErrorMessage) ? _Required.ErrorMessage 
+                        : (property.GetDisplayName() + " is required.")) + "'");
+                }
+                sb.AppendLineIndented("};");
             }
-            sb.AppendLineIndented("};");
+            sb.AppendLineIndented("}");
         }
     }
 }

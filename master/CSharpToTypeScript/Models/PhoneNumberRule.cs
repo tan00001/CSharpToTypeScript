@@ -22,14 +22,14 @@ namespace CSharpToTypeScript.Models
             sb.AppendLineIndented("if (values." + propertyName + @" && !/^(\+1|1)?[ -]?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[ -]?[2-9][0-9]{2}[ -]?[0-9]{4}$/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Phone.ErrorMessage) ? string.Format(_Phone.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName() + " is invalid.") + "'"));
+                        : (property.GetDisplayName() + " is invalid.")) + "'");
                 }
-                sb.AppendLineIndented("});");
+                sb.AppendLineIndented("};");
             }
             sb.AppendLineIndented("}");
         }

@@ -23,34 +23,34 @@ namespace CSharpToTypeScript.Models
             {
                 if (_Range.Maximum != null)
                 {
-                    sb.AppendLineIndented("if (values." + propertyName + ".Length > " + _Range.Maximum + ") {");
+                    sb.AppendLineIndented("if (values." + propertyName + " > " + _Range.Maximum + ") {");
                     using (sb.IncreaseIndentation())
                     {
-                        sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
+                        sb.AppendLineIndented("errors." + propertyName + " = {");
                         using (sb.IncreaseIndentation())
                         {
                             sb.AppendLineIndented("type: 'max',");
                             sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                                : property.GetDisplayName() + " cannot exceed " + _Range.Maximum + ".") + "'");
+                                : (property.GetDisplayName() + " cannot exceed " + _Range.Maximum + ".")) + "'");
                         }
-                        sb.AppendLineIndented("});");
+                        sb.AppendLineIndented("};");
                     }
                     sb.AppendLineIndented("}");
                 }
 
                 if (_Range.Minimum != null)
                 {
-                    sb.AppendLineIndented("if (values." + propertyName + ".Length < " + _Range.Minimum + ") {");
+                    sb.AppendLineIndented("if (values." + propertyName + " < " + _Range.Minimum + ") {");
                     using (sb.IncreaseIndentation())
                     {
-                        sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
+                        sb.AppendLineIndented("errors." + propertyName + " = {");
                         using (sb.IncreaseIndentation())
                         {
                             sb.AppendLineIndented("type: 'min',");
                             sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                                : property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".") + "'");
+                                : (property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".")) + "'");
                         }
-                        sb.AppendLineIndented("});");
+                        sb.AppendLineIndented("};");
                     }
                     sb.AppendLineIndented("}");
                 }

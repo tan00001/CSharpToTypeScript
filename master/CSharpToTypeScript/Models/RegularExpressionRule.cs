@@ -18,17 +18,17 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
-            sb.AppendLineIndented("if (values." + propertyName + " && !" + _ReqularExpression.Pattern + ".test(values." + propertyName + ")) {");
+            sb.AppendLineIndented("if (values." + propertyName + " && !/" + _ReqularExpression.Pattern + "/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
-                sb.AppendLineIndented("errorBuffer." + propertyName + ".push({");
+                sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_ReqularExpression.ErrorMessage) ? _ReqularExpression.ErrorMessage
-                        : property.GetDisplayName() + " is invalid.") + "'");
+                        :(property.GetDisplayName() + " is invalid.")) + "'");
                 }
-                sb.AppendLineIndented("});");
+                sb.AppendLineIndented("};");
             }
             sb.AppendLineIndented("}");
         }
