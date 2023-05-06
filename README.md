@@ -1,5 +1,19 @@
 # CSharpToTypeScript
-Generate Typescript code, React-Hook-Form Resolver code, and Bootstrap styled React form code (.tsx file) from a C# class definition. This project started from TypeLITE 1.8.2.0 source code, with the assumption that the license statement at http://type.litesolutions.net/license grants permission to develop open source code project such as this one.
+
+## Table of Contents
+1. [What is CSharpToTypeScript](#What-is-CSharpToTypeScript)
+2. [Prerequisites](#Prerequisites)
+3. [Installation](#Installation)
+4. [How it works](#How-it-works)
+5. [Acknowledgements](#Acknowledgements)
+4. [License](#License)
+
+## What is CSharpToTypeScript
+CSharpToTypeScript generates Typescript code, React-Hook-Form Resolver code, and Bootstrap styled React form code (.tsx file) from a C# class definition. It features
+1. Support for C# nullable types.
+2. Support for C# enums, interfaces, and classes with inheritance hierarchies from multiple namespaces.
+3. Utilization of C# attributes in TypeScript data validation, variable names, label text, error messages, displayed texts for enumerated values, etc.
+4. Customizable column count in generated TypeScript XML forms.
 
 Start with the C# class
 
@@ -135,10 +149,32 @@ export const PersonWithValidationFormBase = (props: PersonWithValidation) => {
 
 ```
 
-This tool can be launched from the command line, or from Visual Studio via its ppopup menu in C# source files:
+This tool can be launched from the command line, or from Visual Studio via its popup menu in C# source files:
 
 ![alt text](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
 
+## Prerequisites
+1. **.NET Framework 4.8.1**. This is because Visual Studio Extension projects do not support .NET Core versions such as .NET 5, .NET 6, and .NET 7.
+2. **.NET 7**. In order to support all the latest C# syntax, we use .NET 7 for processing the C# type definitions.
+3. **Visual Studio 2022**. .NET 7 is only supported in Visual Studio 2022 and later.
+
+## Installation
+For now, you will need to build everything from the source code in Visual Studio 2022. Although the CSharpToTypeScript.vsix project has a "net7" folder that contains some binary files, they are auto generated from the CSharpToTypeScript project, and can be safely delete.
+Once you have rebuilt everything locally, you can install from the file "CSharpToTypeScript.vsix\bin\Release\CSharpToTypeScript.vsix" that you have built.
+
+## How it works
+CSharpToTypeScript.vsix adds three menu items on the context menu for C# source files. When you right click your mouse in a C# source file, CSharpToTypeScript will detect the class definition you are in, and then generate TypeScript code for that class and all of its dependencies. It will utilize the following C# attributes:
+1. From `System.ComponentModel.DataAnnotations`, CSharpToTypeScript supports `Display`, `Required`, `StringLength`, `Range`, `RegularExpression`, `EmailAddress`, `Phone`, `Compare`, `CreditCard`, and `Url`.
+2. From `System.Text.Json.Serialization`, CSharpToTypeScript supports `JsonIgnore`. Because the C# class is expected to be serialized/de-serialized and sent to/received from React client as JSON objects, marking a member of the C# class with `JsonIgnore` will make the member being ingored by CSharpToTypeScript.
+3. From `System.Runtime.Serialization`, CSharpToTypeScript supports `DataContract` for customizing namespaces. By default, namespaces are not used. You will have to manually turn it on by setting `<CSharpToTypeScriptEnableNamespace>true</CSharpToTypeScriptEnableNamespace>` in your C# project file.
+4. All dependencies of the C# class from the same namespace will be saved in a TypeScript file. You will be prompted to enter a file path with Window's "Save as" dialog box. Once a TypeScript file is saved, the folder path will be stored in the C# project file itself as `<CSharpToTypeScriptOutputFolder>...</CSharpToTypeScriptOutputFolder>`. For this project, you will be prompted to save TypeScript files in the same folder subsequently.
+5. All dependencies of the C# class from other namespaces will be saved in their separate files, respectively. For example, if your C# class references `enum` definitions in a namepsace called `Data.Common`, a file `Data.Common.ts` will be generated in the same folder, and the TypeScript file containing the class definition will import the `enum` definitions from `Data.Common`. If different C# classes depend on different types in a given namespace, you will need to merge them manually. If the file is checked into git, the merging can be done in git, for example.
+6. The generated TypeScript files for react-hook-form resolvers will import components from "react-hook-form". The generated TypeScript XML files for react forms will import components from "react-hook-form" as well. There are no other external imports right now.
+
+## Acknowledgements
+This project started from TypeLITE 1.8.2.0 source code, with the assumption that the license statement at http://type.litesolutions.net/license grants permission to develop open source code project such as this one.
+
 I would like to express my gratitude to Mr. Lukas Kabrt for his inspiring TypeLITE project, which is the basis of this open source project. I greatly appreciate his dedication to creating valuable open source tools and encourage everyone to explore TypeLITE at http://type.litesolutions.net/.
 
+## License
 CSharpToTypeScript is under the <a href="https://opensource.org/license/mit/">MIT License</a>.
