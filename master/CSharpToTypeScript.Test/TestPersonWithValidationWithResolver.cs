@@ -3,18 +3,7 @@ using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
-    public interface IPersonWithValidation
-    {
-        int Id { get; set; }
-
-        string Name { get; set; }
-
-        Int32? Age { get; set; }
-
-        string? Location { get; set; }
-    }
-
-    public class PersonWithValidationAndInterface : IPersonWithValidation
+    public class PersonWithValidation
     {
         public int Id { get; set; }
 
@@ -29,30 +18,14 @@ namespace CSharpToTypeScript.Test
         public string? Location { get; set; }
     }
 
-    public interface IPersonWithGenderAndValidation
-    {
-        Gender? Gender { get; set; }
-    }
-
-    public interface IPersonWithGenderAndValidation2 : IPersonWithValidation
-    {
-        Gender? Gender { get; set; }
-    }
-
-    public class PersonWithGenderAndValidationInterface: PersonWithValidationAndInterface, IPersonWithGenderAndValidation
-    {
-        [Required]
-        public Gender? Gender { get; set; }
-    }
-
-    public class PersonWithGenderAndValidationInterface2 : PersonWithValidationAndInterface, IPersonWithGenderAndValidation2
+    public class PersonWithGengerAndValidation: PersonWithValidation
     {
         [Required]
         public Gender? Gender { get; set; }
     }
 
     [TestClass]
-    public class TestFromSimpleClassesWithInterfaceAndRequiredAndRangeAndStringLengthValidations : IDisposable
+    public class TestPersonWithValidationWithResolver : IDisposable
     {
         private bool disposedValue;
 
@@ -72,13 +45,28 @@ namespace CSharpToTypeScript.Test
         public void TestGenerateTypeScriptFileForSimpleClassesWithRequiredAndRangeAndStringLengthValidations()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithValidationAndInterface>();
+               .For<PersonWithValidation>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithValidationAndInterface));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithValidation));
+
+            Assert.AreEqual(expectedData, personTypeScript);
+        }
+
+        [TestMethod]
+        public void TestGenerateTypeScriptFileForSimpleClassesWithRequiredAndRangeAndStringLengthForm()
+        {
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+               .For<PersonWithValidation>();
+
+            string personTypeScript = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithValidation));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
@@ -87,28 +75,13 @@ namespace CSharpToTypeScript.Test
         public void TestGenerateTypeScriptFileForSimpleClassesWithValidationsWithEnum()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithGenderAndValidationInterface>();
+               .For<PersonWithGengerAndValidation>();
 
             string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGenderAndValidationInterface));
-
-            Assert.AreEqual(expectedData, script);
-        }
-
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithValidationsWithEnum2()
-        {
-            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithGenderAndValidationInterface2>();
-
-            string script = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(script));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGenderAndValidationInterface2));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGengerAndValidation));
 
             Assert.AreEqual(expectedData, script);
         }

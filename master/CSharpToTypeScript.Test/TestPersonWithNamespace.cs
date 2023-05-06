@@ -22,7 +22,7 @@ namespace CSharpToTypeScript.Test
     }
 
     [TestClass]
-    public class TestGenerateTypeScriptFileWithCustomNamespace : IDisposable
+    public class TestPersonWithNamespace : IDisposable
     {
         private bool disposedValue;
 

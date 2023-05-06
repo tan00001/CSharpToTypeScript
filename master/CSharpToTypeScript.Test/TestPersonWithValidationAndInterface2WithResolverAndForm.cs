@@ -3,29 +3,19 @@ using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
-    public class PersonWithValidation
+    public interface IPersonWithGenderAndValidation2 : IPersonWithValidation
     {
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; } = string.Empty;
-
-        [Range(20, 120)]
-        public Int32? Age { get; set; }
-
-        [StringLength(120, MinimumLength = 2)]
-        public string? Location { get; set; }
+        Gender? Gender { get; set; }
     }
 
-    public class PersonWithGengerAndValidation: PersonWithValidation
+    public class PersonWithGenderAndValidationInterface2 : PersonWithValidationAndInterface, IPersonWithGenderAndValidation2
     {
         [Required]
         public Gender? Gender { get; set; }
     }
 
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClassesWithRequiredAndRangeAndStringLengthValidations : IDisposable
+    public class TestPersonWithValidationAndInterface2WithResolverAndForm : IDisposable
     {
         private bool disposedValue;
 
@@ -42,31 +32,31 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithRequiredAndRangeAndStringLengthValidations()
+        public void TestPersonWithValidationAndInterface2WithResolver()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithValidation>();
-
-            string personTypeScript = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithValidation));
-
-            Assert.AreEqual(expectedData, personTypeScript);
-        }
-
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithValidationsWithEnum()
-        {
-            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithGengerAndValidation>();
+               .For<PersonWithGenderAndValidationInterface2>();
 
             string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGengerAndValidation));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGenderAndValidationInterface2));
+
+            Assert.AreEqual(expectedData, script);
+        }
+
+        [TestMethod]
+        public void TestPersonWithValidationAndInterface2WithForm()
+        {
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(5, false))
+               .For<PersonWithGenderAndValidationInterface2>();
+
+            string script = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(script));
+
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithGenderAndValidationInterface2));
 
             Assert.AreEqual(expectedData, script);
         }

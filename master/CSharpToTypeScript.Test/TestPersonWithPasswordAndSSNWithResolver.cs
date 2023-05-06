@@ -1,22 +1,28 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
-    public interface IPerson
+    public class PersonWithPasswordAndSSN
     {
-        int Id { get; set; }
-        string Name { get; set; }
-        DateTime DateOfBirth { get; set; }
-    }
+        public int Id { get; set; }
 
-    public interface IPersonWithGender : IPerson
-    {
-        Gender Gender { get; set; }
-    }
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public string? Password { get; set; }
+
+        [Compare(nameof(Password))]
+        public string? ConfirmPassword { get; set; }
+
+        [RegularExpression(@"\d{3}-\d{2}-\d{4}$")]
+        public string? Ssn { get; set; }
+	}
 
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleInterfaces : IDisposable
+    public class TestPersonWithPasswordAndSSNWithResolver : IDisposable
     {
         private bool disposedValue;
 
@@ -33,35 +39,20 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleInterface()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithValidations()
         {
-            var ts = TypeScript.Definitions()
-               .For<IPerson>();
+            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
+               .For<PersonWithPasswordAndSSN>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(IPerson));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithPasswordAndSSN));
 
             Assert.AreEqual(expectedData, personTypeScript);
-
         }
 
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleInterfaceWithEnum()
-        {
-            var ts = TypeScript.Definitions()
-               .For<IPersonWithGender>();
-
-            string script = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(script));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(IPersonWithGender));
-
-            Assert.AreEqual(expectedData, script);
-        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -69,6 +60,7 @@ namespace CSharpToTypeScript.Test
             {
                 if (disposing)
                 {
+                    // TODO: dispose managed state (managed objects)
                 }
 
                 disposedValue = true;

@@ -41,6 +41,11 @@ namespace CSharpToTypeScript
     [InstalledProductRegistration(Vsix.Name, Vsix.Description, Vsix.Version)]
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(PackageGuids.CSharpToTypeScriptPackageString)]
+    [ProvideUIContextRule(PackageGuids.CSharpEditorContextString,
+        name: "Supported Files",
+        expression: "CSharp",
+        termNames: new[] { "CSharp" },
+        termValues: new[] { "HierSingleSelectionName:.cs$" })]
     public sealed class CSharpToTypeScriptPackage : AsyncPackage
     {
         const Int32 ProcessingWaitTime = 60 * 1000;
@@ -71,7 +76,7 @@ namespace CSharpToTypeScript
         #endregion
 
         #pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
-        public static async Task ExecuteCommandAsync(string generatorName)
+        public static async Task ExecuteCommandAsync(string generatorName, string fileExtension)
         {
             // Get the DTE object
             if (GetGlobalService(typeof(DTE)) is not DTE dte)
@@ -126,8 +131,9 @@ namespace CSharpToTypeScript
 
             SaveFileDialog dialog = new()
             {
-                DefaultExt = ".ts",
-                FileName = Path.GetFileNameWithoutExtension(documentPath) + ".ts",
+                DefaultExt = fileExtension,
+                FileName = Path.GetFileNameWithoutExtension(documentPath) + fileExtension,
+                Filter = fileExtension == ".tsx" ? "TypeScript XML Files | *.tsx" : "TypeScript Files | *.ts",
                 InitialDirectory = scriptOutputFolder
             };
 
@@ -150,10 +156,9 @@ namespace CSharpToTypeScript
                             FileName = ExeFilePath,
                             Arguments = '"' + outputAssmblyPath + "\" "
                                 + className + " \""
-                                + dialog.FileName + "\" \""
-                                + Path.GetDirectoryName(project.FullName) + "\" "
+                                + dialog.FileName + "\" "
                                 + generatorName + " "
-                                + enableNamespace,
+                                + "enableNamespace=" + enableNamespace,
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false,

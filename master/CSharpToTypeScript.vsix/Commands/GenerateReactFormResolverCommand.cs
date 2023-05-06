@@ -12,7 +12,7 @@ namespace CSharpToTypeScript.Commands
     {
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
-            await CSharpToTypeScriptPackage.ExecuteCommandAsync("withresolver");
+            await CSharpToTypeScriptPackage.ExecuteCommandAsync("withresolver", ".ts");
         }
     }
 }

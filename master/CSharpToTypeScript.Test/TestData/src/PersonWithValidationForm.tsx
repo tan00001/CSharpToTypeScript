@@ -1,33 +1,4 @@
-# CSharpToTypeScript
-Generate Typescript code, React-Hook-Form Resolver code, and Bootstrap styled React form code (.tsx file) from a C# class definition. This project started from TypeLITE 1.8.2.0 source code, with the assumption that the license statement at http://type.litesolutions.net/license grants permission to develop open source code project such as this one.
-
-Start with the C# class
-
-```
-using System.ComponentModel.DataAnnotations;
-
-namespace CSharpToTypeScript.Test
-{
-    public class PersonWithValidation
-    {
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; } = string.Empty;
-
-        [Range(20, 120)]
-        public Int32? Age { get; set; }
-
-        [StringLength(120, MinimumLength = 2)]
-        public string? Location { get; set; }
-    }
-}
-```
-
-this tool can generate the following TypeScript:
-```
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 
 export class PersonWithValidation {
@@ -132,13 +103,3 @@ export const PersonWithValidationFormBase = (props: PersonWithValidation) => {
 		</div>
 	</form>;
 };
-
-```
-
-This tool can be launched from the command line, or from Visual Studio via its ppopup menu in C# source files:
-
-![alt text](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
-
-I would like to express my gratitude to Mr. Lukas Kabrt for his inspiring TypeLITE project, which is the basis of this open source project. I greatly appreciate his dedication to creating valuable open source tools and encourage everyone to explore TypeLITE at http://type.litesolutions.net/.
-
-CSharpToTypeScript is under the <a href="https://opensource.org/license/mit/">MIT License</a>.

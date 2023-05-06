@@ -340,7 +340,7 @@ namespace CSharpToTypeScript
             }
         }
 
-        protected virtual void AppendClassDefinition(
+        protected virtual IReadOnlyList<TsProperty> AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
             TsGeneratorOutput generatorOutput,
@@ -371,17 +371,17 @@ namespace CSharpToTypeScript
 
             sb.AppendLine(" {");
 
-            List<TsProperty> source = new ();
+            List<TsProperty> propertiesToExport = new ();
             if ((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties)
-                source.AddRange(classModel.Properties);
+                propertiesToExport.AddRange(classModel.Properties);
             if ((generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields)
-                source.AddRange(classModel.Fields);
+                propertiesToExport.AddRange(classModel.Fields);
 
             string namespaceName = FormatNamespaceName(classModel.Namespace!);
 
             using (sb.IncreaseIndentation())
             {
-                var properties = source.Where(p => p.JsonIgnore == null).OrderBy(p => this.FormatPropertyNameWithOptionalModifier(p)).ToList();
+                var properties = propertiesToExport.Where(p => p.JsonIgnore == null).OrderBy(p => this.FormatPropertyName(p)).ToList();
 
                 foreach (TsProperty property in properties)
                 {
@@ -427,6 +427,8 @@ namespace CSharpToTypeScript
             }
             sb.AppendLineIndented("}");
             this._generatedClasses.Add(classModel);
+
+            return propertiesToExport;
         }
 
         private string FormatTypeName(string namespaceName, TsType type, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)

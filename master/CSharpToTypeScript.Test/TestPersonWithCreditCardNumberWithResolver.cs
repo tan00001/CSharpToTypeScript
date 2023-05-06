@@ -3,7 +3,7 @@ using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
-    public class PersonWithEmailAddressAndPhoneAndSiteUrl
+    public class PersonWithCreditCardNumber
     {
         public int Id { get; set; }
 
@@ -11,18 +11,13 @@ namespace CSharpToTypeScript.Test
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;
 
-        [EmailAddress]
-        public string? EmailAddress { get; set; }
-
-        [Phone]
-        public string? PhoneNumber { get; set; }
-
-        [Url]
-        public string? HomePage { get; set; }
+        [CreditCard]
+        [Display(Name="Credit Card Number")]
+        public string? CreditCardNumber { get; set; }
 	}
 
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClassesWithEmailAddressAndPhoneAndUrlValidations : IDisposable
+    public class TestPersonWithCreditCardNumberWithResolver : IDisposable
     {
         private bool disposedValue;
 
@@ -39,16 +34,16 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithEmailAddressAndPhoneAndUrlValidations()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithCreditCardValidations()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithEmailAddressAndPhoneAndSiteUrl>();
+               .For<PersonWithCreditCardNumber>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithEmailAddressAndPhoneAndSiteUrl));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithCreditCardNumber));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

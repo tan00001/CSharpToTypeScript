@@ -12,7 +12,7 @@ namespace CSharpToTypeScript.Commands
     {
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
-            await CSharpToTypeScriptPackage.ExecuteCommandAsync("default");
+            await CSharpToTypeScriptPackage.ExecuteCommandAsync("default", ".ts");
         }
     }
 }

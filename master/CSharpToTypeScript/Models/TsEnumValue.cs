@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace CSharpToTypeScript.Models
@@ -11,6 +12,8 @@ namespace CSharpToTypeScript.Models
         public string? Value { get; private set; }
 
         public FieldInfo Field { get; private set; }
+
+        public DisplayAttribute? Display { get; private set; }
 
         public TsEnumValue(FieldInfo field)
         {
@@ -56,6 +59,11 @@ namespace CSharpToTypeScript.Models
                     this.Value = ((ulong)obj).ToString();
                     break;
             }
+        }
+
+        public string GetDisplayName()
+        {
+            return Display?.Name ?? this.Name;
         }
     }
 }

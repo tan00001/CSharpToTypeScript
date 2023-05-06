@@ -5,13 +5,13 @@ using CSharpToTypeScript.AlternateGenerators;
 
 if (args.Length < 3)
 {
-    Console.WriteLine("Usage: csharptotypescript <dll/exe file name> <class name> <output file name>\n" +
-        "\tFor example: csharptotypescript \"myassembly.dll\" \"MyNamespace.MyClass\" \"ClientApp\\Models\\MyClass.ts\"");
+    Console.WriteLine("Usage: csharptotypescript <dll/exe file name> <class name> <output file name> <generator name> <enableNamespace=true/false> <launchDebugger>\n" +
+        "\tFor example: csharptotypescript \"myassembly.dll\" \"MyNamespace.MyClass\" \"ClientApp\\Models\\MyClass.ts\" withForm(4) enableNamespace=false");
     return;
 }
 
 #if DEBUG
-if (args.Length > 4 && args[4] == "LaunchDebugger")
+if (args.Length > 5 && args[5] == "LaunchDebugger")
 {
     Console.ReadLine();
 }
@@ -31,11 +31,12 @@ if (typeToExport == null)
     return;
 }
 
-bool enableNamespace = args.Length > 4 && StringComparer.OrdinalIgnoreCase.Equals(args[5], "true");
+bool enableNamespace = args.Length > 4 && StringComparer.OrdinalIgnoreCase.Equals(args[4], "enableNamespace=true");
 
 TsGenerator tsGenerator = args switch
 {
-    _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[4], "withresolver") => new TsGeneratorWithResolver(enableNamespace),
+    _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[3], "withresolver") => new TsGeneratorWithResolver(enableNamespace),
+    _ when args.Length > 3 && args[3].StartsWith("withform(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithForm(GetColCount(args[3]), enableNamespace),
     _ => new TsGenerator(enableNamespace)
 };
 
@@ -61,4 +62,29 @@ foreach (var script in scriptsByNamespaces)
     {
         File.WriteAllText(Path.Combine(directoryName, script.Key + ".ts"), script.Value);
     }
+}
+
+static int GetColCount(string formLayout)
+{
+    const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>).";
+
+    if (string.IsNullOrWhiteSpace(formLayout))
+    {
+        throw new ArgumentException("Form layout cannot be blank.", nameof(formLayout));
+    }
+
+    if (!formLayout.StartsWith("withform(", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new ArgumentException(errorMessage, nameof(formLayout));
+    }
+
+    var gridSize = formLayout.Substring("withform(".Length).TrimEnd(')');
+    if (!Int32.TryParse(gridSize, out int colCount)
+        || colCount <= 0
+        || colCount > TsGeneratorWithForm.MaxColCount)
+    {
+        throw new ArgumentException(errorMessage, nameof(formLayout));
+    }
+
+    return colCount;
 }

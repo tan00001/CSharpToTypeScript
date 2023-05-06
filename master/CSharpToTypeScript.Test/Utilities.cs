@@ -14,5 +14,7 @@ namespace CSharpToTypeScript.Test
         public static string GetProjectFolder() => Path.GetDirectoryName(GetSourceFilePathName())!;
 
         public static string GetTestDataFileContents(string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(), @"TestData\src", testDataFileName + ".ts"));
+
+        public static string GetTestFormFileContents(string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(), @"TestData\src", testDataFileName + "Form.tsx"));
     }
 }

@@ -1,29 +1,10 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
-    public enum Gender
-    {
-        Unknown = 0,
-        Male = 1,
-        Female = 2
-    }
-
-    public class Person
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public DateTime DateOfBirth { get; set; }
-    }
-
-    public class PersonWithGender : Person
-    {
-        public Gender Gender { get; set; }
-    }
-
     [TestClass]
-    public class TestGenerateTypeScriptFileUsingExeFromSimpleClasses : IDisposable
+    public class TestPersonWithValidationWithExeAndForm : IDisposable
     {
         private bool disposedValue;
 
@@ -40,34 +21,33 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileUsingExeForSimpleClasses()
+        public void TestPersonWithValidationWithExeAndRequiredAndRangeAndStringLengthAndGenerateForm()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "Person.d.ts");
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithValidation.d.tsx");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.Person", filePath, string.Empty);
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithValidation", filePath, "withform(3)");
 
             var personTypeScript = File.ReadAllText(filePath);
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(Person));
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithValidation));
 
             Assert.AreEqual(expectedData, personTypeScript);
-
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileUsingExeForSimpleClassesWithEnum()
+        public void TestPersonWithGengerAndValidationWithEnumAndGenerateForm()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGender.d.ts");
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGengerAndValidation.d.tsx");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGender", filePath, string.Empty);
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGengerAndValidation", filePath, "withform(3)");
 
             var personTypeScript = File.ReadAllText(filePath);
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGender));
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithGengerAndValidation));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
@@ -78,6 +58,7 @@ namespace CSharpToTypeScript.Test
             {
                 if (disposing)
                 {
+                    // TODO: dispose managed state (managed objects)
                 }
 
                 disposedValue = true;

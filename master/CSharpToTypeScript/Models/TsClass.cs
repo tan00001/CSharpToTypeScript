@@ -62,6 +62,28 @@ namespace CSharpToTypeScript.Models
                 .Select(t => tsModuleService.GetOrAddTsInterface(t)).ToList();
         }
 
+        public virtual List<TsProperty> GetBaseProperties(bool includeProperties, bool includeFields)
+        {
+            if (BaseType is not TsClass baseClassType)
+            {
+                return new List<TsProperty>();
+            }
+
+            var baseProperties = baseClassType.GetBaseProperties(includeProperties, includeFields);
+
+            if (includeProperties)
+            {
+                baseProperties.AddRange(baseClassType.Properties);
+            }
+
+            if (includeFields)
+            {
+                baseProperties.AddRange(baseClassType.Fields);
+            }
+
+            return baseProperties;
+        }
+
         public virtual List<TsProperty> GetBaseRequiredProperties(bool includeProperties, bool includeFields)
         {
             if (BaseType is not TsClass baseClassType)

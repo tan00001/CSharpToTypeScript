@@ -1,10 +1,23 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace CSharpToTypeScript.Test
 {
+    public class PersonWithNullableName
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public DateTime DateOfBirth { get; set; }
+
+        public int? Age { get; set; }
+    }
+
+    public class PersonWithNullableGender : PersonWithNullableName
+    {
+        public Gender? Gender { get; set; }
+    }
+
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClasses : IDisposable
+    public class TestPersonWithNullableNameAndPersonWithNullableGender : IDisposable
     {
         private bool disposedValue;
 
@@ -21,32 +34,31 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClass()
+        public void TestGenerateTypeScriptFileForPersonWithNullableName()
         {
             var ts = TypeScript.Definitions()
-               .For<Person>();
-
-            string personTypeScript = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(Person));
-
-            Assert.AreEqual(expectedData, personTypeScript);
-
-        }
-
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassWithEnum()
-        {
-            var ts = TypeScript.Definitions()
-               .For<PersonWithGender>();
+               .For<PersonWithNullableName>();
 
             string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGender));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithNullableName));
+
+            Assert.AreEqual(expectedData, script);
+        }
+
+        [TestMethod]
+        public void TestGenerateTypeScriptFileForPersonWithNullableGender()
+        {
+            var ts = TypeScript.Definitions()
+               .For<PersonWithNullableGender>();
+
+            string script = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(script));
+
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithNullableGender));
 
             Assert.AreEqual(expectedData, script);
         }
@@ -57,6 +69,7 @@ namespace CSharpToTypeScript.Test
             {
                 if (disposing)
                 {
+                    // TODO: dispose managed state (managed objects)
                 }
 
                 disposedValue = true;

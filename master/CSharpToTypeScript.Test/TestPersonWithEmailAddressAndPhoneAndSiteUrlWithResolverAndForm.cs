@@ -3,7 +3,7 @@ using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
-    public class PersonWithCreditCardNumber
+    public class PersonWithEmailAddressAndPhoneAndSiteUrl
     {
         public int Id { get; set; }
 
@@ -11,13 +11,18 @@ namespace CSharpToTypeScript.Test
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;
 
-        [CreditCard]
-        [Display(Name="Credit Card Number")]
-        public string? CreditCardNumber { get; set; }
+        [EmailAddress]
+        public string? EmailAddress { get; set; }
+
+        [Phone]
+        public string? PhoneNumber { get; set; }
+
+        [Url]
+        public string? HomePage { get; set; }
 	}
 
     [TestClass]
-    public class TestGenerateTypeScriptFileFromSimpleClassesWithXreditCardlValidation : IDisposable
+    public class TestPersonWithEmailAddressAndPhoneAndSiteUrlWithResolverAndForm : IDisposable
     {
         private bool disposedValue;
 
@@ -34,20 +39,34 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithCreditCardValidations()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithEmailAddressAndPhoneAndUrlValidations()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithCreditCardNumber>();
+               .For<PersonWithEmailAddressAndPhoneAndSiteUrl>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithCreditCardNumber));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithEmailAddressAndPhoneAndSiteUrl));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
 
+        [TestMethod]
+        public void TestGenerateTypeScriptFileForSimpleClassesWithEmailAddressAndPhoneAndUrlForm()
+        {
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+               .For<PersonWithEmailAddressAndPhoneAndSiteUrl>();
+
+            string personTypeScript = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithEmailAddressAndPhoneAndSiteUrl));
+
+            Assert.AreEqual(expectedData, personTypeScript);
+        }
 
         protected virtual void Dispose(bool disposing)
         {

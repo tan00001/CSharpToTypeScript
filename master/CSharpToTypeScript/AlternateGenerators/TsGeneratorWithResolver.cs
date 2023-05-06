@@ -16,6 +16,18 @@ namespace CSharpToTypeScript.AlternateGenerators
             SetTypeVisibilityFormatter(DefaultTypeVisibilityFormatterForResolver);
         }
 
+        protected virtual IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
+        {
+            if (classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored && c.BaseType != null))
+            {
+                return new string[]{ "Resolver", "FieldErrors", "ResolverOptions" };
+            }
+            else
+            {
+                return new string[] { "Resolver", "FieldErrors" };
+            }
+        }
+
         protected override void AppendNamespace(
           TsNamespace @namespace,
           ScriptBuilder sb,
@@ -24,14 +36,8 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
             if (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored))
             {
-                if (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored && c.BaseType != null))
-                {
-                    sb.AppendLine("import { Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';");
-                }
-                else
-                {
-                    sb.AppendLine("import { Resolver, FieldErrors } from 'react-hook-form';");
-                }
+                sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace.Classes)) 
+                    + " } from 'react-hook-form';");
 
                 if (dependencies.Count == 0)
                 {
@@ -42,22 +48,16 @@ namespace CSharpToTypeScript.AlternateGenerators
             base.AppendNamespace(@namespace, sb, generatorOutput, dependencies);
         }
 
-        protected override void AppendClassDefinition(
+        protected override IReadOnlyList<TsProperty> AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
             TsGeneratorOutput generatorOutput,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
+            var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
             sb.AppendLine();
 
-            List<TsProperty> source = new();
-            if ((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties)
-                source.AddRange(classModel.Properties);
-            if ((generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields)
-                source.AddRange(classModel.Fields);
-            source.RemoveAll(p => p.JsonIgnore != null);
-            var sortedSourceList = source.ToImmutableSortedDictionary(a => this.FormatPropertyName(a), a => a);
+            var propertyList = propertiesToExport.ToImmutableSortedDictionary(a => this.FormatPropertyName(a), a => a);
 
             string? typeName = this.GetTypeName(classModel);
             string str = this.GetTypeVisibility(classModel, typeName) ? "export " : "";
@@ -68,11 +68,11 @@ namespace CSharpToTypeScript.AlternateGenerators
                 sb.AppendLineIndented("const errors: FieldErrors<" + typeName + "> = {};");
                 sb.AppendLine();
 
-                foreach (var property in sortedSourceList)
+                foreach (var property in propertyList)
                 {
                     foreach (var validationRule in property.Value.ValidationRules)
                     {
-                        validationRule.BuildRule(sb, property.Key, property.Value, sortedSourceList);
+                        validationRule.BuildRule(sb, property.Key, property.Value, propertyList);
                     }
                 }
 
@@ -102,6 +102,8 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             sb.AppendLineIndented("};");
+
+            return propertiesToExport;
         }
 
         protected override void AppendInterfaceDefinition(
