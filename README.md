@@ -176,6 +176,12 @@ CSharpToTypeScript.vsix adds three menu items on the context menu for C# source 
 5. All dependencies of the C# class from other namespaces will be saved in their separate files, respectively. For example, if your C# class references `enum` definitions in a namepsace called `Data.Common`, a file `Data.Common.ts` will be generated in the same folder, and the TypeScript file containing the class definition will import the `enum` definitions from `Data.Common`. If different C# classes depend on different types in a given namespace, you will need to merge them manually. If the file is checked into git, the merging can be done in git, for example.
 6. The generated TypeScript files for react-hook-form resolvers will import components from "react-hook-form". The generated TypeScript XML files for react forms will import components from "react-hook-form" as well. There are no other external imports right now.
 
+CSharpToTypeScript will try to save the path of your selected output folder into your project file when you change the folder path, or when you save a TypeScript file in the project for the first time:
+
+![alt text](https://github.com/tan00001/CSharpToTypeScript/blob/main/OutputFolderSettingScreenshot.png)
+
+You may edit your project file manually and add this path if CSharpToTypeScript is not permitted to update the project file directly.
+
 ## Acknowledgements
 This project started from TypeLITE 1.8.2.0 source code, with the assumption that the license statement at http://type.litesolutions.net/license grants permission to develop open source code project such as this one.
 

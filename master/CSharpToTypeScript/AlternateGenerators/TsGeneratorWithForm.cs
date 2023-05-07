@@ -44,21 +44,26 @@ namespace CSharpToTypeScript.AlternateGenerators
             List<TsClass> moduleClasses, List<TsInterface> moduleInterfaces,
             List<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            sb.AppendLineIndented("const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>");
-            using (sb.IncreaseIndentation())
+            if (((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties
+                || (generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields)
+                && moduleClasses.Any(c => !c.IsIgnored))
             {
-                sb.AppendLineIndented("error ? \"form-control is-invalid\" : (isValidated ? \"form-control is-valid\" : \"form-control\");");
+                sb.AppendLineIndented("const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>");
+                using (sb.IncreaseIndentation())
+                {
+                    sb.AppendLineIndented("error ? \"form-control is-invalid\" : (isValidated ? \"form-control is-valid\" : \"form-control\");");
+                }
+
+                sb.AppendLine();
+
+                sb.AppendLineIndented("const getErrorMessage = (error: FieldError | undefined) =>");
+                using (sb.IncreaseIndentation())
+                {
+                    sb.AppendLineIndented("error && <span className=\"invalid-feedback\">{error.message}</span>;");
+                }
+
+                sb.AppendLine();
             }
-
-            sb.AppendLine();
-
-            sb.AppendLineIndented("const getErrorMessage = (error: FieldError | undefined) =>");
-            using (sb.IncreaseIndentation())
-            {
-                sb.AppendLineIndented("error && <span className=\"invalid-feedback\">{error.message}</span>;");
-            }
-
-            sb.AppendLine();
 
             base.AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces,
                 moduleEnums, importNames);
