@@ -1,7 +1,4 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript.AlternateGenerators
@@ -34,9 +31,17 @@ namespace CSharpToTypeScript.AlternateGenerators
           TsGeneratorOutput generatorOutput,
           IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
+            base.AppendNamespace(@namespace, sb, generatorOutput, dependencies);
+        }
+
+        protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
+            TsNamespace @namespace,
+            ScriptBuilder sb,
+            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
+        {
             if (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored))
             {
-                sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace.Classes)) 
+                sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace.Classes))
                     + " } from 'react-hook-form';");
 
                 if (dependencies.Count == 0)
@@ -45,7 +50,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                 }
             }
 
-            base.AppendNamespace(@namespace, sb, generatorOutput, dependencies);
+            return base.AppendImports(@namespace, sb, dependencies);
         }
 
         protected override IReadOnlyList<TsProperty> AppendClassDefinition(

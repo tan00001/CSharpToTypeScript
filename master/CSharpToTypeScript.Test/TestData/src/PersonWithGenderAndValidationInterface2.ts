@@ -23,8 +23,8 @@ export class PersonWithValidationAndInterface implements IPersonWithValidation {
 	location?: string | null;
 	name: string;
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(name?: string) {
+		this.name = name ?? "";
 	}
 }
 
@@ -79,9 +79,9 @@ export const PersonWithValidationAndInterfaceResolver: Resolver<PersonWithValida
 export class PersonWithGenderAndValidationInterface2 extends PersonWithValidationAndInterface implements IPersonWithValidation, IPersonWithGenderAndValidation2 {
 	gender: Gender | null;
 
-	constructor(gender: Gender | null, name: string) {
+	constructor(gender?: Gender | null, name?: string) {
 		super(name);
-		this.gender = gender;
+		this.gender = gender ?? null;
 	}
 }
 

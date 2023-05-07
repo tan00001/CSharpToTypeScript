@@ -1,5 +1,10 @@
-﻿import { useState } from 'react';
-import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
+﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
+
+const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>
+	error ? "form-control is-invalid" : (isValidated ? "form-control is-valid" : "form-control");
+
+const getErrorMessage = (error: FieldError | undefined) =>
+	error && <span className="invalid-feedback">{error.message}</span>;
 
 export class PersonWithEmailAddressAndPhoneAndSiteUrl {
 	emailAddress?: string | null;
@@ -8,8 +13,8 @@ export class PersonWithEmailAddressAndPhoneAndSiteUrl {
 	name: string;
 	phoneNumber?: string | null;
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(name?: string) {
+		this.name = name ?? "";
 	}
 }
 
@@ -53,50 +58,51 @@ export const PersonWithEmailAddressAndPhoneAndSiteUrlResolver: Resolver<PersonWi
 	};
 };
 
-export const PersonWithEmailAddressAndPhoneAndSiteUrlFormBase = (props: PersonWithEmailAddressAndPhoneAndSiteUrl) => {
-	const { register, handleSubmit, formState: { errors } } = useForm<PersonWithEmailAddressAndPhoneAndSiteUrl>({
+export type PersonWithEmailAddressAndPhoneAndSiteUrlFormData = {
+	personWithEmailAddressAndPhoneAndSiteUrl?: PersonWithEmailAddressAndPhoneAndSiteUrl,
+	onSubmit: SubmitHandler<PersonWithEmailAddressAndPhoneAndSiteUrl>
+};
+
+export const PersonWithEmailAddressAndPhoneAndSiteUrlForm = (props: PersonWithEmailAddressAndPhoneAndSiteUrlFormData) => {
+	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithEmailAddressAndPhoneAndSiteUrl>({
 		resolver: PersonWithEmailAddressAndPhoneAndSiteUrlResolver,
-		defaultValues: props
+		defaultValues: props.personWithEmailAddressAndPhoneAndSiteUrl ?? new PersonWithEmailAddressAndPhoneAndSiteUrl()
 	});
 
-	const onSubmit: SubmitHandler<PersonWithEmailAddressAndPhoneAndSiteUrl> = async (data: PersonWithEmailAddressAndPhoneAndSiteUrl) => {
-		// TODO: fill in submit action details
-	};
-
-	return <form onSubmit={handleSubmit(onSubmit)}>
+	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row">
 			<div className="form-group col-md-4">
 				<label htmlFor="emailAddress">EmailAddress:</label>
-				<input type="email" className="form-control" id="emailAddress" {...register("emailAddress")} />
-				{errors.emailAddress && <span className="invalid-feedback">{errors.emailAddress.message}</span>}
+				<input type="email" className={getClassName(touchedFields.emailAddress, errors.emailAddress)} id="emailAddress" {...register("emailAddress")} />
+				{getErrorMessage(errors.emailAddress)}
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor="homePage">HomePage:</label>
-				<input type="url" className="form-control" id="homePage" {...register("homePage")} />
-				{errors.homePage && <span className="invalid-feedback">{errors.homePage.message}</span>}
+				<input type="url" className={getClassName(touchedFields.homePage, errors.homePage)} id="homePage" {...register("homePage")} />
+				{getErrorMessage(errors.homePage)}
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor="id">Id:</label>
-				<input type="number" className="form-control" id="id" {...register("id")} />
-				{errors.id && <span className="invalid-feedback">{errors.id.message}</span>}
+				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				{getErrorMessage(errors.id)}
 			</div>
 		</div>
 		<div className="row">
 			<div className="form-group col-md-4">
 				<label htmlFor="name">Name:</label>
-				<input type="text" className="form-control" id="name" {...register("name")} />
-				{errors.name && <span className="invalid-feedback">{errors.name.message}</span>}
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				{getErrorMessage(errors.name)}
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor="phoneNumber">PhoneNumber:</label>
-				<input type="tel" className="form-control" id="phoneNumber" {...register("phoneNumber")} />
-				{errors.phoneNumber && <span className="invalid-feedback">{errors.phoneNumber.message}</span>}
+				<input type="tel" className={getClassName(touchedFields.phoneNumber, errors.phoneNumber)} id="phoneNumber" {...register("phoneNumber")} />
+				{getErrorMessage(errors.phoneNumber)}
 			</div>
 		</div>
 		<div className="row">
 			<div className="form-group col-md-12">
-				<button className="btn btn-primary" type="submit">Submit</button>
-				<button className="btn btn-secondary" type="reset">Reset</button>
+				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
+				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;

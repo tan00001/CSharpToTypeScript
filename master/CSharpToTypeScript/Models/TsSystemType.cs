@@ -1,7 +1,4 @@
-﻿#nullable enable
-using System;
-
-namespace CSharpToTypeScript.Models
+﻿namespace CSharpToTypeScript.Models
 {
     public class TsSystemType : TsType
     {

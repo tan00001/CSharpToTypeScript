@@ -1,13 +1,8 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.Extensions;
 using System.Text.Json.Serialization;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 namespace CSharpToTypeScript.Models
@@ -211,6 +206,28 @@ namespace CSharpToTypeScript.Models
         public string GetDisplayName()
         {
             return Display?.Name ?? this.Name;
+        }
+
+        public string? GetDefaultValue()
+        {
+            if (this.IsNullable)
+            {
+                return "null";
+            }
+
+            return this.PropertyType switch
+            {
+                _ when this.PropertyType is TsEnum => "0",
+                _ when this.PropertyType is TsCollection => "[]",
+                _ when this.PropertyType is TsSystemType tsSystemType =>
+                tsSystemType.Kind switch {
+                    _ when tsSystemType.Kind == SystemTypeKind.String => "\"\"",
+                    _ when tsSystemType.Kind == SystemTypeKind.Number => "0",
+                    _ when tsSystemType.Kind == SystemTypeKind.Bool => "false",
+                    _ => null
+                },
+                _ => null
+            };
         }
     }
 }

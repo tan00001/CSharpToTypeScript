@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using CSharpToTypeScript.Models;
+﻿using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
 {

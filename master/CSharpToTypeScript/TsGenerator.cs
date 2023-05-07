@@ -1,8 +1,4 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using CSharpToTypeScript.Extensions;
+﻿using CSharpToTypeScript.Extensions;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
@@ -71,7 +67,7 @@ namespace CSharpToTypeScript
 
         public static string DefaultNamespaceNameFormatter(TsNamespace @namespace) => @namespace.Name;
 
-        public static string DefaultMemberFormatter(TsProperty identifier) => identifier.Name.Length > 0 ? (char.ToLower(identifier.Name[0]) + identifier.Name.Substring(1)) : identifier.Name;
+        public static string DefaultMemberFormatter(TsProperty identifier) => ToCamelCase(identifier.Name);
 
         public string DefaultMemberTypeFormatter(TsProperty tsProperty, string? memberTypeName, string currentNamespaceName,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
@@ -193,40 +189,37 @@ namespace CSharpToTypeScript
                 sb.AppendLine(string.Format("namespace {0} {{", namespaceName));
                 using (sb.IncreaseIndentation())
                 {
+                    AppendImports(@namespace, sb, dependencies);
                     AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces, moduleEnums, new Dictionary<string, IReadOnlyDictionary<string, Int32>>());
                 }
                 sb.AppendLine("}");
             }
             else
             {
-                var importedNames = AppendDependencies(sb, dependencies, false);
+                var importedNames = AppendImports(@namespace, sb, dependencies);
                 AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces, moduleEnums, importedNames);
             }
         }
 
-        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendDependencies(ScriptBuilder sb,
-            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies, bool addIndentation)
+        protected virtual IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
+            TsNamespace @namespace,
+            ScriptBuilder sb,
+            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
             Dictionary<string, IReadOnlyDictionary<string, Int32>> importIndices = new();
 
+            if (EnableNamespaceInTypeScript)
+            {
+                return importIndices;
+            }
+
             if (dependencies.Count > 0)
             {
-                if (addIndentation)
+                foreach (var dependency in dependencies)
                 {
-                    foreach (var dependency in dependencies)
-                    {
-                        var importIndicesForNamespace = new Dictionary<string, Int32>();
-                        sb.AppendLineIndented("import { " + string.Join(", ", dependency.Value.Select(v => GetImportName(v.Name, importIndices, importIndicesForNamespace))) + " } from './" + dependency.Key + "';");
-                    }
-                }
-                else
-                {
-                    foreach (var dependency in dependencies)
-                    {
-                        var importIndicesForNamespace = new Dictionary<string, Int32>();
-                        sb.AppendLine("import { " + string.Join(", ", dependency.Value.Select(v => GetImportName(v.Name, importIndices, importIndicesForNamespace))) + " } from './" + dependency.Key + "';");
-                        importIndices[dependency.Key] = importIndicesForNamespace;
-                    }
+                    var importIndicesForNamespace = new Dictionary<string, Int32>();
+                    sb.AppendLine("import { " + string.Join(", ", dependency.Value.Select(v => GetImportName(v.Name, importIndices, importIndicesForNamespace))) + " } from './" + dependency.Key + "';");
+                    importIndices[dependency.Key] = importIndicesForNamespace;
                 }
 
                 sb.AppendLine();
@@ -249,7 +242,7 @@ namespace CSharpToTypeScript
             return name + " as " + BuildImportName(name, usageCount);
         }
 
-        private void AppendNamespace(ScriptBuilder sb, TsGeneratorOutput generatorOutput,
+        protected virtual void AppendNamespace(ScriptBuilder sb, TsGeneratorOutput generatorOutput,
             List<TsClass> moduleClasses, List<TsInterface> moduleInterfaces,
             List<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
@@ -396,7 +389,7 @@ namespace CSharpToTypeScript
                 {
                     sb.AppendLine();
                     var constructorParameters = string.Join(", ", requiredProperties.Select(p => string.Format("{0}: {1}",
-                        this.FormatPropertyNameWithOptionalModifier(p),
+                        this.FormatPropertyName(p) + (string.IsNullOrEmpty(p.GetDefaultValue()) ? "" : "?"),
                         this.FormatPropertyType(namespaceName, p, importNames))
                         ));
                     var baseRequiredProperties = classModel.GetBaseRequiredProperties((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties,
@@ -404,7 +397,7 @@ namespace CSharpToTypeScript
                     if (baseRequiredProperties.Count > 0)
                     {
                         constructorParameters += ", " + string.Join(", ", baseRequiredProperties.Select(p => string.Format("{0}: {1}",
-                            this.FormatPropertyNameWithOptionalModifier(p),
+                            this.FormatPropertyName(p) + (string.IsNullOrEmpty(p.GetDefaultValue()) ? "" : "?"),
                             this.FormatPropertyType(namespaceName, p, importNames))
                             ));
                     }
@@ -419,7 +412,8 @@ namespace CSharpToTypeScript
                         foreach (var requiredProperty in requiredProperties)
                         {
                             var propertyName = this.FormatPropertyNameWithOptionalModifier(requiredProperty);
-                            sb.AppendLineIndented("this." + propertyName + " = " + propertyName + ";");
+                            var defaultValue = requiredProperty.GetDefaultValue();
+                            sb.AppendLineIndented("this." + propertyName + " = " + propertyName + (string.IsNullOrEmpty(defaultValue) ? string.Empty : (" ?? " + defaultValue)) + ";");
                         }
                     }
                     sb.AppendLineIndented("}");
@@ -639,5 +633,7 @@ namespace CSharpToTypeScript
         }
 
         public bool GetTypeVisibility(TsType tsType, string? typeName) => this._typeVisibilityFormatter(tsType, typeName);
+
+        protected static string ToCamelCase(string s) => s.Length > 0 ? (char.ToLower(s[0]) + s.Substring(1)) : s;
     }
 }

@@ -7,9 +7,9 @@ export class PersonWithPasswordAndSSN {
 	password: string | null;
 	ssn?: string | null;
 
-	constructor(name: string, password: string | null) {
-		this.name = name;
-		this.password = password;
+	constructor(name?: string, password?: string | null) {
+		this.name = name ?? "";
+		this.password = password ?? null;
 	}
 }
 

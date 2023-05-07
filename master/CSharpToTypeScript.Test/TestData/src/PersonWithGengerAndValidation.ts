@@ -12,8 +12,8 @@ export class PersonWithValidation {
 	location?: string | null;
 	name: string;
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(name?: string) {
+		this.name = name ?? "";
 	}
 }
 
@@ -68,9 +68,9 @@ export const PersonWithValidationResolver: Resolver<PersonWithValidation> = asyn
 export class PersonWithGengerAndValidation extends PersonWithValidation {
 	gender: Gender | null;
 
-	constructor(gender: Gender | null, name: string) {
+	constructor(gender?: Gender | null, name?: string) {
 		super(name);
-		this.gender = gender;
+		this.gender = gender ?? null;
 	}
 }
 

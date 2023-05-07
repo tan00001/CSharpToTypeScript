@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CSharpToTypeScript
+﻿namespace CSharpToTypeScript
 {
     public class IndentationLevelScope : IDisposable
     {

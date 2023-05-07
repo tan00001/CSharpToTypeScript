@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Xml.Linq;
-using System.Xml.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace CSharpToTypeScript.Models
 {

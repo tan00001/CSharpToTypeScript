@@ -1,5 +1,10 @@
-﻿import { useState } from 'react';
-import { useForm, SubmitHandler, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
+﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
+
+const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>
+	error ? "form-control is-invalid" : (isValidated ? "form-control is-valid" : "form-control");
+
+const getErrorMessage = (error: FieldError | undefined) =>
+	error && <span className="invalid-feedback">{error.message}</span>;
 
 export const enum Gender {
 	Unknown = 0,
@@ -24,8 +29,8 @@ export class PersonWithValidationAndInterface implements IPersonWithValidation {
 	location?: string | null;
 	name: string;
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(name?: string) {
+		this.name = name ?? "";
 	}
 }
 
@@ -77,43 +82,44 @@ export const PersonWithValidationAndInterfaceResolver: Resolver<PersonWithValida
 	};
 };
 
-export const PersonWithValidationAndInterfaceFormBase = (props: PersonWithValidationAndInterface) => {
-	const { register, handleSubmit, formState: { errors } } = useForm<PersonWithValidationAndInterface>({
+export type PersonWithValidationAndInterfaceFormData = {
+	personWithValidationAndInterface?: PersonWithValidationAndInterface,
+	onSubmit: SubmitHandler<PersonWithValidationAndInterface>
+};
+
+export const PersonWithValidationAndInterfaceForm = (props: PersonWithValidationAndInterfaceFormData) => {
+	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithValidationAndInterface>({
 		resolver: PersonWithValidationAndInterfaceResolver,
-		defaultValues: props
+		defaultValues: props.personWithValidationAndInterface ?? new PersonWithValidationAndInterface()
 	});
 
-	const onSubmit: SubmitHandler<PersonWithValidationAndInterface> = async (data: PersonWithValidationAndInterface) => {
-		// TODO: fill in submit action details
-	};
-
-	return <form onSubmit={handleSubmit(onSubmit)}>
+	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row">
 			<div className="form-group col-md-2">
 				<label htmlFor="age">Age:</label>
-				<input type="number" className="form-control" id="age" {...register("age")} />
-				{errors.age && <span className="invalid-feedback">{errors.age.message}</span>}
+				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
+				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="id">Id:</label>
-				<input type="number" className="form-control" id="id" {...register("id")} />
-				{errors.id && <span className="invalid-feedback">{errors.id.message}</span>}
+				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				{getErrorMessage(errors.id)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="location">Location:</label>
-				<input type="text" className="form-control" id="location" {...register("location")} />
-				{errors.location && <span className="invalid-feedback">{errors.location.message}</span>}
+				<input type="text" className={getClassName(touchedFields.location, errors.location)} id="location" {...register("location")} />
+				{getErrorMessage(errors.location)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="name">Name:</label>
-				<input type="text" className="form-control" id="name" {...register("name")} />
-				{errors.name && <span className="invalid-feedback">{errors.name.message}</span>}
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				{getErrorMessage(errors.name)}
 			</div>
 		</div>
 		<div className="row">
 			<div className="form-group col-md-12">
-				<button className="btn btn-primary" type="submit">Submit</button>
-				<button className="btn btn-secondary" type="reset">Reset</button>
+				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
+				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;
@@ -122,9 +128,9 @@ export const PersonWithValidationAndInterfaceFormBase = (props: PersonWithValida
 export class PersonWithGenderAndValidationInterface2 extends PersonWithValidationAndInterface implements IPersonWithValidation, IPersonWithGenderAndValidation2 {
 	gender: Gender | null;
 
-	constructor(gender: Gender | null, name: string) {
+	constructor(gender?: Gender | null, name?: string) {
 		super(name);
-		this.gender = gender;
+		this.gender = gender ?? null;
 	}
 }
 
@@ -145,52 +151,53 @@ export const PersonWithGenderAndValidationInterface2Resolver: Resolver<PersonWit
 	};
 };
 
-export const PersonWithGenderAndValidationInterface2FormBase = (props: PersonWithGenderAndValidationInterface2) => {
-	const { register, handleSubmit, formState: { errors } } = useForm<PersonWithGenderAndValidationInterface2>({
+export type PersonWithGenderAndValidationInterface2FormData = {
+	personWithGenderAndValidationInterface2?: PersonWithGenderAndValidationInterface2,
+	onSubmit: SubmitHandler<PersonWithGenderAndValidationInterface2>
+};
+
+export const PersonWithGenderAndValidationInterface2Form = (props: PersonWithGenderAndValidationInterface2FormData) => {
+	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithGenderAndValidationInterface2>({
 		resolver: PersonWithGenderAndValidationInterface2Resolver,
-		defaultValues: props
+		defaultValues: props.personWithGenderAndValidationInterface2 ?? new PersonWithGenderAndValidationInterface2()
 	});
 
-	const onSubmit: SubmitHandler<PersonWithGenderAndValidationInterface2> = async (data: PersonWithGenderAndValidationInterface2) => {
-		// TODO: fill in submit action details
-	};
-
-	return <form onSubmit={handleSubmit(onSubmit)}>
+	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row">
 			<div className="form-group col-md-2">
 				<label htmlFor="age">Age:</label>
-				<input type="number" className="form-control" id="age" {...register("age")} />
-				{errors.age && <span className="invalid-feedback">{errors.age.message}</span>}
+				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
+				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="gender">Gender:</label>
-				<select id="gender" {...register('gender')}>
+				<select className={getClassName(touchedFields.gender, errors.gender)} id="gender" {...register('gender')}>
 					<option value="0">Unknown</option>
 					<option value="1">Male</option>
 					<option value="2">Female</option>
 				</select>
-				{errors.gender && <span className="invalid-feedback">{errors.gender.message}</span>}
+				{getErrorMessage(errors.gender)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="id">Id:</label>
-				<input type="number" className="form-control" id="id" {...register("id")} />
-				{errors.id && <span className="invalid-feedback">{errors.id.message}</span>}
+				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				{getErrorMessage(errors.id)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="location">Location:</label>
-				<input type="text" className="form-control" id="location" {...register("location")} />
-				{errors.location && <span className="invalid-feedback">{errors.location.message}</span>}
+				<input type="text" className={getClassName(touchedFields.location, errors.location)} id="location" {...register("location")} />
+				{getErrorMessage(errors.location)}
 			</div>
 			<div className="form-group col-md-2">
 				<label htmlFor="name">Name:</label>
-				<input type="text" className="form-control" id="name" {...register("name")} />
-				{errors.name && <span className="invalid-feedback">{errors.name.message}</span>}
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				{getErrorMessage(errors.name)}
 			</div>
 		</div>
 		<div className="row">
 			<div className="form-group col-md-12">
-				<button className="btn btn-primary" type="submit">Submit</button>
-				<button className="btn btn-secondary" type="reset">Reset</button>
+				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
+				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;

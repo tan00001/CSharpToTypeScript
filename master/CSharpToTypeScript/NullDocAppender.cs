@@ -1,5 +1,4 @@
-﻿#nullable enable
-using CSharpToTypeScript.Models;
+﻿using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
 {

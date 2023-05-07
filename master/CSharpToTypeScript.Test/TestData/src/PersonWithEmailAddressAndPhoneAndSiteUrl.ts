@@ -7,8 +7,8 @@ export class PersonWithEmailAddressAndPhoneAndSiteUrl {
 	name: string;
 	phoneNumber?: string | null;
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(name?: string) {
+		this.name = name ?? "";
 	}
 }
 

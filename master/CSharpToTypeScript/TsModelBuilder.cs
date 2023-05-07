@@ -1,12 +1,7 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using CSharpToTypeScript.Models;
 using CSharpToTypeScript.Extensions;
 using System.Runtime.Serialization;
-using Microsoft.VisualBasic;
 
 namespace CSharpToTypeScript
 {

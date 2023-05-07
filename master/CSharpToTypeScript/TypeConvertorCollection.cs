@@ -1,8 +1,4 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
-
-namespace CSharpToTypeScript
+﻿namespace CSharpToTypeScript
 {
     public class TypeConvertorCollection
     {
