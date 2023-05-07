@@ -12,7 +12,7 @@ namespace CSharpToTypeScript
         public const string Description = @"Generate Typescript code from a C# class definition.";
         public const string Language = "en-US";
         public const string Version = "1.0";
-        public const string Author = "Xiaodong Tan";
+        public const string Author = "Programount Inc.";
         public const string Tags = "TypeScript, C#, schema, validation";
     }
 }
