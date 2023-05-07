@@ -1,6 +1,6 @@
 # Example for Using a Generated .tsx File
 
-Assume that you have the generated file [PersonWithValidationForm.tsx](https://github.com/tan00001/CSharpToTypeScript/blob/main/master/CSharpToTypeScript.Test/TestData/src/PersonWithValidationForm.tsx) in the same folder as the file below, and you are building a modal dialog box that posts the data for an instance of `PersonWithValidation` collected from the `PersonWithValidation` to the .NET 7 API server that implemented `PersonWithValidation`. The Controller name on the server is called `PersonsController`:
+Assume that you have the generated file [PersonWithValidationForm.tsx](https://github.com/tan00001/CSharpToTypeScript/blob/main/master/CSharpToTypeScript.Test/TestData/src/PersonWithValidationForm.tsx) in the same folder as the file below, and you are building a modal dialog box that posts the data for an instance of `PersonWithValidation` collected from the `PersonWithValidationForm` to the .NET 7 API server that implemented `PersonWithValidation`. The Controller name on the server is called `PersonsController`:
 
 ```
 import { useState } from 'react';
