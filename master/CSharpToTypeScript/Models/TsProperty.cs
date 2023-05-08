@@ -4,12 +4,15 @@ using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.Extensions;
 using System.Text.Json.Serialization;
 using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CSharpToTypeScript.Models
 {
     [DebuggerDisplay("Name: {Name}")]
     public class TsProperty
     {
+        public const string UiHintHidden = "hidden";
+
         public string Name { get; set; }
 
         public TsType PropertyType { get; set; }
@@ -26,8 +29,18 @@ namespace CSharpToTypeScript.Models
         public List<ITsValidationRule> ValidationRules { get; private set; }
         public DataMemberAttribute? DataMember { get; set; }
         public DisplayAttribute? Display { get; set; }
-        public JsonIgnoreAttribute? JsonIgnore { get; set; }
+        public UIHintAttribute? UiHint { get; set; }
+        protected NotMappedAttribute? NotMapped { get; set; }
+        protected JsonIgnoreAttribute? JsonIgnore { get; set; }
         public JsonPropertyNameAttribute? JsonPropertyName { get; set; }
+
+        public bool HasIgnoreAttribute
+        {
+            get
+            {
+                return JsonIgnore != null || NotMapped != null;
+            }
+        }
 
         public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo)
         {
@@ -53,6 +66,8 @@ namespace CSharpToTypeScript.Models
             Display = propertyInfo.GetCustomAttribute<DisplayAttribute>(false);
             JsonIgnore = propertyInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
             JsonPropertyName = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
+            UiHint = propertyInfo.GetCustomAttribute<UIHintAttribute>(false);
+            NotMapped = propertyInfo.GetCustomAttribute<NotMappedAttribute>(false);
 
             var compare = propertyInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
@@ -142,6 +157,8 @@ namespace CSharpToTypeScript.Models
             Display = fieldInfo.GetCustomAttribute<DisplayAttribute>(false);
             JsonIgnore = fieldInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
             JsonPropertyName = fieldInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
+            UiHint = fieldInfo.GetCustomAttribute<UIHintAttribute>(false);
+            NotMapped = fieldInfo.GetCustomAttribute<NotMappedAttribute>(false);
 
             var compare = fieldInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)

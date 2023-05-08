@@ -1,4 +1,5 @@
-﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
+﻿import { useId } from 'react';
+import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export const enum Gender {
@@ -21,7 +22,7 @@ export class PersonWithValidation {
 export const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (values) => {
 	const errors: FieldErrors<PersonWithValidation> = {};
 
-	if (values.age) {
+	if (values.age || values.age === 0) {
 		if (values.age > 120) {
 			errors.age = {
 				type: 'max',
@@ -72,7 +73,9 @@ export type PersonWithValidationFormData = {
 };
 
 export const PersonWithValidationForm = (props: PersonWithValidationFormData) => {
+	const formId = useId();
 	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithValidation>({
+		mode: "onTouched",
 		resolver: PersonWithValidationResolver,
 		defaultValues: props.personWithValidation ?? new PersonWithValidation()
 	});
@@ -80,25 +83,25 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="age">Age:</label>
-				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
+				<label htmlFor={formId + "-age"}>Age:</label>
+				<input type="number" className={getClassName(touchedFields.age, errors.age)} id={formId + "-age"} {...register("age", { valueAsNumber: true })} />
 				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="id">Id:</label>
-				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				<label htmlFor={formId + "-id"}>Id:</label>
+				<input type="hidden" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 				{getErrorMessage(errors.id)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="location">Location:</label>
-				<input type="text" className={getClassName(touchedFields.location, errors.location)} id="location" {...register("location")} />
+				<label htmlFor={formId + "-location"}>Location:</label>
+				<input type="text" className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location")} />
 				{getErrorMessage(errors.location)}
 			</div>
 		</div>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="name">Name:</label>
-				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				<label htmlFor={formId + "-name"}>Name:</label>
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
 				{getErrorMessage(errors.name)}
 			</div>
 		</div>
@@ -111,7 +114,7 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 	</form>;
 };
 
-export class PersonWithGengerAndValidation extends PersonWithValidation {
+export class PersonWithGenderAndValidation extends PersonWithValidation {
 	gender: Gender | null;
 
 	constructor(gender?: Gender | null, name?: string) {
@@ -120,8 +123,8 @@ export class PersonWithGengerAndValidation extends PersonWithValidation {
 	}
 }
 
-export const PersonWithGengerAndValidationResolver: Resolver<PersonWithGengerAndValidation> = async (values) => {
-	const errors: FieldErrors<PersonWithGengerAndValidation> = {};
+export const PersonWithGenderAndValidationResolver: Resolver<PersonWithGenderAndValidation> = async (values) => {
+	const errors: FieldErrors<PersonWithGenderAndValidation> = {};
 
 	if (!values.gender) {
 		errors.gender = {
@@ -137,27 +140,29 @@ export const PersonWithGengerAndValidationResolver: Resolver<PersonWithGengerAnd
 	};
 };
 
-export type PersonWithGengerAndValidationFormData = {
-	personWithGengerAndValidation?: PersonWithGengerAndValidation,
-	onSubmit: SubmitHandler<PersonWithGengerAndValidation>
+export type PersonWithGenderAndValidationFormData = {
+	personWithGenderAndValidation?: PersonWithGenderAndValidation,
+	onSubmit: SubmitHandler<PersonWithGenderAndValidation>
 };
 
-export const PersonWithGengerAndValidationForm = (props: PersonWithGengerAndValidationFormData) => {
-	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithGengerAndValidation>({
-		resolver: PersonWithGengerAndValidationResolver,
-		defaultValues: props.personWithGengerAndValidation ?? new PersonWithGengerAndValidation()
+export const PersonWithGenderAndValidationForm = (props: PersonWithGenderAndValidationFormData) => {
+	const formId = useId();
+	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithGenderAndValidation>({
+		mode: "onTouched",
+		resolver: PersonWithGenderAndValidationResolver,
+		defaultValues: props.personWithGenderAndValidation ?? new PersonWithGenderAndValidation()
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="age">Age:</label>
-				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
+				<label htmlFor={formId + "-age"}>Age:</label>
+				<input type="number" className={getClassName(touchedFields.age, errors.age)} id={formId + "-age"} {...register("age", { valueAsNumber: true })} />
 				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="gender">Gender:</label>
-				<select className={getClassName(touchedFields.gender, errors.gender)} id="gender" {...register('gender')}>
+				<label htmlFor={formId + "-gender"}>Gender:</label>
+				<select className={getClassName(touchedFields.gender, errors.gender)} id={formId + "-gender"} {...register('gender')}>
 					<option value="0">Unknown</option>
 					<option value="1">Male</option>
 					<option value="2">Female</option>
@@ -165,20 +170,20 @@ export const PersonWithGengerAndValidationForm = (props: PersonWithGengerAndVali
 				{getErrorMessage(errors.gender)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="id">Id:</label>
-				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				<label htmlFor={formId + "-id"}>Id:</label>
+				<input type="hidden" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 				{getErrorMessage(errors.id)}
 			</div>
 		</div>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="location">Location:</label>
-				<input type="text" className={getClassName(touchedFields.location, errors.location)} id="location" {...register("location")} />
+				<label htmlFor={formId + "-location"}>Location:</label>
+				<input type="text" className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location")} />
 				{getErrorMessage(errors.location)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="name">Name:</label>
-				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				<label htmlFor={formId + "-name"}>Name:</label>
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
 				{getErrorMessage(errors.name)}
 			</div>
 		</div>

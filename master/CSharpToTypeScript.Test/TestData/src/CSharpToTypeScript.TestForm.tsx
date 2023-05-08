@@ -1,4 +1,5 @@
-﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
+﻿import { useId } from 'react';
+import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export const enum Gender {
@@ -9,7 +10,7 @@ export const enum Gender {
 
 export class PersonWithNullableName {
 	age?: number | null;
-	dateOfBirth?: number;
+	dateOfBirth?: Date;
 	id?: number;
 	name?: string | null;
 }
@@ -30,7 +31,9 @@ export type PersonWithNullableNameFormData = {
 };
 
 export const PersonWithNullableNameForm = (props: PersonWithNullableNameFormData) => {
+	const formId = useId();
 	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithNullableName>({
+		mode: "onTouched",
 		resolver: PersonWithNullableNameResolver,
 		defaultValues: props.personWithNullableName ?? new PersonWithNullableName()
 	});
@@ -38,25 +41,25 @@ export const PersonWithNullableNameForm = (props: PersonWithNullableNameFormData
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="age">Age:</label>
-				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
+				<label htmlFor={formId + "-age"}>Age:</label>
+				<input type="number" className={getClassName(touchedFields.age, errors.age)} id={formId + "-age"} {...register("age", { valueAsNumber: true })} />
 				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="dateOfBirth">DateOfBirth:</label>
-				<input type="number" className={getClassName(touchedFields.dateOfBirth, errors.dateOfBirth)} id="dateOfBirth" {...register("dateOfBirth")} />
+				<label htmlFor={formId + "-dateOfBirth"}>DateOfBirth:</label>
+				<input type="date" className={getClassName(touchedFields.dateOfBirth, errors.dateOfBirth)} id={formId + "-dateOfBirth"} {...register("dateOfBirth")} />
 				{getErrorMessage(errors.dateOfBirth)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="id">Id:</label>
-				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				<label htmlFor={formId + "-id"}>Id:</label>
+				<input type="number" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 				{getErrorMessage(errors.id)}
 			</div>
 		</div>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="name">Name:</label>
-				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				<label htmlFor={formId + "-name"}>Name:</label>
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
 				{getErrorMessage(errors.name)}
 			</div>
 		</div>

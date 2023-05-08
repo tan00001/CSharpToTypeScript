@@ -188,7 +188,7 @@ namespace CSharpToTypeScript
 
         private void AddReferences(TsModuleMemberWithPropertiesAndGenericArguments model, Dictionary<Type, TypeConvertor>? typeConvertors)
         {
-            foreach (TsProperty tsProperty in model.Properties.Where(p => p.JsonIgnore == null))
+            foreach (TsProperty tsProperty in model.Properties.Where(p => !p.HasIgnoreAttribute))
             {
                 switch (TsType.GetTypeFamily(tsProperty.PropertyType.Type))
                 {

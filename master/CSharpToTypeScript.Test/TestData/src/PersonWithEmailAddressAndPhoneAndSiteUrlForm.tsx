@@ -1,4 +1,5 @@
-﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
+﻿import { useId } from 'react';
+import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export class PersonWithEmailAddressAndPhoneAndSiteUrl {
@@ -59,7 +60,9 @@ export type PersonWithEmailAddressAndPhoneAndSiteUrlFormData = {
 };
 
 export const PersonWithEmailAddressAndPhoneAndSiteUrlForm = (props: PersonWithEmailAddressAndPhoneAndSiteUrlFormData) => {
+	const formId = useId();
 	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithEmailAddressAndPhoneAndSiteUrl>({
+		mode: "onTouched",
 		resolver: PersonWithEmailAddressAndPhoneAndSiteUrlResolver,
 		defaultValues: props.personWithEmailAddressAndPhoneAndSiteUrl ?? new PersonWithEmailAddressAndPhoneAndSiteUrl()
 	});
@@ -67,30 +70,30 @@ export const PersonWithEmailAddressAndPhoneAndSiteUrlForm = (props: PersonWithEm
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="emailAddress">EmailAddress:</label>
-				<input type="email" className={getClassName(touchedFields.emailAddress, errors.emailAddress)} id="emailAddress" {...register("emailAddress")} />
+				<label htmlFor={formId + "-emailAddress"}>EmailAddress:</label>
+				<input type="email" className={getClassName(touchedFields.emailAddress, errors.emailAddress)} id={formId + "-emailAddress"} {...register("emailAddress")} />
 				{getErrorMessage(errors.emailAddress)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="homePage">HomePage:</label>
-				<input type="url" className={getClassName(touchedFields.homePage, errors.homePage)} id="homePage" {...register("homePage")} />
+				<label htmlFor={formId + "-homePage"}>HomePage:</label>
+				<input type="url" className={getClassName(touchedFields.homePage, errors.homePage)} id={formId + "-homePage"} {...register("homePage")} />
 				{getErrorMessage(errors.homePage)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="id">Id:</label>
-				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				<label htmlFor={formId + "-id"}>Id:</label>
+				<input type="number" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 				{getErrorMessage(errors.id)}
 			</div>
 		</div>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="name">Name:</label>
-				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				<label htmlFor={formId + "-name"}>Name:</label>
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
 				{getErrorMessage(errors.name)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="phoneNumber">PhoneNumber:</label>
-				<input type="tel" className={getClassName(touchedFields.phoneNumber, errors.phoneNumber)} id="phoneNumber" {...register("phoneNumber")} />
+				<label htmlFor={formId + "-phoneNumber"}>PhoneNumber:</label>
+				<input type="tel" className={getClassName(touchedFields.phoneNumber, errors.phoneNumber)} id={formId + "-phoneNumber"} {...register("phoneNumber")} />
 				{getErrorMessage(errors.phoneNumber)}
 			</div>
 		</div>

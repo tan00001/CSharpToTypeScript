@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -44,7 +45,8 @@ namespace CSharpToTypeScript.Models
 
         public DisplayAttribute? Display { get; private set; }
         public DataContractAttribute? DataContract { get; private set; }
-        public JsonIgnoreAttribute? Ignore { get; private set; }
+        protected JsonIgnoreAttribute? Ignore { get; private set; }
+        protected NotMappedAttribute? NotMapped { get; private set; }
 
         public bool IsIgnored { get; set; }
 
@@ -118,7 +120,9 @@ namespace CSharpToTypeScript.Models
 
             Ignore = this.Type.GetCustomAttribute<JsonIgnoreAttribute>(false);
 
-            IsIgnored = Ignore != null;
+            NotMapped = this.Type.GetCustomAttribute<NotMappedAttribute>(false);
+
+            IsIgnored = Ignore != null || NotMapped != null;
 
             ModuleName = GetModuleName(type);
 

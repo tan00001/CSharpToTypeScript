@@ -5,7 +5,7 @@
 }
 
 export class Person {
-	dateOfBirth?: number;
+	dateOfBirth?: Date;
 	id?: number;
 	name?: string;
 }

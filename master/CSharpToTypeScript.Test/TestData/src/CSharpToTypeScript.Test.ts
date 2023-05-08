@@ -6,7 +6,7 @@
 
 export class PersonWithNullableName {
 	age?: number | null;
-	dateOfBirth?: number;
+	dateOfBirth?: Date;
 	id?: number;
 	name?: string | null;
 }

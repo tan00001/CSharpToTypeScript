@@ -37,17 +37,17 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestPersonWithGengerAndValidationWithEnumAndGenerateForm()
+        public void TestPersonWithGenderAndValidationWithEnumAndGenerateForm()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGengerAndValidation.d.tsx");
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGenderAndValidation.d.tsx");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGengerAndValidation", filePath, "withform(3)");
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGenderAndValidation", filePath, "withform(3)");
 
             var personTypeScript = File.ReadAllText(filePath);
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithGengerAndValidation));
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithGenderAndValidation));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

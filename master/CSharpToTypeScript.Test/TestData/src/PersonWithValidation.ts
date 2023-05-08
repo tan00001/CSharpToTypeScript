@@ -14,7 +14,7 @@ export class PersonWithValidation {
 export const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (values) => {
 	const errors: FieldErrors<PersonWithValidation> = {};
 
-	if (values.age) {
+	if (values.age || values.age === 0) {
 		if (values.age > 120) {
 			errors.age = {
 				type: 'max',

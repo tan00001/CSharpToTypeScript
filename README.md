@@ -24,6 +24,7 @@ namespace CSharpToTypeScript.Test
 {
     public class PersonWithValidation
     {
+        [UIHint("hidden")]
         public int Id { get; set; }
 
         [Required]
@@ -41,6 +42,7 @@ namespace CSharpToTypeScript.Test
 
 this tool can generate the following TypeScript:
 ```
+import { useId } from 'react';
 import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
@@ -58,7 +60,7 @@ export class PersonWithValidation {
 export const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (values) => {
 	const errors: FieldErrors<PersonWithValidation> = {};
 
-	if (values.age) {
+	if (values.age || values.age === 0) {
 		if (values.age > 120) {
 			errors.age = {
 				type: 'max',
@@ -109,7 +111,9 @@ export type PersonWithValidationFormData = {
 };
 
 export const PersonWithValidationForm = (props: PersonWithValidationFormData) => {
+	const formId = useId();
 	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithValidation>({
+		mode: "onTouched",
 		resolver: PersonWithValidationResolver,
 		defaultValues: props.personWithValidation ?? new PersonWithValidation()
 	});
@@ -117,25 +121,25 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="age">Age:</label>
-				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
+				<label htmlFor={formId + "-age"}>Age:</label>
+				<input type="number" className={getClassName(touchedFields.age, errors.age)} id={formId + "-age"} {...register("age", { valueAsNumber: true })} />
 				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="id">Id:</label>
-				<input type="number" className={getClassName(touchedFields.id, errors.id)} id="id" {...register("id")} />
+				<label htmlFor={formId + "-id"}>Id:</label>
+				<input type="hidden" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 				{getErrorMessage(errors.id)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="location">Location:</label>
-				<input type="text" className={getClassName(touchedFields.location, errors.location)} id="location" {...register("location")} />
+				<label htmlFor={formId + "-location"}>Location:</label>
+				<input type="text" className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location")} />
 				{getErrorMessage(errors.location)}
 			</div>
 		</div>
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
-				<label htmlFor="name">Name:</label>
-				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
+				<label htmlFor={formId + "-name"}>Name:</label>
+				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
 				{getErrorMessage(errors.name)}
 			</div>
 		</div>
@@ -157,6 +161,7 @@ This tool can be launched from the command line, or from Visual Studio via its p
 1. **.NET Framework 4.8.1**. This is because Visual Studio Extension projects do not support .NET Core versions such as .NET 5, .NET 6, and .NET 7.
 2. **.NET 7**. In order to support all the latest C# syntax, we use .NET 7 for processing the C# type definitions.
 3. **Visual Studio 2022**. .NET 7 is only supported in Visual Studio 2022 and later.
+4. **React 18.0 or later**. CSharpToTypeScript uses `useId` from React to generate unique identifiers.
 
 ## Installation
 You may download CSharpToTypeScript from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).

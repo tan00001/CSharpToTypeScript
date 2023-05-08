@@ -275,7 +275,7 @@ namespace CSharpToTypeScript
 
             if (generatorOutput.HasFlag(TsGeneratorOptions.Constants))
             {
-                var constants = moduleClasses.Where(c => !c.IsIgnored).SelectMany(c => c.Constants.Where(ct => ct.JsonIgnore == null)).ToList();
+                var constants = moduleClasses.Where(c => !c.IsIgnored).SelectMany(c => c.Constants.Where(ct => !ct.HasIgnoreAttribute)).ToList();
                 if (constants.Count > 0)
                 {
                     string namespaceName = FormatNamespaceName(moduleClasses.First().Namespace!);
@@ -400,7 +400,7 @@ namespace CSharpToTypeScript
 
             using (sb.IncreaseIndentation())
             {
-                var properties = propertiesToExport.Where(p => p.JsonIgnore == null).OrderBy(p => this.FormatPropertyName(p)).ToList();
+                var properties = propertiesToExport.Where(p => !p.HasIgnoreAttribute).OrderBy(p => this.FormatPropertyName(p)).ToList();
 
                 foreach (TsProperty property in properties)
                 {
@@ -529,7 +529,7 @@ namespace CSharpToTypeScript
                 string namespaceName = FormatNamespaceName(interfaceModel.Namespace!);
                 using (sb.IncreaseIndentation())
                 {
-                    foreach (TsProperty property in interfaceModel.Properties.Where(p => p.JsonIgnore == null)
+                    foreach (TsProperty property in interfaceModel.Properties.Where(p => !p.HasIgnoreAttribute)
                         .OrderBy(p => this.FormatPropertyNameWithOptionalModifier(p)))
                     {
                         this._docAppender.AppendPropertyDoc(sb, property, this.FormatPropertyNameWithOptionalModifier(property),

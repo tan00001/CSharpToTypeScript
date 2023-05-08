@@ -21,7 +21,7 @@ export class PersonWithValidationAndInterface implements IPersonWithValidation {
 export const PersonWithValidationAndInterfaceResolver: Resolver<PersonWithValidationAndInterface> = async (values) => {
 	const errors: FieldErrors<PersonWithValidationAndInterface> = {};
 
-	if (values.age) {
+	if (values.age || values.age === 0) {
 		if (values.age > 120) {
 			errors.age = {
 				type: 'max',

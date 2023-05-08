@@ -68,7 +68,7 @@
                     tsSystemType = SystemTypeKind.String;
                     return true;
                 case Type t when t == typeof(DateTime):
-                    tsSystemType = SystemTypeKind.Number;
+                    tsSystemType = SystemTypeKind.Date;
                     return true;
                 case Type t when t == typeof(DateTimeOffset):
                     tsSystemType = SystemTypeKind.Date;

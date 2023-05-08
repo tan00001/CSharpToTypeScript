@@ -5,6 +5,7 @@ namespace CSharpToTypeScript.Test
 {
     public class PersonWithValidation
     {
+        [UIHint("hidden")]
         public int Id { get; set; }
 
         [Required]
@@ -18,7 +19,7 @@ namespace CSharpToTypeScript.Test
         public string? Location { get; set; }
     }
 
-    public class PersonWithGengerAndValidation: PersonWithValidation
+    public class PersonWithGenderAndValidation: PersonWithValidation
     {
         [Required]
         public Gender? Gender { get; set; }
@@ -75,13 +76,13 @@ namespace CSharpToTypeScript.Test
         public void TestGenerateTypeScriptFileForSimpleClassesWithValidationsWithEnum()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithGengerAndValidation>();
+               .For<PersonWithGenderAndValidation>();
 
             string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGengerAndValidation));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGenderAndValidation));
 
             Assert.AreEqual(expectedData, script);
         }

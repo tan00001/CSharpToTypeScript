@@ -59,7 +59,7 @@ namespace CSharpToTypeScript
 
         public override void VisitProperty(ITsModuleService tsModuleService, TsProperty property)
         {
-            if (property.JsonIgnore != null)
+            if (property.HasIgnoreAttribute)
                 return;
 
             property.PropertyType = this.ResolveType(tsModuleService, property.PropertyType);

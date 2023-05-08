@@ -20,7 +20,7 @@ export class PersonWithValidation {
 export const PersonWithValidationResolver: Resolver<PersonWithValidation> = async (values) => {
 	const errors: FieldErrors<PersonWithValidation> = {};
 
-	if (values.age) {
+	if (values.age || values.age === 0) {
 		if (values.age > 120) {
 			errors.age = {
 				type: 'max',
@@ -65,7 +65,7 @@ export const PersonWithValidationResolver: Resolver<PersonWithValidation> = asyn
 	};
 };
 
-export class PersonWithGengerAndValidation extends PersonWithValidation {
+export class PersonWithGenderAndValidation extends PersonWithValidation {
 	gender: Gender | null;
 
 	constructor(gender?: Gender | null, name?: string) {
@@ -74,8 +74,8 @@ export class PersonWithGengerAndValidation extends PersonWithValidation {
 	}
 }
 
-export const PersonWithGengerAndValidationResolver: Resolver<PersonWithGengerAndValidation> = async (values) => {
-	const errors: FieldErrors<PersonWithGengerAndValidation> = {};
+export const PersonWithGenderAndValidationResolver: Resolver<PersonWithGenderAndValidation> = async (values) => {
+	const errors: FieldErrors<PersonWithGenderAndValidation> = {};
 
 	if (!values.gender) {
 		errors.gender = {

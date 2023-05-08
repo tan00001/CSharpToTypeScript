@@ -44,6 +44,21 @@ namespace CSharpToTypeScript.AlternateGenerators
             ColumnWidths = columnWidths;
         }
 
+        protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
+            TsNamespace @namespace,
+            ScriptBuilder sb,
+            TsGeneratorOptions generatorOptions,
+            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
+        {
+            if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && @namespace.Classes.Any(c => !c.IsIgnored))
+            {
+                sb.AppendLine("import { useId } from 'react';");
+            }
+
+            return base.AppendImports(@namespace, sb, generatorOptions, dependencies);
+        }
+
         protected override void AppendAdditionalImports(
             TsNamespace @namespace,
             ScriptBuilder sb, 
@@ -177,9 +192,11 @@ namespace CSharpToTypeScript.AlternateGenerators
 
             using (sb.IncreaseIndentation())
             {
+                sb.AppendLineIndented("const formId = useId();");
                 sb.AppendLineIndented("const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<" + typeName+ ">({");
                 using (sb.IncreaseIndentation())
                 {
+                    sb.AppendLineIndented("mode: \"onTouched\",");
                     sb.AppendLineIndented("resolver: " + typeName + "Resolver,");
                     var defaultValues = "defaultValues: props." + typeNameInCamelCase;
                     if (!hasRequiredConstructorParams)
@@ -258,8 +275,8 @@ namespace CSharpToTypeScript.AlternateGenerators
                     {
                         if (property.PropertyType is TsEnum tsEnum)
                         {
-                            sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
-                            sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\"" + propertyName + "\" {...register('" + propertyName + "')}>");
+                            sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + ":</label>");
+                            sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register('" + propertyName + "')}>");
                             using (sb.IncreaseIndentation())
                             {
                                 if (!property.IsRequired)
@@ -278,16 +295,23 @@ namespace CSharpToTypeScript.AlternateGenerators
                             if (tsSystemType.Kind == SystemTypeKind.Bool)
                             {
                                 sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                                    + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\""
-                                    + propertyName + "\" {...register(\"" + propertyName + "\")} />");
-                                sb.AppendLineIndented("<label classNam=\"form-check-label\" htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + "</label>");
+                                    + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} {formId + \"-" 
+                                    + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                                sb.AppendLineIndented("<label className=\"form-check-label\" htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + "</label>");
+                            }
+                            else if (tsSystemType.Kind == SystemTypeKind.Number)
+                            {
+                                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + ":</label>");
+                                sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" 
+                                    + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
                             }
                             else
                             {
-                                sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
+                                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + ":</label>");
                                 sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\""
-                                    + propertyName + "\" {...register(\"" + propertyName + "\")} />");
+                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" 
+                                    + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
                             }
                         }
                         else
@@ -306,6 +330,11 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         private static string GetInputType(TsProperty property, SystemTypeKind kind)
         {
+            if (!string.IsNullOrEmpty(property.UiHint?.UIHint))
+            {
+                return property.UiHint.UIHint;
+            }
+
             switch (kind)
             {
                 case SystemTypeKind.Number:
