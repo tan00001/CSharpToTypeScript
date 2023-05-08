@@ -1,11 +1,21 @@
-﻿namespace CSharpToTypeScript
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CSharpToTypeScript
 {
-    [Flags]
-    public enum TsGeneratorOutput
+    public class TsGeneratorOutput
     {
-        Properties = 1,
-        Enums = 2,
-        Fields = 4,
-        Constants = 8,
+        public string FileType { get; set; }
+        public string Script { get; set; }
+        public bool ExcludeFromResultToString { get; set; }
+
+        public TsGeneratorOutput(string fileType, string script)
+        {
+            FileType = fileType;
+            Script = script;
+        }
     }
 }

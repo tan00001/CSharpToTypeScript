@@ -13,7 +13,15 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
-            sb.AppendLineIndented("if (!values." + propertyName + ") {");
+            if (property.PropertyType is TsSystemType tsSystemType && tsSystemType.Kind == SystemTypeKind.Number)
+            {
+                sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
+            }
+            else
+            {
+                sb.AppendLineIndented("if (!values." + propertyName + ") {");
+            }
+
             using (sb.IncreaseIndentation())
             {
                 sb.AppendLineIndented("errors." + propertyName + " = {");

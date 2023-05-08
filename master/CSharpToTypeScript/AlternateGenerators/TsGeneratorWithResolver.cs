@@ -25,38 +25,57 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
         }
 
-        protected override void AppendNamespace(
-          TsNamespace @namespace,
-          ScriptBuilder sb,
-          TsGeneratorOutput generatorOutput,
-          IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
-        {
-            base.AppendNamespace(@namespace, sb, generatorOutput, dependencies);
-        }
 
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
+            TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
-            if (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored))
+            if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && @namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored))
             {
                 sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace.Classes))
                     + " } from 'react-hook-form';");
 
-                if (dependencies.Count == 0)
+                if (dependencies.Count == 0 && !HasAdditionalImports(@namespace, generatorOptions))
                 {
                     sb.AppendLine();
                 }
             }
 
-            return base.AppendImports(@namespace, sb, dependencies);
+            return base.AppendImports(@namespace, sb, generatorOptions, dependencies);
+        }
+
+        protected override void AppendAdditionalImports(
+            TsNamespace @namespace,
+            ScriptBuilder sb,
+            TsGeneratorOptions generatorOutput,
+            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies,
+            Dictionary<string, IReadOnlyDictionary<string, Int32>> importIndices)
+        {
+            if (!generatorOutput.HasFlag(TsGeneratorOptions.Properties) && !generatorOutput.HasFlag(TsGeneratorOptions.Fields))
+            {
+                return;
+            }
+
+            var baseClassesByNamespace = @namespace.Classes.Where(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
+                .Where(c => c.BaseType != null && c.BaseType is TsClass baseClass && baseClass.Namespace != @namespace)
+                .Select(c => (TsClass)c.BaseType!)
+                .GroupBy(c => c.NamespaceName);
+            foreach (var baseClasses in baseClassesByNamespace)
+            {
+                var importSourceName = baseClasses.Key + "Form";
+                var importIndicesForNamespace = new Dictionary<string, Int32>();
+                sb.AppendLine("import { " + string.Join(", ", baseClasses.Select(c => GetImportName(c.Name + "Resolver", importIndices, importIndicesForNamespace))) + " } from './" + importSourceName + "';");
+                importIndices[importSourceName] = importIndicesForNamespace;
+            }
         }
 
         protected override IReadOnlyList<TsProperty> AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
-            TsGeneratorOutput generatorOutput,
+            TsGeneratorOptions generatorOutput,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
             var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
@@ -84,7 +103,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                 sb.AppendLine();
                 if (classModel.BaseType is TsClass baseClass)
                 {
-                    var baseTypeName = this.GetTypeName(baseClass);
+                    var baseTypeName = FormatTypeName(classModel.NamespaceName, baseClass, importNames);
                     sb.AppendLineIndented("const baseResults = await " + baseTypeName + "Resolver(values, undefined, {} as ResolverOptions<" + baseTypeName + ">);");
                     sb.AppendLineIndented("return {");
                     using (sb.IncreaseIndentation())
@@ -109,15 +128,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             sb.AppendLineIndented("};");
 
             return propertiesToExport;
-        }
-
-        protected override void AppendInterfaceDefinition(
-            TsInterface interfaceModel,
-            ScriptBuilder sb,
-            TsGeneratorOutput generatorOutput,
-            IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
-        {
-            base.AppendInterfaceDefinition(interfaceModel, sb, generatorOutput, importNames);
         }
     }
 }

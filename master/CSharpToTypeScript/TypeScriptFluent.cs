@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using CSharpToTypeScript.AlternateGenerators;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
@@ -100,19 +101,20 @@ namespace CSharpToTypeScript
             return this;
         }
 
-        public IReadOnlyDictionary<string, string> Generate() => this._scriptGenerator.Generate(this._modelBuilder);
+        public IReadOnlyDictionary<string, TsGeneratorOutput> Generate() => this._scriptGenerator.Generate(this._modelBuilder);
 
-        public IReadOnlyDictionary<string, string> Generate(TsGeneratorOutput output) => this._scriptGenerator.Generate(this._modelBuilder, output);
+        public IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsGeneratorOptions output) => this._scriptGenerator.Generate(this._modelBuilder, output);
 
         public override string ToString()
         {
-            var results = this.Generate();
-            if (results.Count == 1 || this._scriptGenerator.EnableNamespaceInTypeScript)
+            var results = this.Generate().Where(r => !r.Value.ExcludeFromResultToString);
+
+            if (results.Count() == 1 || this._scriptGenerator.EnableNamespaceInTypeScript)
             {
-                return string.Join("\r\n", results.Values);
+                return string.Join("\r\n", results.Select(r => r.Value.Script));
             }
 
-            return string.Join("\r\n", results.Select(r => "namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value) + "\r\n}\r\n"));
+            return string.Join("\r\n", results.Select(r => "namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value.Script) + "\r\n}\r\n"));
         }
 
         private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n")

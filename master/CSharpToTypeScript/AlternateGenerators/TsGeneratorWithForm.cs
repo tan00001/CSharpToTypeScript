@@ -7,6 +7,10 @@ namespace CSharpToTypeScript.AlternateGenerators
     {
         // Bootstrap column count max. is 12
         public const Int32 MaxColCount = 12;
+        public const string TypeScriptXmlFileType = ".tsx";
+        public const string BootstrapUtilsNamespace = "BootstrapUtils";
+
+        public bool GenerateBootstrapUtils { get; private set; }
 
         public Int32 ColCount { get; init; }
 
@@ -40,15 +44,56 @@ namespace CSharpToTypeScript.AlternateGenerators
             ColumnWidths = columnWidths;
         }
 
-        protected override void AppendNamespace(ScriptBuilder sb, TsGeneratorOutput generatorOutput,
-            List<TsClass> moduleClasses, List<TsInterface> moduleInterfaces,
-            List<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
+        protected override void AppendAdditionalImports(
+            TsNamespace @namespace,
+            ScriptBuilder sb, 
+            TsGeneratorOptions tsGeneratorOptions,
+            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies,
+            Dictionary<string, IReadOnlyDictionary<string, Int32>> importIndices)
         {
-            if (((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties
-                || (generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields)
-                && moduleClasses.Any(c => !c.IsIgnored))
+            base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, dependencies, importIndices);
+
+            bool hasClasses = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) || tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && @namespace.Classes.Any(c => !c.IsIgnored);
+
+            if (hasClasses)
             {
-                sb.AppendLineIndented("const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>");
+                bool hasCheckBoxes = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) && @namespace.Classes
+                        .Any(c => c.Properties.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)))
+                    || (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields) && @namespace.Classes
+                        .Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)));
+                if (hasCheckBoxes)
+                {
+                    sb.AppendLineIndented("import { getClassName, getCheckBoxClassName, getErrorMessage } from './" + BootstrapUtilsNamespace + "';");
+                    importIndices.Add(BootstrapUtilsNamespace, new Dictionary<string, Int32>() 
+                    { 
+                        { "getClassName", 0 },
+                        { "getErrorMessage", 0 },
+                        { "getCheckBoxClassName", 0 }
+                    });
+                }
+                else
+                {
+                    sb.AppendLineIndented("import { getClassName, getErrorMessage } from './" + BootstrapUtilsNamespace + "';");
+                    importIndices.Add(BootstrapUtilsNamespace, new Dictionary<string, Int32>() { { "getClassName", 0 }, { "getErrorMessage", 0 } });
+                }
+
+                GenerateBootstrapUtils = true;
+            }
+        }
+
+        protected override void AppendAdditionalDependencies(Dictionary<string, TsGeneratorOutput> results)
+        {
+            base.AppendAdditionalDependencies(results);
+
+            if (GenerateBootstrapUtils)
+            {
+                ScriptBuilder sb = new(this.IndentationString);
+
+                sb.AppendLine("import { FieldError } from 'react-hook-form';");
+                sb.AppendLine();
+
+                sb.AppendLine("export const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("error ? \"form-control is-invalid\" : (isValidated ? \"form-control is-valid\" : \"form-control\");");
@@ -56,29 +101,54 @@ namespace CSharpToTypeScript.AlternateGenerators
 
                 sb.AppendLine();
 
-                sb.AppendLineIndented("const getErrorMessage = (error: FieldError | undefined) =>");
+                sb.AppendLine("export const getCheckBoxClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>");
+                using (sb.IncreaseIndentation())
+                {
+                    sb.AppendLineIndented("error ? \"form-check-input is-invalid\" : (isValidated ? \"form-check-input is-valid\" : \"form-check-input\");");
+                }
+
+                sb.AppendLine();
+
+                sb.AppendLine("export const getErrorMessage = (error: FieldError | undefined) =>");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("error && <span className=\"invalid-feedback\">{error.message}</span>;");
                 }
 
-                sb.AppendLine();
+                results.Add(BootstrapUtilsNamespace, new TsGeneratorOutput(TypeScriptXmlFileType, sb.ToString()) { ExcludeFromResultToString = true });
             }
+        }
 
-            base.AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces,
+        protected override string AppendNamespace(ScriptBuilder sb, TsGeneratorOptions generatorOutput,
+            List<TsClass> moduleClasses, List<TsInterface> moduleInterfaces,
+            List<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
+        {
+            bool hasClasses = (generatorOutput.HasFlag(TsGeneratorOptions.Properties) || generatorOutput.HasFlag(TsGeneratorOptions.Fields))
+                && moduleClasses.Any(c => !c.IsIgnored);
+
+            var fileType = base.AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces,
                 moduleEnums, importNames);
+
+            if (hasClasses)
+            {
+                return TypeScriptXmlFileType;
+            }
+            else
+            {
+                return fileType;
+            }
         }
 
         protected override IReadOnlyList<TsProperty> AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
-            TsGeneratorOutput generatorOutput,
+            TsGeneratorOptions generatorOutput,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
             var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
 
-            List<TsProperty> allProperties = classModel.GetBaseProperties((generatorOutput & TsGeneratorOutput.Properties) == TsGeneratorOutput.Properties,
-                (generatorOutput & TsGeneratorOutput.Fields) == TsGeneratorOutput.Fields);
+            List<TsProperty> allProperties = classModel.GetBaseProperties(generatorOutput.HasFlag(TsGeneratorOptions.Properties),
+                generatorOutput.HasFlag(TsGeneratorOptions.Fields));
 
             allProperties.AddRange(propertiesToExport);
 
@@ -150,6 +220,12 @@ namespace CSharpToTypeScript.AlternateGenerators
             return reactHookFormComponentNames;
         }
 
+        protected override bool HasAdditionalImports(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
+        {
+            return (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && @namespace.Classes.Any(c => !c.IsIgnored);
+        }
+
         private static void AppendButtonRow(ScriptBuilder sb)
         {
             sb.AppendLineIndented("<div className=\"row\">");
@@ -159,7 +235,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" disabled={isSubmitting}>Submit</button>");
-                    sb.AppendLineIndented("<button className=\"btn btn-secondary\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
+                    sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
                 }
                 sb.AppendLineIndented("</div>");
             }
@@ -168,7 +244,7 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         private void AppendRow(ScriptBuilder sb, int startIndex, int count, IReadOnlyList<KeyValuePair<string, TsProperty>> properties)
         {
-            sb.AppendLineIndented("<div className=\"row\">");
+            sb.AppendLineIndented("<div className=\"row mb-3\">");
             using (sb.IncreaseIndentation())
             {
                 for (var i = 0; i < count; ++i)
@@ -180,9 +256,9 @@ namespace CSharpToTypeScript.AlternateGenerators
                     sb.AppendLineIndented("<div className=\"form-group col-md-" + columnWidth + "\">");
                     using (sb.IncreaseIndentation())
                     {
-                        sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
                         if (property.PropertyType is TsEnum tsEnum)
                         {
+                            sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
                             sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\"" + propertyName + "\" {...register('" + propertyName + "')}>");
                             using (sb.IncreaseIndentation())
                             {
@@ -199,12 +275,24 @@ namespace CSharpToTypeScript.AlternateGenerators
                         }
                         else if (property.PropertyType is TsSystemType tsSystemType)
                         {
-                            sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind) 
-                                + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\""
-                                + propertyName + "\" {...register(\"" + propertyName + "\")} />");
+                            if (tsSystemType.Kind == SystemTypeKind.Bool)
+                            {
+                                sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                                    + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\""
+                                    + propertyName + "\" {...register(\"" + propertyName + "\")} />");
+                                sb.AppendLineIndented("<label classNam=\"form-check-label\" htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + "</label>");
+                            }
+                            else
+                            {
+                                sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
+                                sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\""
+                                    + propertyName + "\" {...register(\"" + propertyName + "\")} />");
+                            }
                         }
                         else
                         {
+                            sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
                             sb.AppendLineIndented("<input type=\"text\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\"" + propertyName
                                 + "\" {...register(\"" + propertyName + "\")} />");
                         }

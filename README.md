@@ -42,12 +42,7 @@ namespace CSharpToTypeScript.Test
 this tool can generate the following TypeScript:
 ```
 import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
-
-const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>
-	error ? "form-control is-invalid" : (isValidated ? "form-control is-valid" : "form-control");
-
-const getErrorMessage = (error: FieldError | undefined) =>
-	error && <span className="invalid-feedback">{error.message}</span>;
+import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export class PersonWithValidation {
 	age?: number | null;
@@ -120,7 +115,7 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
-		<div className="row">
+		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor="age">Age:</label>
 				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
@@ -137,7 +132,7 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 				{getErrorMessage(errors.location)}
 			</div>
 		</div>
-		<div className="row">
+		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor="name">Name:</label>
 				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
@@ -147,7 +142,7 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 		<div className="row">
 			<div className="form-group col-md-12">
 				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
-				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
+				<button className="btn btn-secondary mx-1" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;
@@ -164,7 +159,8 @@ This tool can be launched from the command line, or from Visual Studio via its p
 3. **Visual Studio 2022**. .NET 7 is only supported in Visual Studio 2022 and later.
 
 ## Installation
-For now, you will need to build everything from the source code in Visual Studio 2022. Although the CSharpToTypeScript.vsix project has a "net7" folder that contains some binary files, they are auto generated from the CSharpToTypeScript project, and can be safely delete.
+You may download CSharpToTypeScript from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).
+You may also build everything from the source code in Visual Studio 2022. Although the CSharpToTypeScript.vsix project has a "net7" folder that contains some binary files, they are auto generated from the CSharpToTypeScript project, and can be safely delete.
 Once you have rebuilt everything locally, you can install from the file "CSharpToTypeScript.vsix\bin\Release\CSharpToTypeScript.vsix" that you have built.
 
 ## How it works

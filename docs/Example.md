@@ -6,6 +6,7 @@ Assume that you have the generated file [PersonWithValidationForm.tsx](https://g
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import authService from './api-authorization/AuthorizeService';
 import { PersonWithValidation, PersonWithValidationForm, PersonWithValidationFormData } from './PersonWithValidation'
 
 type MyDialogBoxData = {

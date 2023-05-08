@@ -1,10 +1,5 @@
 ﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
-
-const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>
-	error ? "form-control is-invalid" : (isValidated ? "form-control is-valid" : "form-control");
-
-const getErrorMessage = (error: FieldError | undefined) =>
-	error && <span className="invalid-feedback">{error.message}</span>;
+import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export const enum Gender {
 	Unknown = 0,
@@ -94,7 +89,7 @@ export const PersonWithValidationAndInterfaceForm = (props: PersonWithValidation
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
-		<div className="row">
+		<div className="row mb-3">
 			<div className="form-group col-md-2">
 				<label htmlFor="age">Age:</label>
 				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
@@ -119,7 +114,7 @@ export const PersonWithValidationAndInterfaceForm = (props: PersonWithValidation
 		<div className="row">
 			<div className="form-group col-md-12">
 				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
-				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
+				<button className="btn btn-secondary mx-1" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;
@@ -163,7 +158,7 @@ export const PersonWithGenderAndValidationInterface2Form = (props: PersonWithGen
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
-		<div className="row">
+		<div className="row mb-3">
 			<div className="form-group col-md-2">
 				<label htmlFor="age">Age:</label>
 				<input type="number" className={getClassName(touchedFields.age, errors.age)} id="age" {...register("age")} />
@@ -197,7 +192,7 @@ export const PersonWithGenderAndValidationInterface2Form = (props: PersonWithGen
 		<div className="row">
 			<div className="form-group col-md-12">
 				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
-				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
+				<button className="btn btn-secondary mx-1" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;

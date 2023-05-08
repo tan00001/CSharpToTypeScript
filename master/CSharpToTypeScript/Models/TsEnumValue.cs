@@ -17,6 +17,9 @@ namespace CSharpToTypeScript.Models
         {
             this.Field = field;
             this.Name = field.Name;
+
+            Display = field.GetCustomAttribute<DisplayAttribute>(false);
+
             object? obj = field.GetValue(null);
             if (obj == null)
             {

@@ -47,7 +47,7 @@ var scriptsByNamespaces = ts.Generate();
 
 if (scriptsByNamespaces.Count == 1)
 {
-    File.WriteAllText(args[2], scriptsByNamespaces.Values.First());
+    File.WriteAllText(args[2], scriptsByNamespaces.Values.First().Script);
     return;
 }
 
@@ -56,11 +56,11 @@ foreach (var script in scriptsByNamespaces)
 {
     if (ts.Member.NamespaceName == script.Key)
     {
-        File.WriteAllText(args[2], script.Value);
+        File.WriteAllText(args[2], script.Value.Script);
     }
     else
     {
-        File.WriteAllText(Path.Combine(directoryName, script.Key + ".ts"), script.Value);
+        File.WriteAllText(Path.Combine(directoryName, script.Key + script.Value.FileType), script.Value.Script);
     }
 }
 

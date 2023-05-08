@@ -1,10 +1,5 @@
 ﻿import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
-
-const getClassName = (isValidated: boolean | undefined, error: FieldError | undefined): string =>
-	error ? "form-control is-invalid" : (isValidated ? "form-control is-valid" : "form-control");
-
-const getErrorMessage = (error: FieldError | undefined) =>
-	error && <span className="invalid-feedback">{error.message}</span>;
+import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export class PersonWithEmailAddressAndPhoneAndSiteUrl {
 	emailAddress?: string | null;
@@ -70,7 +65,7 @@ export const PersonWithEmailAddressAndPhoneAndSiteUrlForm = (props: PersonWithEm
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
-		<div className="row">
+		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor="emailAddress">EmailAddress:</label>
 				<input type="email" className={getClassName(touchedFields.emailAddress, errors.emailAddress)} id="emailAddress" {...register("emailAddress")} />
@@ -87,7 +82,7 @@ export const PersonWithEmailAddressAndPhoneAndSiteUrlForm = (props: PersonWithEm
 				{getErrorMessage(errors.id)}
 			</div>
 		</div>
-		<div className="row">
+		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor="name">Name:</label>
 				<input type="text" className={getClassName(touchedFields.name, errors.name)} id="name" {...register("name")} />
@@ -102,7 +97,7 @@ export const PersonWithEmailAddressAndPhoneAndSiteUrlForm = (props: PersonWithEm
 		<div className="row">
 			<div className="form-group col-md-12">
 				<button className="btn btn-primary" type="submit" disabled={isSubmitting}>Submit</button>
-				<button className="btn btn-secondary" type="reset" disabled={isSubmitting}>Reset</button>
+				<button className="btn btn-secondary mx-1" type="reset" disabled={isSubmitting}>Reset</button>
 			</div>
 		</div>
 	</form>;
