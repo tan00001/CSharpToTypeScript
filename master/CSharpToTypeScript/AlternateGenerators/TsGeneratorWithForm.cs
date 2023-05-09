@@ -286,7 +286,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                         {
                             var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                             sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                            sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register('" + propertyName + "')}>");
+                            sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })}>");
                             using (sb.IncreaseIndentation())
                             {
                                 if (!property.IsRequired)

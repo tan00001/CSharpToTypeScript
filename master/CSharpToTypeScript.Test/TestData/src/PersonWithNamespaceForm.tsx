@@ -48,7 +48,7 @@ export const PersonWithNamespaceForm = (props: PersonWithNamespaceFormData) => {
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-gender"}>Gender:</label>
-				<select className={getClassName(touchedFields.gender, errors.gender)} id={formId + "-gender"} {...register('gender')}>
+				<select className={getClassName(touchedFields.gender, errors.gender)} id={formId + "-gender"} {...register("gender", { valueAsNumber: true })}>
 					<option value="">Select a Gender</option>
 					<option value="0">Unknown</option>
 					<option value="1">Male</option>
@@ -70,7 +70,7 @@ export const PersonWithNamespaceForm = (props: PersonWithNamespaceFormData) => {
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-status"}>Status:</label>
-				<select className={getClassName(touchedFields.status, errors.status)} id={formId + "-status"} {...register('status')}>
+				<select className={getClassName(touchedFields.status, errors.status)} id={formId + "-status"} {...register("status", { valueAsNumber: true })}>
 					<option value="">Select a Status</option>
 					<option value="0">Unknown</option>
 					<option value="1">Registered</option>

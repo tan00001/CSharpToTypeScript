@@ -173,7 +173,7 @@ export const PersonWithGenderAndValidationInterfaceForm = (props: PersonWithGend
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-gender"}>Gender:</label>
-				<select className={getClassName(touchedFields.gender, errors.gender)} id={formId + "-gender"} {...register('gender')}>
+				<select className={getClassName(touchedFields.gender, errors.gender)} id={formId + "-gender"} {...register("gender", { valueAsNumber: true })}>
 					<option value="0">Unknown</option>
 					<option value="1">Male</option>
 					<option value="2">Female</option>
