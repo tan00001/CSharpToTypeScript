@@ -155,7 +155,7 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 
 This tool can be launched from the command line, or from Visual Studio via its popup menu in C# source files:
 
-![alt text](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
+![Visual Studio popup menu in C# source file for CSharpToTypeScript](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
 
 ## Prerequisites
 1. **.NET Framework 4.8.1**. This is because Visual Studio Extension projects do not support .NET Core versions such as .NET 5, .NET 6, and .NET 7.
@@ -179,7 +179,7 @@ CSharpToTypeScript.vsix adds three menu items on the context menu for C# source 
 
 CSharpToTypeScript will try to save the path of your selected output folder into your project file when you change the folder path, or when you save a TypeScript file in the project for the first time:
 
-![alt text](https://github.com/tan00001/CSharpToTypeScript/blob/main/OutputFolderSettingScreenshot.png)
+![Output folder setting](https://github.com/tan00001/CSharpToTypeScript/blob/main/OutputFolderSettingScreenshot.png)
 
 You may edit your project file manually and add this path if CSharpToTypeScript is not permitted to update the project file directly.
 
