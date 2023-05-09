@@ -164,7 +164,11 @@ This tool can be launched from the command line, or from Visual Studio via its p
 4. **React 18.0 or later**. CSharpToTypeScript uses `useId` from React to generate unique identifiers.
 
 ## Installation
-You may download CSharpToTypeScript from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).
+You can install CSharpToTypeScript by going to the "Extensions" menu on the Visual Studio menu bar: 
+
+![Download CSharpToTypeScript in Visual Studio](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/DownloadScreenshot.png)
+
+You may also download CSharpToTypeScript from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).
 You may also build everything from the source code in Visual Studio 2022. Although the CSharpToTypeScript.vsix project has a "net7" folder that contains some binary files, they are auto generated from the CSharpToTypeScript project, and can be safely delete.
 Once you have rebuilt everything locally, you can install from the file "CSharpToTypeScript.vsix\bin\Release\CSharpToTypeScript.vsix" that you have built.
 
