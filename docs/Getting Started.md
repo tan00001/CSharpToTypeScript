@@ -11,7 +11,7 @@
 	* To check if you have **.NET 7** installed, please also go to the "View" menu on the Visual Studio menu bar, and select "Terminal". In the terminal window, enter 
 	  `dotnet --list-runtimes`
 	  The returned result should contain `Microsoft.NETCore.App 7.0.5` and `Microsoft.WindowsDesktop.App 7.0.5`. If you do not have .NET 7 installed, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-7.0.5-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-7.0.5-windows-x64-installer)
-* To use the generated TypeScript with React, pleas make sure that the version of React that you are using is version 18.0 or newer.
+* To use the generated TypeScript with React, please make sure that the version of React that you are using is version 18.0 or newer.
 * Exit Visual Studio 2022 to install CSharpToTypeScript. If you downloaded CSharpToTypeScript from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript), open the downloaded CSharpToTypeScript.vsix file. You will be prompted to start installation:
   ![Install CSharpToTypeScript](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/InstallScreenshot.png)
   
