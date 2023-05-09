@@ -192,7 +192,7 @@
 
 	  ![Set column count](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/ColumnCountDlgScreenshot.png)
 
-	  For the example above, we would enter 4 for the column count. `FirstName`, `LastName`, and `StreeAddress` spans 4 columns each, so each of them will occupy an entire row. On the fourth row, `City` occupies the first two columns, whereas `State` and `ZIP` would each occupy a single column.
+	  For the example above, we would enter 4 for the column count. `FirstName`, `LastName`, and `StreeAddress` each spans 4 columns, so each of them will occupy an entire row. On the fourth row, `City` occupies the first two columns, whereas `State` and `ZIP` would each occupy a single column.
 	  Once you have entered a column count, CSharpToTypeScript will bring up Windows "Save as" dialog box, and prompt you to save the gnerated TypeScript file.
 	  ```
 	  export type PersonFormData = {
