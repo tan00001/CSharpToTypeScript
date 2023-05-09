@@ -1,0 +1,23 @@
+{
+  "name": "csharptotypescript",
+  "version": "1.0.0",
+  "description": "Generate Typescript code from C# Class definitions.",
+  "main": "CSharpToTypeScript.vsix",
+  "scripts": {
+    "test": "dotnet build master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj --no-restore"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tan00001/CSharpToTypeScript.git"
+  },
+  "keywords": [
+    "C#",
+    "TypeScript"
+  ],
+  "author": "Programount Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tan00001/CSharpToTypeScript/issues"
+  },
+  "homepage": "https://github.com/tan00001/CSharpToTypeScript#readme"
+}

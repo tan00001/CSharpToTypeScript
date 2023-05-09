@@ -23,3 +23,5 @@
 *.bak
 /master/CSharpToTypeScript.Test/TestData/node_modules
 /master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj.user
+/master/CSharpToTypeScript/Properties/launchSettings.json
+/master/CSharpToTypeScript/CSharpToTypeScript.csproj.user
