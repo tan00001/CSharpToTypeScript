@@ -26,6 +26,14 @@ namespace CSharpToTypeScript.Models
         public bool IsNullable { get; set; }
         public bool IsRequired { get; set; }
 
+        public bool IsHidden
+        {
+            get
+            {
+                return UiHint?.UIHint == UiHintHidden;
+            }
+        }
+
         public List<ITsValidationRule> ValidationRules { get; private set; }
         public DataMemberAttribute? DataMember { get; set; }
         public DisplayAttribute? Display { get; set; }

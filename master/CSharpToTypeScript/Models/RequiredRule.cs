@@ -13,7 +13,28 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
-            if (property.PropertyType is TsSystemType tsSystemType && tsSystemType.Kind == SystemTypeKind.Number)
+            if (property.PropertyType is TsSystemType tsSystemType)
+            {
+                switch (tsSystemType.Kind)
+                {
+                    case SystemTypeKind.Number:
+                        sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
+                        break;
+
+                    case SystemTypeKind.Date:
+                        sb.AppendLineIndented("if (!values." + propertyName + " || isNaN(Date.parse(values." + propertyName + "))) {");
+                        break;
+
+                    case SystemTypeKind.Bool:
+                        sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== false) {");
+                        break;
+
+                    default:
+                        sb.AppendLineIndented("if (!values." + propertyName + ") {");
+                        break;
+                }
+            }
+            else if (property.PropertyType is TsEnum)
             {
                 sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
             }

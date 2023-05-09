@@ -77,7 +77,7 @@ export class PersonWithGenderAndValidation extends PersonWithValidation {
 export const PersonWithGenderAndValidationResolver: Resolver<PersonWithGenderAndValidation> = async (values) => {
 	const errors: FieldErrors<PersonWithGenderAndValidation> = {};
 
-	if (!values.gender) {
+	if (!values.gender && values.gender !== 0) {
 		errors.gender = {
 			type: 'required',
 			message: 'Gender is required.'

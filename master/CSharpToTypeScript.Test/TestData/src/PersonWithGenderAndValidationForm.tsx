@@ -81,6 +81,7 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
+		<input type="hidden" id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-age"}>Age:</label>
@@ -88,17 +89,10 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 				{getErrorMessage(errors.age)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor={formId + "-id"}>Id:</label>
-				<input type="hidden" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
-				{getErrorMessage(errors.id)}
-			</div>
-			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-location"}>Location:</label>
 				<input type="text" className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location")} />
 				{getErrorMessage(errors.location)}
 			</div>
-		</div>
-		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-name"}>Name:</label>
 				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
@@ -126,7 +120,7 @@ export class PersonWithGenderAndValidation extends PersonWithValidation {
 export const PersonWithGenderAndValidationResolver: Resolver<PersonWithGenderAndValidation> = async (values) => {
 	const errors: FieldErrors<PersonWithGenderAndValidation> = {};
 
-	if (!values.gender) {
+	if (!values.gender && values.gender !== 0) {
 		errors.gender = {
 			type: 'required',
 			message: 'Gender is required.'
@@ -154,6 +148,7 @@ export const PersonWithGenderAndValidationForm = (props: PersonWithGenderAndVali
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
+		<input type="hidden" id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
 		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-age"}>Age:</label>
@@ -170,17 +165,12 @@ export const PersonWithGenderAndValidationForm = (props: PersonWithGenderAndVali
 				{getErrorMessage(errors.gender)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor={formId + "-id"}>Id:</label>
-				<input type="hidden" className={getClassName(touchedFields.id, errors.id)} id={formId + "-id"} {...register("id", { valueAsNumber: true })} />
-				{getErrorMessage(errors.id)}
-			</div>
-		</div>
-		<div className="row mb-3">
-			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-location"}>Location:</label>
 				<input type="text" className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location")} />
 				{getErrorMessage(errors.location)}
 			</div>
+		</div>
+		<div className="row mb-3">
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-name"}>Name:</label>
 				<input type="text" className={getClassName(touchedFields.name, errors.name)} id={formId + "-name"} {...register("name")} />
