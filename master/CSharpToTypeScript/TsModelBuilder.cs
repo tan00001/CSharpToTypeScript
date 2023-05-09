@@ -76,8 +76,8 @@ namespace CSharpToTypeScript
                         foreach (TsProperty tsProperty in classType.Properties.Where(p => p.PropertyType.Type.IsEnum))
                             this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                     }
-                    foreach (TsType tsType in classType.Interfaces)
-                        this.Add(tsType.Type);
+                    foreach (TsInterface tsInterface in classType.Interfaces)
+                        this.Add(tsInterface.Type);
                     return classType;
 
                 case TsTypeFamily.Interface:
@@ -186,7 +186,7 @@ namespace CSharpToTypeScript
             return model;
         }
 
-        private void AddReferences(TsModuleMemberWithPropertiesAndGenericArguments model, Dictionary<Type, TypeConvertor>? typeConvertors)
+        private void AddReferences(TsModuleMemberWithHierarchy model, Dictionary<Type, TypeConvertor>? typeConvertors)
         {
             foreach (TsProperty tsProperty in model.Properties.Where(p => !p.HasIgnoreAttribute))
             {

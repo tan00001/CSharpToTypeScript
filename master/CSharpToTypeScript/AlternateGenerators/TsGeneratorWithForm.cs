@@ -14,8 +14,6 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         public Int32 ColCount { get; init; }
 
-        public readonly IReadOnlyList<Int32> ColumnWidths;
-
         public TsGeneratorWithForm(int colCount, bool enableNamespace)
             : base(enableNamespace)
         {
@@ -25,23 +23,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             ColCount = colCount;
-
-            var columnWidths = new int[colCount];
-            var averageColumnWidth = MaxColCount / colCount;
-            for (var i = 0; i < colCount; ++i)
-            {
-                if (i < colCount - 1)
-                {
-                    columnWidths[i] = averageColumnWidth;
-                }
-                else
-                {
-                    var remainder = MaxColCount % colCount;
-                    columnWidths[i] = remainder == 0 ? averageColumnWidth : remainder;
-                }
-            }
-
-            ColumnWidths = columnWidths;
         }
 
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
@@ -169,7 +150,7 @@ namespace CSharpToTypeScript.AlternateGenerators
 
             sb.AppendLine();
 
-            var propertyList = allProperties.ToImmutableSortedDictionary(a => this.FormatPropertyName(a), a => a)
+            var propertyList = allProperties.OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
                 .ToList();
 
             string typeName = this.GetTypeName(classModel) ?? string.Empty;
@@ -212,11 +193,21 @@ namespace CSharpToTypeScript.AlternateGenerators
                 sb.AppendLineIndented("return <form onSubmit={handleSubmit(props.onSubmit)}>");
                 using (sb.IncreaseIndentation())
                 {
-                    var rowCount = (propertyList.Count + ColCount - 1) / ColCount;
-                    for (var i = 0; i < rowCount; ++i)
+                    Int32 defaultColSpan = MaxColCount / ColCount;
+                    List<TsProperty> propertiesForRow = new();
+                    for (var i = 0; i < propertyList.Count; ++i)
                     {
-                        var startIndex = i * ColCount;
-                        AppendRow(sb, startIndex, Math.Min(ColCount, propertyList.Count - startIndex), propertyList);
+                        var property = propertyList[i];
+                        propertiesForRow.Add(property);
+
+                        TsProperty? nextProperty = i + 1 < propertyList.Count ? propertyList[i + 1] : null;
+                        if (nextProperty == null
+                            || propertiesForRow.Count >= ColCount
+                            || ColSpanHasReachedMax(propertiesForRow, nextProperty, defaultColSpan))
+                        {
+                            AppendRow(sb, propertiesForRow, defaultColSpan);
+                            propertiesForRow.Clear();
+                        }
                     }
                     AppendButtonRow(sb);
                 }
@@ -226,6 +217,23 @@ namespace CSharpToTypeScript.AlternateGenerators
             sb.AppendLineIndented("};");
 
             return propertiesToExport;
+        }
+
+        private static bool ColSpanHasReachedMax(List<TsProperty> propertiesForRow, TsProperty nextProperty, Int32 defaultColSpan)
+        {
+            var totalColSpanSoFar = propertiesForRow.Sum(p => p.GetColSpanHint(defaultColSpan, MaxColCount) ?? MaxColCount);
+            if (totalColSpanSoFar >= MaxColCount)
+            {
+                return true;
+            }
+
+            var nextColSpan = nextProperty.GetColSpanHint(defaultColSpan, MaxColCount);
+            if (nextColSpan == null)
+            {
+                return false;
+            }
+
+            return totalColSpanSoFar + nextColSpan.Value > MaxColCount;
         }
 
         protected override IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
@@ -259,23 +267,25 @@ namespace CSharpToTypeScript.AlternateGenerators
             sb.AppendLineIndented("</div>");
         }
 
-        private void AppendRow(ScriptBuilder sb, int startIndex, int count, IReadOnlyList<KeyValuePair<string, TsProperty>> properties)
+        private void AppendRow(ScriptBuilder sb, IReadOnlyList<TsProperty> properties, Int32 defaultColSpan)
         {
             sb.AppendLineIndented("<div className=\"row mb-3\">");
             using (sb.IncreaseIndentation())
             {
-                for (var i = 0; i < count; ++i)
+                Int32 totalColSpan = 0;
+                foreach (var property in properties)
                 {
-                    var propertyValuePair = properties[i + startIndex];
-                    var property = propertyValuePair.Value;
-                    var propertyName = propertyValuePair.Key;
-                    var columnWidth = ColumnWidths[i];
-                    sb.AppendLineIndented("<div className=\"form-group col-md-" + columnWidth + "\">");
+                    var colSpan = property.GetColSpanHint(defaultColSpan, MaxColCount)
+                        ?? (MaxColCount - totalColSpan);
+                    totalColSpan += colSpan;
+                    var propertyName = this.FormatPropertyName(property);                    
+                    sb.AppendLineIndented("<div className=\"form-group col-md-" + colSpan + "\">");
                     using (sb.IncreaseIndentation())
                     {
                         if (property.PropertyType is TsEnum tsEnum)
                         {
-                            sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + ":</label>");
+                            var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                            sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                             sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register('" + propertyName + "')}>");
                             using (sb.IncreaseIndentation())
                             {
@@ -294,29 +304,34 @@ namespace CSharpToTypeScript.AlternateGenerators
                         {
                             if (tsSystemType.Kind == SystemTypeKind.Bool)
                             {
+                                // The prompt is different here in that there is no trailing ":"
+                                var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName();
                                 sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                                    + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} {formId + \"-" 
+                                    + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} {formId + \"-"
                                     + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                                sb.AppendLineIndented("<label className=\"form-check-label\" htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + "</label>");
+                                sb.AppendLineIndented("<label className=\"form-check-label\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                             }
                             else if (tsSystemType.Kind == SystemTypeKind.Number)
                             {
-                                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + ":</label>");
+                                var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                                 sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" 
+                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
                                     + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
                             }
                             else
                             {
-                                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + property.GetDisplayName() + ":</label>");
+                                var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                                 sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" 
+                                    + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
                                     + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
                             }
                         }
                         else
                         {
-                            sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + property.GetDisplayName() + ":</label>");
+                            var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                            sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + displayPrompt + "</label>");
                             sb.AppendLineIndented("<input type=\"text\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\"" + propertyName
                                 + "\" {...register(\"" + propertyName + "\")} />");
                         }

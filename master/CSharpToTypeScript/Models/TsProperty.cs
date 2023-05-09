@@ -220,6 +220,46 @@ namespace CSharpToTypeScript.Models
                 this.ConstantValue = null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>Null if it uses wildcard</returns>
+        public Int32? GetColSpanHint(Int32 defaultColSpan, Int32 maxColSpan)
+        {
+            if (UiHint == null)
+            {
+                return defaultColSpan;
+            }
+
+            if (UiHint.ControlParameters.TryGetValue("colSpan", out object? colSpanSetting)
+                && colSpanSetting is string colSpanString)
+            {
+                if (colSpanString == "*")
+                {
+                    return null;
+                }
+
+                if (!Int32.TryParse(colSpanString, out var colSpan))
+                {
+                    return defaultColSpan;
+                }
+
+                if (colSpan <= 0)
+                {
+                    return defaultColSpan;
+                }
+
+                if (colSpan > maxColSpan)
+                {
+                    return maxColSpan;
+                }
+
+                return colSpan * defaultColSpan;
+            }
+
+            return defaultColSpan;
+        }
+
         public string GetDisplayName()
         {
             return Display?.Name ?? this.Name;
@@ -245,6 +285,11 @@ namespace CSharpToTypeScript.Models
                 },
                 _ => null
             };
+        }
+
+        public string? GetDisplayPrompt()
+        {
+            return Display?.Prompt;
         }
     }
 }

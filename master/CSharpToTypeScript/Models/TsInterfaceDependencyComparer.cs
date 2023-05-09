@@ -28,6 +28,6 @@
             return 0;
         }
 
-        public static bool CompareDependency(IList<TsType> x, TsInterface y) => x.Any(t => t is TsInterface i && (i == y || CompareDependency(i.Interfaces, y)));
+        public static bool CompareDependency(IList<TsInterface> x, TsInterface y) => x.Any(i => i == y || CompareDependency(i.Interfaces, y));
     }
 }

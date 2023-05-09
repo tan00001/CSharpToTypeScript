@@ -110,13 +110,13 @@ namespace CSharpToTypeScript.Models
 
             Display = this.Type.GetCustomAttribute<DisplayAttribute>(false);
 
-            if (Display != null)
-            {
-                if (!string.IsNullOrEmpty(Display.Name))
-                    this.Name = Display.Name!;
-            }
-
             DataContract = this.Type.GetCustomAttribute<DataContractAttribute>(false);
+
+            if (DataContract != null)
+            {
+                if (!string.IsNullOrEmpty(DataContract.Name))
+                    this.Name = DataContract.Name;
+            }
 
             Ignore = this.Type.GetCustomAttribute<JsonIgnoreAttribute>(false);
 
