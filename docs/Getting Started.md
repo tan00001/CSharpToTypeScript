@@ -71,6 +71,8 @@
     Right click inside this class definition with your mouse. You must click inside the class definition because CSharpToTypeScript uses this location to identify the class to export.
 
 * There are three menu items for CSharpToTypeScript on the popup menu: "Generate TypeScript...", "Generate React Hook Form Resolver...", and "Generate React+Bootstrap Form...". 
+    ![Poup menu](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
+
     * "Generate TypeScript..." will bring up Windows "Save as" dialog box, and prompt you to save the gnerated TypeScript file.
 	  ![Save TypeScript file as](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/SaveAsScreenshot.png)
 
@@ -95,6 +97,13 @@
 		}
 		```
 		Because each property has a `Required` attribute, a constructor is defined to initialize the required members.
+		* **When there are references to code in other namespaces, additional files will be saved in the same folder. The file names will be the corresponding namespaces. Please make sure that you do not have files in this folder that cannot be overwritten. Your TypeScript will import from these files.**
+		* **CSharpToTypeScript will try to save the folder path into the project file if you are exporting from this project for the first time, or if you have chosen a different folder path when saving the TypeScript file output.**
+		
+		  ![Output folder setting](https://github.com/tan00001/CSharpToTypeScript/blob/main/OutputFolderSettingScreenshot.png)
+
+		  **Please edit your project file manually and add this path if CSharpToTypeScript is not permitted to update the project file directly.**
+ 
     * "Generate React Hook Form Resolver..." will also bring up Windows "Save as" dialog box, and prompt you to save the gnerated TypeScript file. The difference is that in addition to saving the TypeScript for the class definition, it will also include a definition for a resolver function that is used for data validation in a React Hook form.
 		```
 		export const PersonResolver: Resolver<Person> = async (values) => {
@@ -180,6 +189,7 @@
 		};
 		```
 	* "Generate React+Bootstrap Form..." will first bring up a dialog box to prompt you for the number of columns in the grid of the form to be created: 
+
 	  ![Set column count](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/ColumnCountDlgScreenshot.png)
 
 	  For the example above, we would enter 4 for the column count. `FirstName`, `LastName`, and `StreeAddress` spans 4 columns each, so each of them will occupy an entire row. On the fourth row, `City` occupies the first two columns, whereas `State` and `ZIP` would each occupy a single column.
