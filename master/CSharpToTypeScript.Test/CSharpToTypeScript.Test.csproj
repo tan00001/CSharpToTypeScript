@@ -16,4 +16,15 @@
   <ItemGroup>
     <ProjectReference Include="..\CSharpToTypeScript\CSharpToTypeScript.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="TestData\src\CSharpToTypeScript.TestNamespace.TestMethod2.ts">
+      <SubType>Code</SubType>
+    </None>
+    <None Update="TestData\src\CSharpToTypeScript.TestNamespace.TestMethod1.ts">
+      <SubType>Code</SubType>
+    </None>
+    <None Update="TestData\src\PersonPlusAddressAndUiHints2Form.tsx">
+      <SubType>Code</SubType>
+    </None>
+  </ItemGroup>
 </Project>

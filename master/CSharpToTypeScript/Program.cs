@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Reflection;
+using System.Text;
 using CSharpToTypeScript;
 using CSharpToTypeScript.AlternateGenerators;
 
@@ -60,7 +61,11 @@ foreach (var script in scriptsByNamespaces)
     }
     else
     {
-        File.WriteAllText(Path.Combine(directoryName, script.Key + script.Value.FileType), script.Value.Script);
+        var filePath = Path.Combine(directoryName, script.Key + script.Value.FileType);
+        if (!File.Exists(filePath) || FileContainsScript(script.Value.Script, filePath))
+        {
+            File.WriteAllText(filePath, script.Value.Script);
+        }
     }
 }
 
@@ -87,4 +92,29 @@ static int GetColCount(string formLayout)
     }
 
     return colCount;
+}
+
+static bool FileContainsScript(string script, string filePath)
+{
+    var existingFileContent = File.ReadAllText(filePath);
+
+    var scriptBodyBuilder = new StringBuilder();
+
+    var scriptLines = script.Split("\r\n");
+
+    foreach (var line in scriptLines)
+    {
+        if (line.StartsWith("import "))
+        {
+            if (!existingFileContent.Contains(line))
+            {
+                return false;
+            }
+            continue;
+        }
+
+        scriptBodyBuilder.AppendLine(line);
+    }
+
+    return existingFileContent.Contains(scriptBodyBuilder.ToString().Trim());
 }

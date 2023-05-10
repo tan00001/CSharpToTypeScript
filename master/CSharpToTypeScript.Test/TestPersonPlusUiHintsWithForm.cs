@@ -87,6 +87,12 @@ namespace CSharpToTypeScript.Test
         [Display(Name = "ZIP", Order = 6)]
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public string? Zip { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Address is residential", Order = 7)]
+        [UIHint("", "HTML", new object[] { "colSpan", "4" })]
+        public bool? IsAddressResidential { get; set; }
     }
 
     [DataContract(Name = "Person")]
@@ -171,7 +177,7 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonPlusAddressAndUiHints));
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonPlusAddressAndUiHints2));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

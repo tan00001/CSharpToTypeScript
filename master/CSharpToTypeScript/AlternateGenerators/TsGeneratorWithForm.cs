@@ -339,9 +339,9 @@ namespace CSharpToTypeScript.AlternateGenerators
                     // The prompt is different here in that there is no trailing ":"
                     var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName();
                     sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                        + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} {formId + \"-"
+                        + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
                         + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                    sb.AppendLineIndented("<label className=\"form-check-label\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<label className=\"form-check-label ms-1\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                 }
                 else if (tsSystemType.Kind == SystemTypeKind.Number)
                 {

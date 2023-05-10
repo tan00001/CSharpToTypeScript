@@ -1,6 +1,19 @@
 # Change log
 All notable changes to CSharpToTypeScript will be documented in this file.
 
+## 1.0.0.6 (2023-05-09)
+
+### Changed
+
+* Check if Date type values are indeed Date type in React Hook Form resolver for `Required` validation rule.
+* Allow default values for enums, booleans, and numbers when check for `Required` validation rule. We will add support for `System.ComponentModel.DataAnnotations.RequiredAttribute.DisallowAllDefaultValues` when .NET 8 is released.
+* Detect existing dependent scripts, and do not re-generate if not necessary.
+
+### Fixed
+
+* Remove control group and label for hidden controls.
+* Updated generated checkbox script.
+
 ## 1.0.0.5 (2023-05-09)
 
 ### Changed
