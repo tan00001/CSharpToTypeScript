@@ -62,7 +62,7 @@ foreach (var script in scriptsByNamespaces)
     else
     {
         var filePath = Path.Combine(directoryName, script.Key + script.Value.FileType);
-        if (!File.Exists(filePath) || FileContainsScript(script.Value.Script, filePath))
+        if (!File.Exists(filePath) || !FileContainsScript(script.Value.Script, filePath))
         {
             File.WriteAllText(filePath, script.Value.Script);
         }

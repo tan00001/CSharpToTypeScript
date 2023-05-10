@@ -1,7 +1,7 @@
 # Change log
 All notable changes to CSharpToTypeScript will be documented in this file.
 
-## 1.0.0.6 (2023-05-09)
+## 1.0.0.7 (2023-05-10)
 
 ### Changed
 
