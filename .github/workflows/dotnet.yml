@@ -33,7 +33,7 @@ jobs:
     - name: Build CSharpToTypeScript.Test
       run: dotnet build master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj --no-restore
     - name: Test CSharpToTypeScript
-      run: dotnet test master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj --no-build --verbosity normal
+      run: dotnet test master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj /p:CollectCoverage=false --no-build --verbosity normal
     - name: Build CSharpToTypeScript.vsix
       run: |
         $msbuildPath = (Resolve-Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe").Path

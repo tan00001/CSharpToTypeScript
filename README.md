@@ -12,8 +12,9 @@
 CSharpToTypeScript generates Typescript code, React-Hook-Form Resolver code, and Bootstrap styled React form code (.tsx file) from a C# class definition. It features
 1. Support for C# nullable types.
 2. Support for C# enums, interfaces, and classes with inheritance hierarchies from multiple namespaces.
-3. Utilization of C# attributes in TypeScript data validation, variable names, label text, error messages, displayed texts for enumerated values, etc.
-4. Customizable column count in generated TypeScript XML forms.
+3. Support generic types. For generating React Hook Form resolvers and React + Bootstrap forms, generic types with specific type parameters are supported.
+4. Utilization of C# attributes in TypeScript data validation, variable names, label text, error messages, displayed texts for enumerated values, etc.
+5. Customizable column count in generated TypeScript XML forms.
 
 Start with the C# class
 
