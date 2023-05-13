@@ -1,16 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
-    public interface IPersonWithGenericParameter<T>: IPerson
+    public class PersonWithConstant
     {
-        T TesProperty { get; set; }
+        public const int MaxDescriptionLength = 1000;
+
+        [Required]
+        public string Name { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int Id { get; set; }
+
+        [StringLength(MaxDescriptionLength)]
+        public string Description;
     }
 
 
     [TestClass]
-    public class TestIPersonInterface : IDisposable
+    public class TestPersonStructure : IDisposable
     {
         private bool disposedValue;
 
@@ -27,16 +36,19 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestInterface()
+        public void TestStructureFormWithConstant()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<IPersonWithGenericParameter<int>>();
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+               .For<PersonWithConstant>();
 
-            var personTypeScript = ts.ToString();
+            var result = ts.Generate(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants)
+                .Where(r => !r.Value.ExcludeFromResultToString).First();
+
+            string personTypeScript = result.Value.Script;
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(IPersonWithGenericParameter<int>));
+            var expectedData = Utilities.GetTestDataFileContents("TsClass", nameof(PersonWithConstant));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

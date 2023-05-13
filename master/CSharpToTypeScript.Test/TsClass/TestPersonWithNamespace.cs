@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
     [DataContract(Namespace = "CSharpToTypeScript.TestNamespace.Enums")]
     public enum RegistrationStatus

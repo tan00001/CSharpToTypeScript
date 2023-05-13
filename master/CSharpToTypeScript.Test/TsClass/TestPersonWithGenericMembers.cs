@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
-    public class PersonWithGenericMember<T> where T: new()
+    public class PersonWithGenericMember<T> where T : new()
     {
         [UIHint("hidden")]
         public int Id { get; set; }
@@ -13,7 +13,7 @@ namespace CSharpToTypeScript.Test
         public string Name { get; set; } = string.Empty;
 
         [Range(20, 120)]
-        public Int32? Age;
+        public int? Age;
 
         [StringLength(120, MinimumLength = 2)]
         public string? Location;
@@ -92,8 +92,8 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenericDefinitionFormWithParam()
         {
-            var typeName = "CSharpToTypeScript.Test.PersonWithGenericMember`1[[CSharpToTypeScript.Test.RegistrationStatus]]";
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, typeName + ".d.tsx");
+            var typeName = "CSharpToTypeScript.Test.TsClass.PersonWithGenericMember`1[[CSharpToTypeScript.Test.TsClass.RegistrationStatus]]";
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, typeName + ".d.tsx");
 
             CSharpToTypeScriptProgram.Run(typeName, filePath, "withform(1)");
 
@@ -101,7 +101,7 @@ namespace CSharpToTypeScript.Test
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestFormFileContents("PersonWithGenericMember`1[[CSharpToTypeScript.Test.RegistrationStatus]]");
+            var expectedData = Utilities.GetTestFormFileContents("PersonWithGenericMember`1[[CSharpToTypeScript.Test.TsClass.RegistrationStatus]]");
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

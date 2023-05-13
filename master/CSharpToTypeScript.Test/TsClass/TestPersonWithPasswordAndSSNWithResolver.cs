@@ -1,21 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
-    public struct PersonWithArrayMember
+    public class PersonWithPasswordAndSSN
     {
+        public int Id { get; set; }
+
         [Required]
-        public string Name { get; set; }
+        [StringLength(50)]
+        public string Name { get; set; } = string.Empty;
 
-        [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        [Required]
+        public string? Password { get; set; }
 
-        public string[] Notes { get; set; }
+        [Compare(nameof(Password))]
+        public string? ConfirmPassword { get; set; }
+
+        [RegularExpression(@"\d{3}-\d{2}-\d{4}$")]
+        public string? Ssn { get; set; }
     }
 
     [TestClass]
-    public class TestIPersonWithArrayMember : IDisposable
+    public class TestPersonWithPasswordAndSSNWithResolver : IDisposable
     {
         private bool disposedValue;
 
@@ -32,19 +39,20 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestStructureWithArrayMember()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithValidations()
         {
-            var ts = TypeScript.Definitions(new TsGenerator(false))
-               .For<PersonWithArrayMember>();
+            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
+               .For<PersonWithPasswordAndSSN>();
 
-            var personTypeScript = ts.ToString();
+            string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithArrayMember));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithPasswordAndSSN));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
+
 
         protected virtual void Dispose(bool disposing)
         {

@@ -3,8 +3,19 @@ using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
 {
+    public struct PersonWithArrayMember
+    {
+        [Required]
+        public string Name { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public Int32 Id { get; set; }
+
+        public string[] Notes { get; set; }
+    }
+
     [TestClass]
-    public class TestRegistrationStatus : IDisposable
+    public class TestPersonWithArrayMember : IDisposable
     {
         private bool disposedValue;
 
@@ -21,31 +32,16 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestEnum()
+        public void TestStructureWithArrayMember()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<RegistrationStatus>();
+            var ts = TypeScript.Definitions(new TsGenerator(false))
+               .For<PersonWithArrayMember>();
 
             var personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(RegistrationStatus));
-
-            Assert.AreEqual(expectedData, personTypeScript);
-        }
-
-        [TestMethod]
-        public void TestNullableEnum()
-        {
-            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<RegistrationStatus?>();
-
-            var personTypeScript = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(RegistrationStatus));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithArrayMember));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

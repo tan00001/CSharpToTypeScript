@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
+using CSharpToTypeScript.Test.TsClass;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsInterface
 {
     public interface IPersonWithGenderAndValidation2 : IPersonWithValidation
     {

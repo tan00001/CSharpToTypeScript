@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
     public enum Gender
     {
@@ -42,9 +42,9 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileUsingExeForSimpleClasses()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "Person.d.ts");
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, "Person.d.ts");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.Person", filePath, string.Empty);
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.TsClass.Person", filePath, string.Empty);
 
             var personTypeScript = File.ReadAllText(filePath);
 
@@ -59,9 +59,9 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateTypeScriptFileUsingExeForSimpleClassesWithEnum()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGender.d.ts");
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, "PersonWithGender.d.ts");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGender", filePath, string.Empty);
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.TsClass.PersonWithGender", filePath, string.Empty);
 
             var personTypeScript = File.ReadAllText(filePath);
 

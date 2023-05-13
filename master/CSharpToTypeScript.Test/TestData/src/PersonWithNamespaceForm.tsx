@@ -1,8 +1,8 @@
 ﻿import { useId } from 'react';
 import { useForm, SubmitHandler, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
-import { PersonWithNullableName as impPersonWithNullableName, Gender as impGender } from './CSharpToTypeScript.Test';
+import { PersonWithNullableName as impPersonWithNullableName, Gender as impGender } from './CSharpToTypeScript.Test.TsClass';
 import { RegistrationStatus as impRegistrationStatus } from './CSharpToTypeScript.TestNamespace.Enums';
-import { PersonWithNullableNameResolver as impPersonWithNullableNameResolver } from './CSharpToTypeScript.TestForm';
+import { PersonWithNullableNameResolver as impPersonWithNullableNameResolver } from './CSharpToTypeScript.Test.TsClassForm';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export class PersonWithNamespace extends impPersonWithNullableName {

@@ -1,22 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
-    public interface IPerson
-    {
-        int Id { get; set; }
-        string Name { get; set; }
-        DateTime DateOfBirth { get; set; }
-    }
-
-    public interface IPersonWithGender : IPerson
-    {
-        Gender Gender { get; set; }
-    }
-
     [TestClass]
-    public class TestIPersonAndIPersonWithGender : IDisposable
+    public class TestPersonAndPersonWithGender : IDisposable
     {
         private bool disposedValue;
 
@@ -33,32 +21,32 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleInterface()
+        public void TestGenerateTypeScriptFileForSimpleClass()
         {
             var ts = TypeScript.Definitions()
-               .For<IPerson>();
+               .For<Person>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(IPerson));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(Person));
 
             Assert.AreEqual(expectedData, personTypeScript);
 
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleInterfaceWithEnum()
+        public void TestGenerateTypeScriptFileForSimpleClassWithEnum()
         {
             var ts = TypeScript.Definitions()
-               .For<IPersonWithGender>();
+               .For<PersonWithGender>();
 
             string script = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(script));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(IPersonWithGender));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGender));
 
             Assert.AreEqual(expectedData, script);
         }

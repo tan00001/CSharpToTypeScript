@@ -1,32 +1,28 @@
 using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
-    public class PersonWithValidation
+    public class PersonWithEmailAddressAndPhoneAndSiteUrl
     {
-        [UIHint("hidden")]
         public int Id { get; set; }
 
         [Required]
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;
 
-        [Range(20, 120)]
-        public Int32? Age { get; set; }
+        [EmailAddress]
+        public string? EmailAddress { get; set; }
 
-        [StringLength(120, MinimumLength = 2)]
-        public string? Location { get; set; }
-    }
+        [Phone]
+        public string? PhoneNumber { get; set; }
 
-    public class PersonWithGenderAndValidation: PersonWithValidation
-    {
-        [Required]
-        public Gender? Gender { get; set; }
+        [Url]
+        public string? HomePage { get; set; }
     }
 
     [TestClass]
-    public class TestPersonWithValidationWithResolver : IDisposable
+    public class TestPersonWithEmailAddressAndPhoneAndSiteUrlWithResolverAndForm : IDisposable
     {
         private bool disposedValue;
 
@@ -43,48 +39,33 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithRequiredAndRangeAndStringLengthValidations()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithEmailAddressAndPhoneAndUrlValidations()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithValidation>();
+               .For<PersonWithEmailAddressAndPhoneAndSiteUrl>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithValidation));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithEmailAddressAndPhoneAndSiteUrl));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithRequiredAndRangeAndStringLengthForm()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithEmailAddressAndPhoneAndUrlForm()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
-               .For<PersonWithValidation>();
+               .For<PersonWithEmailAddressAndPhoneAndSiteUrl>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithValidation));
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonWithEmailAddressAndPhoneAndSiteUrl));
 
             Assert.AreEqual(expectedData, personTypeScript);
-        }
-
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithValidationsWithEnum()
-        {
-            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithGenderAndValidation>();
-
-            string script = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(script));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGenderAndValidation));
-
-            Assert.AreEqual(expectedData, script);
         }
 
         protected virtual void Dispose(bool disposing)

@@ -14,7 +14,7 @@
              SizeToContent="WidthAndHeight"  
              WindowStartupLocation="CenterOwner"
              DataContext="{Binding RelativeSource={RelativeSource Self}}" 
-    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
+    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" Loaded="OnLoaded">
     <platform:DialogWindow.Resources>
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
@@ -102,6 +102,31 @@
                                 <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.Focus.Border}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Grid>
+                            <Polygon Points="0,9 9,0 0,0"
+                                 Stroke="Red"
+                                 StrokeThickness="1"
+                                 Fill="Red"
+                                 HorizontalAlignment="Left"
+                                 ToolTipService.InitialShowDelay="0"
+                                 ToolTipService.ShowDuration="7000"
+                                 VerticalAlignment="Top">
+                                <Polygon.ToolTip>
+                                    <ToolTip Placement="Top">
+                                        <TextBlock Text="{Binding [0].ErrorContent}" Foreground="Red" />
+                                    </ToolTip>
+                                </Polygon.ToolTip>
+                            </Polygon>
+                            <Border BorderBrush="Red" BorderThickness="1" SnapsToDevicePixels="True" CornerRadius="3">
+                                <AdornedElementPlaceholder />
+                            </Border>
+                        </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>

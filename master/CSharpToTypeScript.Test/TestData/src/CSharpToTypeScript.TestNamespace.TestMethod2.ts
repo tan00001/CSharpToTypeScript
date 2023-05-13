@@ -1,4 +1,4 @@
-﻿import { Gender } from './CSharpToTypeScript.Test';
+﻿import { Gender } from './CSharpToTypeScript.Test.TsClass';
 import { RegistrationStatus } from './CSharpToTypeScript.TestNamespace.Enums';
 
 export const getGenderStatusClassName = (isValidated: boolean | undefined, status: RegistrationStatus, gender: Gender): string =>

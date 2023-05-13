@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
     [DataContract(Name = "Person")]
     public class PersonPlusAddressAndUiHints
@@ -44,7 +44,7 @@ namespace CSharpToTypeScript.Test
 
         [Required]
         [StringLength(50)]
-        [Display(Name="ZIP", Order = 6)]
+        [Display(Name = "ZIP", Order = 6)]
         [UIHint("", "HTML", new object[] { "colSpan", "3" })]
         public string? Zip { get; set; }
     }

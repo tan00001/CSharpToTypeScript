@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsTypeDefinition
 {
     public struct PersonStructure
     {
@@ -9,7 +9,7 @@ namespace CSharpToTypeScript.Test
         public string Name { get; set; }
 
         [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(10024)]
         public string Description { get; set; }
@@ -21,7 +21,7 @@ namespace CSharpToTypeScript.Test
         public string Name { get; set; }
 
         [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(10024)]
         public string Description { get; set; }
@@ -35,12 +35,12 @@ namespace CSharpToTypeScript.Test
         public string Name { get; set; }
 
         [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(10024)]
         public string Description { get; set; }
 
-        public Int32 Age { get; set; }
+        public int Age { get; set; }
 
         public int CompareTo(object? obj)
         {
@@ -59,7 +59,7 @@ namespace CSharpToTypeScript.Test
         public string Name { get; set; }
 
         [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(10024)]
         public string Description;
@@ -67,21 +67,20 @@ namespace CSharpToTypeScript.Test
 
     public struct PersonStructureWithConstant
     {
-        public const Int32 MaxDescriptionLength = 1000;
+        public const int MaxDescriptionLength = 1000;
 
         [Required]
         public string Name { get; set; }
 
         [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(MaxDescriptionLength)]
         public string Description;
     }
 
-
     [TestClass]
-    public class TestIPersonStructure : IDisposable
+    public class TestPersonStructure : IDisposable
     {
         private bool disposedValue;
 

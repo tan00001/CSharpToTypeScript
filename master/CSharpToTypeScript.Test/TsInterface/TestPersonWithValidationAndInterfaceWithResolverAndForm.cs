@@ -1,15 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsInterface
 {
+    public enum Gender
+    {
+        Unknown = 0,
+        Male = 1,
+        Female = 2
+    }
+
     public interface IPersonWithValidation
     {
         int Id { get; set; }
 
         string Name { get; set; }
 
-        Int32? Age { get; set; }
+        int? Age { get; set; }
 
         string? Location { get; set; }
     }
@@ -23,7 +30,7 @@ namespace CSharpToTypeScript.Test
         public string Name { get; set; } = string.Empty;
 
         [Range(20, 120)]
-        public Int32? Age { get; set; }
+        public int? Age { get; set; }
 
         [StringLength(120, MinimumLength = 2)]
         public string? Location { get; set; }
@@ -34,7 +41,7 @@ namespace CSharpToTypeScript.Test
         Gender? Gender { get; set; }
     }
 
-    public class PersonWithGenderAndValidationInterface: PersonWithValidationAndInterface, IPersonWithGenderAndValidation
+    public class PersonWithGenderAndValidationInterface : PersonWithValidationAndInterface, IPersonWithGenderAndValidation
     {
         [Required]
         public Gender? Gender { get; set; }

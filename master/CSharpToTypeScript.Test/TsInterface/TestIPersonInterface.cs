@@ -1,28 +1,16 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsInterface
 {
-    public class PersonWithPasswordAndSSN
+    public interface IPersonWithGenericParameter<T> : IPerson
     {
-        public int Id { get; set; }
+        T TesProperty { get; set; }
+    }
 
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; } = string.Empty;
-
-        [Required]
-        public string? Password { get; set; }
-
-        [Compare(nameof(Password))]
-        public string? ConfirmPassword { get; set; }
-
-        [RegularExpression(@"\d{3}-\d{2}-\d{4}$")]
-        public string? Ssn { get; set; }
-	}
 
     [TestClass]
-    public class TestPersonWithPasswordAndSSNWithResolver : IDisposable
+    public class TestIPersonInterface : IDisposable
     {
         private bool disposedValue;
 
@@ -39,20 +27,19 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithValidations()
+        public void TestInterface()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithPasswordAndSSN>();
+               .For<IPersonWithGenericParameter<int>>();
 
-            string personTypeScript = ts.ToString();
+            var personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithPasswordAndSSN));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(IPersonWithGenericParameter<int>));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
-
 
         protected virtual void Dispose(bool disposing)
         {

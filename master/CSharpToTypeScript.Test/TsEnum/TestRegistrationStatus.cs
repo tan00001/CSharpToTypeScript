@@ -1,23 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using CSharpToTypeScript.AlternateGenerators;
+using CSharpToTypeScript.Test.TsClass;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsEnum
 {
-    public class PersonWithCreditCardNumber
-    {
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; } = string.Empty;
-
-        [CreditCard]
-        [Display(Name="Credit Card Number")]
-        public string? CreditCardNumber { get; set; }
-	}
-
     [TestClass]
-    public class TestPersonWithCreditCardNumberWithResolver : IDisposable
+    public class TestRegistrationStatus : IDisposable
     {
         private bool disposedValue;
 
@@ -34,20 +22,34 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassesWithCreditCardValidations()
+        public void TestEnum()
         {
             var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
-               .For<PersonWithCreditCardNumber>();
+               .For<RegistrationStatus>();
 
-            string personTypeScript = ts.ToString();
+            var personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithCreditCardNumber));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(RegistrationStatus));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }
 
+        [TestMethod]
+        public void TestNullableEnum()
+        {
+            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
+               .For<RegistrationStatus?>();
+
+            var personTypeScript = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+            var expectedData = Utilities.GetTestDataFileContents(nameof(RegistrationStatus));
+
+            Assert.AreEqual(expectedData, personTypeScript);
+        }
 
         protected virtual void Dispose(bool disposing)
         {

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
     [TestClass]
     public class TestPersonWithValidationWithExeAndForm : IDisposable
@@ -24,7 +24,7 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateFormWithInvalidAssembly()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "InvalidTypeDefinition.d.tsx");
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, "InvalidTypeDefinition.d.tsx");
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -39,7 +39,7 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestGenerateFormWithInvalidType()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "InvalidTypeDefinition.d.tsx");
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, "InvalidTypeDefinition.d.tsx");
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -56,9 +56,9 @@ namespace CSharpToTypeScript.Test
         {
             var exception = Assert.ThrowsException<TargetInvocationException>(() =>
             {
-                var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithValidation.d.tsx");
+                var filePath = Path.Combine(TestContext.TestRunDirectory!, "PersonWithValidation.d.tsx");
 
-                CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithValidation", filePath, "withform(abc)");
+                CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.TsClass.PersonWithValidation", filePath, "withform(abc)");
             });
 
             Assert.IsNotNull(exception.InnerException);
@@ -68,9 +68,9 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestPersonWithValidationWithExeAndRequiredAndRangeAndStringLengthAndGenerateForm()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithValidation.d.tsx");
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, "PersonWithValidation.d.tsx");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithValidation", filePath, "withform(3)");
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.TsClass.PersonWithValidation", filePath, "withform(3)");
 
             var personTypeScript = File.ReadAllText(filePath);
 
@@ -84,9 +84,9 @@ namespace CSharpToTypeScript.Test
         [TestMethod]
         public void TestPersonWithGenderAndValidationWithEnumAndGenerateForm()
         {
-            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithGenderAndValidation.d.tsx");
+            var filePath = Path.Combine(TestContext.TestRunDirectory!, "PersonWithGenderAndValidation.d.tsx");
 
-            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithGenderAndValidation", filePath, "withform(3)");
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.TsClass.PersonWithGenderAndValidation", filePath, "withform(3)");
 
             var personTypeScript = File.ReadAllText(filePath);
 

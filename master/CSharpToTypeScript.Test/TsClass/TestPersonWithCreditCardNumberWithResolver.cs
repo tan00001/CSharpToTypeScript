@@ -1,10 +1,23 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using CSharpToTypeScript.AlternateGenerators;
 
-namespace CSharpToTypeScript.Test
+namespace CSharpToTypeScript.Test.TsClass
 {
+    public class PersonWithCreditCardNumber
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; } = string.Empty;
+
+        [CreditCard]
+        [Display(Name = "Credit Card Number")]
+        public string? CreditCardNumber { get; set; }
+    }
+
     [TestClass]
-    public class TestPersonAndPersonWithGender : IDisposable
+    public class TestPersonWithCreditCardNumberWithResolver : IDisposable
     {
         private bool disposedValue;
 
@@ -21,35 +34,20 @@ namespace CSharpToTypeScript.Test
         }
 
         [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClass()
+        public void TestGenerateTypeScriptFileForSimpleClassesWithCreditCardValidations()
         {
-            var ts = TypeScript.Definitions()
-               .For<Person>();
+            var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
+               .For<PersonWithCreditCardNumber>();
 
             string personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(Person));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithCreditCardNumber));
 
             Assert.AreEqual(expectedData, personTypeScript);
-
         }
 
-        [TestMethod]
-        public void TestGenerateTypeScriptFileForSimpleClassWithEnum()
-        {
-            var ts = TypeScript.Definitions()
-               .For<PersonWithGender>();
-
-            string script = ts.ToString();
-
-            Assert.IsTrue(!string.IsNullOrEmpty(script));
-
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithGender));
-
-            Assert.AreEqual(expectedData, script);
-        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -57,6 +55,7 @@ namespace CSharpToTypeScript.Test
             {
                 if (disposing)
                 {
+                    // TODO: dispose managed state (managed objects)
                 }
 
                 disposedValue = true;
