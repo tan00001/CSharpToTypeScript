@@ -8,6 +8,10 @@ namespace CSharpToTypeScript
         {
         }
 
+        public void AppendTypeDefinitionDoc(ScriptBuilder sb, TsTypeDefinition classModel, string? className)
+        {
+        }
+
         public void AppendInterfaceDoc(ScriptBuilder sb, TsInterface interfaceModel, string? className)
         {
         }

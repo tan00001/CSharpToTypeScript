@@ -1,5 +1,5 @@
 ﻿import { useId } from 'react';
-import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
+import { useForm, SubmitHandler, Resolver, FieldErrors, ResolverOptions } from 'react-hook-form';
 import { PersonWithNullableName as impPersonWithNullableName, Gender as impGender } from './CSharpToTypeScript.Test';
 import { RegistrationStatus as impRegistrationStatus } from './CSharpToTypeScript.TestNamespace.Enums';
 import { PersonWithNullableNameResolver as impPersonWithNullableNameResolver } from './CSharpToTypeScript.TestForm';
@@ -43,7 +43,7 @@ export const PersonWithNamespaceForm = (props: PersonWithNamespaceFormData) => {
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-dateOfBirth"}>DateOfBirth:</label>
-				<input type="date" className={getClassName(touchedFields.dateOfBirth, errors.dateOfBirth)} id={formId + "-dateOfBirth"} {...register("dateOfBirth")} />
+				<input type="date" className={getClassName(touchedFields.dateOfBirth, errors.dateOfBirth)} id={formId + "-dateOfBirth"} {...register("dateOfBirth", { valueAsDate: true })} />
 				{getErrorMessage(errors.dateOfBirth)}
 			</div>
 			<div className="form-group col-md-4">

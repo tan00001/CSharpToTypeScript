@@ -1,6 +1,13 @@
 # Change log
 All notable changes to CSharpToTypeScript will be documented in this file.
 
+## 1.0.0.8 (2023-05-12)
+
+### Changed
+
+* Generic types are supported. For generating React Hook Form resolvers and React + Bootstrap forms, generic types with specific type parameters are supported.
+* React + Bootstrap Layout dialog box is now renamed as Export Options dialog box. When exporting generic types, this dialog box is used for specifying generic type parameters.
+
 ## 1.0.0.7 (2023-05-10)
 
 ### Changed

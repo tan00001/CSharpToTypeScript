@@ -6,6 +6,8 @@
 
         public IDictionary<string, TsNamespace> Namespaces { get; private set; }
 
+        private static readonly Stack<Type> _TypesBeingProcessed = new();
+
         public TsModuleService(string? defaultNamespaceName = null) 
         {
             this.Namespaces = new SortedList<string, TsNamespace>();
@@ -17,6 +19,18 @@
         }
 
         #region IModuleService
+        public IReadOnlyList<TsType> BuildGenericArgumentList(Type clrType)
+        {
+            List<TsType> tsTypes = new(clrType.GetGenericArguments().Length);
+
+            foreach (var type in clrType.GetGenericArguments())
+            {
+                tsTypes.Add(TsType.Create(this, type));
+            }
+
+            return tsTypes;
+        }
+
         public TsModule GetModule(string name)
         {
             if (Modules.TryGetValue(name, out TsModule? value))
@@ -36,9 +50,11 @@
             return Namespaces.Values;
         }
 
-        public IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> GetDependentNamespaces(TsNamespace tsNamespace)
+        public IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> GetDependentNamespaces(TsNamespace tsNamespace,
+            TsGeneratorOptions generatorOptions)
         {
-            return Namespaces.Where(n => n.Key != tsNamespace.Name).ToDictionary(n => n.Key, n => tsNamespace.GetDependentMembers(n.Value))
+            return Namespaces.Where(n => n.Key != tsNamespace.Name)
+                .ToDictionary(n => n.Key, n => tsNamespace.GetDependentMembers(n.Value, generatorOptions))
                 .Where(n => n.Value.Count > 0).ToDictionary(n => n.Key, n => n.Value);
         }
 
@@ -50,12 +66,37 @@
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
                 clrType.Name, out TsModuleMember? tsModuleMember))
             {
+                _TypesBeingProcessed.Push(clrType);
                 tsModuleMember = new TsClass(this, clrType);
                 module.Add(tsModuleMember);
+                _TypesBeingProcessed.Pop();
                 return (TsClass)tsModuleMember;
             }
 
             if (tsModuleMember is TsClass classType)
+            {
+                return classType;
+            }
+
+            throw new Exception("Name conflict. \"" + tsModuleMember!.Name + "\" is defined more than once.");
+        }
+
+        public TsTypeDefinition GetOrAddTsTypeDefinition(Type clrType)
+        {
+            var moduleName = TsModuleMember.GetModuleName(clrType);
+            TsModule module = GetModule(moduleName);
+
+            if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
+                clrType.Name, out TsModuleMember? tsModuleMember))
+            {
+                _TypesBeingProcessed.Push(clrType);
+                tsModuleMember = new TsTypeDefinition(this, clrType);
+                module.Add(tsModuleMember);
+                _TypesBeingProcessed.Pop();
+                return (TsTypeDefinition)tsModuleMember;
+            }
+
+            if (tsModuleMember is TsTypeDefinition classType)
             {
                 return classType;
             }
@@ -92,7 +133,7 @@
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
                 clrType.Name, out TsModuleMember? tsModuleMember))
             {
-                tsModuleMember = new TsEnum(clrType);
+                tsModuleMember = new TsEnum(this, clrType);
                 module.Add(tsModuleMember);
                 return (TsEnum)tsModuleMember;
             }
@@ -103,6 +144,11 @@
             }
 
             throw new Exception("Name conflict. \"" + tsModuleMember!.Name + "\" is defined more than once.");
+        }
+
+        public bool IsProcessing(Type type)
+        {
+            return _TypesBeingProcessed.Contains(type);
         }
         #endregion // IModuleService
     }

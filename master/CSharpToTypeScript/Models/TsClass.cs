@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -11,24 +12,26 @@ namespace CSharpToTypeScript.Models
 
         public ICollection<TsProperty> Constants { get; private set; }
 
+        public TsType? BaseType { get; internal set; }
+
         public TsClass(ITsModuleService tsModuleService, Type type)
           : base(tsModuleService, type)
         {
-            this.Properties = this.Type.GetProperties().Where(pi => pi.DeclaringType == this.Type)
-                .Select(pi => new TsProperty(tsModuleService, pi)).ToList();
-
-            this.Fields = this.Type.GetFields().Where(fi =>
+            Fields = Type.GetFields().Where(fi =>
                 {
-                    if (fi.DeclaringType != this.Type)
+                    if (fi.DeclaringType != Type)
                         return false;
                     return !fi.IsLiteral || fi.IsInitOnly;
                 })
                 .Select(fi => new TsProperty(tsModuleService, fi))
                 .ToList();
 
-            this.Constants = this.Type.GetFields().Where(fi => fi.DeclaringType == this.Type && fi.IsLiteral && !fi.IsInitOnly)
+            Constants = Type.GetFields().Where(fi => fi.DeclaringType == Type && fi.IsLiteral && !fi.IsInitOnly)
                 .Select(fi => new TsProperty(tsModuleService, fi))
                 .ToList();
+
+            if (this.Type.BaseType != null && this.Type.BaseType != typeof(object) && this.Type.BaseType != typeof(ValueType))
+                this.BaseType = new TsType(this.Type.BaseType);
         }
 
         public virtual List<TsProperty> GetBaseProperties(bool includeProperties, bool includeFields)
@@ -75,13 +78,13 @@ namespace CSharpToTypeScript.Models
             return baseRequiredProperties;
         }
 
-        public override HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace)
+        public override HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
-            var dependentTypes = base.GetDependentTypes(tsNamespace);
+            var dependentTypes = base.GetDependentTypes(tsNamespace, generatorOptions);
 
             foreach (var field in Fields)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == field.PropertyType.Type);
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == field.PropertyType.Type && !m.Type.IsGenericParameter);
                 if (dependentMember != null)
                 {
                     dependentTypes.Add(dependentMember);
@@ -90,7 +93,7 @@ namespace CSharpToTypeScript.Models
 
             foreach (var constant in Constants)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == constant.PropertyType.Type);
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == constant.PropertyType.Type && !m.Type.IsGenericParameter);
                 if (dependentMember != null)
                 {
                     dependentTypes.Add(dependentMember);
@@ -98,6 +101,36 @@ namespace CSharpToTypeScript.Models
             }
 
             return dependentTypes;
+        }
+
+        public override bool IsExportable(TsGeneratorOptions generatorOptions)
+        {
+            if (Type.IsGenericTypeParameter)
+            {
+                return false;
+            }
+
+            if (Properties.Count != 0 && generatorOptions.HasFlag(TsGeneratorOptions.Properties))
+            {
+                return true;
+            }
+
+            if (Fields.Count != 0 && generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+            {
+                return true;
+            }
+
+            if (Constants.Count != 0 && generatorOptions.HasFlag(TsGeneratorOptions.Constants))
+            {
+                return true;
+            }
+
+            if (BaseType is not TsClass baseClass)
+            {
+                return false;
+            }
+
+            return baseClass.IsExportable(generatorOptions);
         }
     }
 }

@@ -1,16 +1,14 @@
 ﻿using System.Collections.Immutable;
 using CSharpToTypeScript.Models;
+using System;
 
 namespace CSharpToTypeScript.AlternateGenerators
 {
     public class TsGeneratorWithResolver : TsGenerator
     {
-        public static bool DefaultTypeVisibilityFormatterForResolver(TsType tsType, string? typeName) => tsType is TsClass || tsType is TsInterface ;
-
         public TsGeneratorWithResolver(bool enableNamespace)
             : base(enableNamespace)
         {
-            SetTypeVisibilityFormatter(DefaultTypeVisibilityFormatterForResolver);
         }
 
         protected virtual IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
@@ -33,7 +31,8 @@ namespace CSharpToTypeScript.AlternateGenerators
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
             if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && @namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored))
+                && (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
+                    || @namespace.TypeDefinitions.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)))
             {
                 sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace.Classes))
                     + " } from 'react-hook-form';");
@@ -50,11 +49,11 @@ namespace CSharpToTypeScript.AlternateGenerators
         protected override void AppendAdditionalImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
-            TsGeneratorOptions generatorOutput,
+            TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies,
             Dictionary<string, IReadOnlyDictionary<string, Int32>> importIndices)
         {
-            if (!generatorOutput.HasFlag(TsGeneratorOptions.Properties) && !generatorOutput.HasFlag(TsGeneratorOptions.Fields))
+            if (!generatorOptions.HasFlag(TsGeneratorOptions.Properties) && !generatorOptions.HasFlag(TsGeneratorOptions.Fields))
             {
                 return;
             }
@@ -75,17 +74,82 @@ namespace CSharpToTypeScript.AlternateGenerators
         protected override IReadOnlyList<TsProperty> AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
-            TsGeneratorOptions generatorOutput,
+            TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
+            var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
             sb.AppendLine();
 
             var propertyList = propertiesToExport.ToImmutableSortedDictionary(a => this.FormatPropertyName(a), a => a);
 
-            string? typeName = this.GetTypeName(classModel);
-            string str = this.GetTypeVisibility(classModel, typeName) ? "export " : "";
-            sb.AppendLineIndented(str + "const " + typeName + "Resolver: Resolver<" + typeName  + "> = async (values) => {");
+            if (classModel.ImplementedGenericTypes.Count > 0)
+            {
+                foreach (var genericType in classModel.ImplementedGenericTypes.Values)
+                {
+                    if (genericType.Any(t => t.Type.IsGenericParameter))
+                    {
+                        throw new NotSupportedException("Partially specified generic argument list is not supported.");
+                    }
+
+                    AppendGenericClassDefinition(classModel, genericType, sb, importNames, propertyList);
+                }
+            }
+            else
+            {
+                AppendClassDefinition(classModel, sb, importNames, propertyList);
+            }
+
+            return propertiesToExport;
+        }
+
+        protected override IReadOnlyList<TsProperty> AppendTypeDefinition(
+            TsTypeDefinition typeDefinitionModel,
+            ScriptBuilder sb,
+            TsGeneratorOptions generatorOptions,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
+        {
+            var propertiesToExport = base.AppendTypeDefinition(typeDefinitionModel, sb, generatorOptions, importNames);
+            sb.AppendLine();
+
+            var propertyList = propertiesToExport.ToImmutableSortedDictionary(a => this.FormatPropertyName(a), a => a);
+
+            if (typeDefinitionModel.ImplementedGenericTypes.Count > 0)
+            {
+                foreach (var genericType in typeDefinitionModel.ImplementedGenericTypes.Values)
+                {
+                    AppendGenericTypeDefinition(typeDefinitionModel, genericType, sb, importNames, propertyList);
+                }
+            }
+            else
+            {
+                AppendTypeDefinition(typeDefinitionModel, sb, importNames, propertyList);
+            }
+
+            return propertiesToExport;
+        }
+
+        private void AppendClassDefinition(TsClass classModel, ScriptBuilder sb, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames, ImmutableSortedDictionary<string, TsProperty> propertyList)
+        {
+            string typeName = this.GetTypeName(classModel) ?? throw new ArgumentException("Class type name cannot be blank.", nameof(classModel));
+            AppendResolverDefinition(classModel, sb, importNames, propertyList, typeName, typeName);
+        }
+
+        private void AppendGenericClassDefinition(TsClass classModel, IReadOnlyList<TsType> genericArguments, ScriptBuilder sb,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            ImmutableSortedDictionary<string, TsProperty> propertyList)
+        {
+            string typeName = SubstituteTypeParameters(this.GetTypeName(classModel), genericArguments,
+                classModel.NamespaceName, importNames);
+            string resolverName = BuildVariableNameWithGenericArguments(typeName);
+            AppendResolverDefinition(classModel, sb, importNames, propertyList, typeName, resolverName);
+        }
+
+        private void AppendResolverDefinition(TsModuleMemberWithHierarchy memberModel, ScriptBuilder sb,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            ImmutableSortedDictionary<string, TsProperty> propertyList, string typeName, string resolverName)
+        {
+            string str = this.GetTypeVisibility(memberModel, typeName) ? "export " : "";
+            sb.AppendLineIndented(str + "const " + resolverName + "Resolver: Resolver<" + typeName + "> = async (values) => {");
 
             using (sb.IncreaseIndentation())
             {
@@ -101,9 +165,9 @@ namespace CSharpToTypeScript.AlternateGenerators
                 }
 
                 sb.AppendLine();
-                if (classModel.BaseType is TsClass baseClass)
+                if (memberModel is TsClass tsClass && tsClass.BaseType is TsClass baseClass)
                 {
-                    var baseTypeName = FormatTypeName(classModel.NamespaceName, baseClass, importNames);
+                    var baseTypeName = FormatTypeName(memberModel.NamespaceName, baseClass, importNames);
                     sb.AppendLineIndented("const baseResults = await " + baseTypeName + "Resolver(values, undefined, {} as ResolverOptions<" + baseTypeName + ">);");
                     sb.AppendLineIndented("return {");
                     using (sb.IncreaseIndentation())
@@ -126,8 +190,43 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             sb.AppendLineIndented("};");
+        }
 
-            return propertiesToExport;
+
+        private void AppendTypeDefinition(TsTypeDefinition typeDefinitionModel, ScriptBuilder sb, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames, ImmutableSortedDictionary<string, TsProperty> propertyList)
+        {
+            string typeName = this.GetTypeName(typeDefinitionModel) ?? throw new ArgumentException("Struct type name cannot be blank.", nameof(typeDefinitionModel));
+            AppendResolverDefinition(typeDefinitionModel, sb, importNames, propertyList, typeName, typeName);
+        }
+
+        private void AppendGenericTypeDefinition(TsTypeDefinition typeDefinitionModel, IReadOnlyList<TsType> genericArguments, ScriptBuilder sb,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            ImmutableSortedDictionary<string, TsProperty> propertyList)
+        {
+            string typeName = SubstituteTypeParameters(this.GetTypeName(typeDefinitionModel), genericArguments,
+                typeDefinitionModel.NamespaceName, importNames);
+            string resolverName = BuildVariableNameWithGenericArguments(typeName);
+            AppendResolverDefinition(typeDefinitionModel, sb, importNames, propertyList, typeName, resolverName);
+        }
+
+
+        protected static string BuildVariableNameWithGenericArguments(string typeName)
+        {
+            return typeName.Replace("<", "").Replace(", " , "").TrimEnd('>');
+        }
+
+        protected string SubstituteTypeParameters(string? typeName, IReadOnlyList<TsType> genericArguments,
+            string namespaceName, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
+        {
+            if (string.IsNullOrEmpty(typeName))
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            var argumentIndex = typeName.IndexOf('<');
+
+            return string.Concat(typeName.AsSpan(0, argumentIndex), "<", string.Join(", ", genericArguments
+                .Select(a => this.FormatTypeName(namespaceName, a, importNames))), ">");
         }
     }
 }

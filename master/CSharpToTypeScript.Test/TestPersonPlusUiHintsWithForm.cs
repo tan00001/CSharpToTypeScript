@@ -89,7 +89,6 @@ namespace CSharpToTypeScript.Test
         public string? Zip { get; set; }
 
         [Required]
-        [StringLength(50)]
         [Display(Name = "Address is residential", Order = 7)]
         [UIHint("", "HTML", new object[] { "colSpan", "4" })]
         public bool? IsAddressResidential { get; set; }

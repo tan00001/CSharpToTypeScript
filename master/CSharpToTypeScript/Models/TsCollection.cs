@@ -13,7 +13,7 @@ namespace CSharpToTypeScript.Models
         public TsCollection(ITsModuleService tsModuleService, Type type)
           : base(type)
         {
-            Type? enumerableType = TsType.GetEnumerableType(this.Type);
+            Type? enumerableType = TsType.GetEnumeratedType(this.Type);
             if (enumerableType == this.Type)
                 this.ItemsType = TsType.Any;
             else if (enumerableType != null)
@@ -33,7 +33,7 @@ namespace CSharpToTypeScript.Models
             }
 
             Type? enumerableType;
-            return t != typeof(string) && (enumerableType = TsType.GetEnumerableType(t)) != null && enumerableType != t ? TsCollection.GetCollectionDimension(enumerableType) + 1 : 0;
+            return t != typeof(string) && (enumerableType = TsType.GetEnumeratedType(t)) != null && enumerableType != t ? TsCollection.GetCollectionDimension(enumerableType) + 1 : 0;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace CSharpToTypeScript.Models
                         break;
 
                     case SystemTypeKind.Date:
-                        sb.AppendLineIndented("if (!values." + propertyName + " || (typeof values." + propertyName + " === 'string' && isNaN(Date.parse(values." + propertyName + ")))) {");
+                        sb.AppendLineIndented("if (!values." + propertyName + " || isNaN(values." + propertyName + ".getTime())) {");
                         break;
 
                     case SystemTypeKind.Bool:

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Reflection.Metadata;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript.AlternateGenerators
@@ -32,7 +32,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
             if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && @namespace.Classes.Any(c => !c.IsIgnored))
+                && (@namespace.Classes.Any(c => !c.IsIgnored) || @namespace.TypeDefinitions.Any(c => !c.IsIgnored)))
             {
                 sb.AppendLine("import { useId } from 'react';");
             }
@@ -49,20 +49,18 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
             base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, dependencies, importIndices);
 
-            bool hasClasses = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) || tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && @namespace.Classes.Any(c => !c.IsIgnored);
+            bool hasForms = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) || tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && (@namespace.Classes.Any(c => !c.IsIgnored) || @namespace.TypeDefinitions.Any(c => !c.IsIgnored));
 
-            if (hasClasses)
+            if (hasForms)
             {
-                bool hasCheckBoxes = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) && @namespace.Classes
-                        .Any(c => c.Properties.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)))
-                    || (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields) && @namespace.Classes
-                        .Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)));
+                bool hasCheckBoxes = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) && HasBooleanProperties(@namespace))
+                    || (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields) && HasBooleanFields(@namespace));
                 if (hasCheckBoxes)
                 {
                     sb.AppendLineIndented("import { getClassName, getCheckBoxClassName, getErrorMessage } from './" + BootstrapUtilsNamespace + "';");
-                    importIndices.Add(BootstrapUtilsNamespace, new Dictionary<string, Int32>() 
-                    { 
+                    importIndices.Add(BootstrapUtilsNamespace, new Dictionary<string, Int32>()
+                    {
                         { "getClassName", 0 },
                         { "getErrorMessage", 0 },
                         { "getCheckBoxClassName", 0 }
@@ -115,17 +113,19 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
         }
 
-        protected override string AppendNamespace(ScriptBuilder sb, TsGeneratorOptions generatorOutput,
-            List<TsClass> moduleClasses, List<TsInterface> moduleInterfaces,
-            List<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
+        protected override string AppendNamespace(ScriptBuilder sb, TsGeneratorOptions generatorOptions,
+            IReadOnlyList<TsClass> moduleClasses, 
+            IReadOnlyList<TsTypeDefinition> moduleTypeDefinitions,
+            IReadOnlyList<TsInterface> moduleInterfaces,
+            IReadOnlyList<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            bool hasClasses = (generatorOutput.HasFlag(TsGeneratorOptions.Properties) || generatorOutput.HasFlag(TsGeneratorOptions.Fields))
-                && moduleClasses.Any(c => !c.IsIgnored);
+            bool hasForms = (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && (moduleClasses.Any(c => !c.IsIgnored) || moduleTypeDefinitions.Any(d => !d.IsIgnored));
 
-            var fileType = base.AppendNamespace(sb, generatorOutput, moduleClasses, moduleInterfaces,
-                moduleEnums, importNames);
+            var fileType = base.AppendNamespace(sb, generatorOptions, moduleClasses, moduleTypeDefinitions,
+                moduleInterfaces, moduleEnums, importNames);
 
-            if (hasClasses)
+            if (hasForms)
             {
                 return TypeScriptXmlFileType;
             }
@@ -138,13 +138,13 @@ namespace CSharpToTypeScript.AlternateGenerators
         protected override IReadOnlyList<TsProperty> AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
-            TsGeneratorOptions generatorOutput,
+            TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
-            var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOutput, importNames);
+            var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
 
-            List<TsProperty> allProperties = classModel.GetBaseProperties(generatorOutput.HasFlag(TsGeneratorOptions.Properties),
-                generatorOutput.HasFlag(TsGeneratorOptions.Fields));
+            List<TsProperty> allProperties = classModel.GetBaseProperties(generatorOptions.HasFlag(TsGeneratorOptions.Properties),
+                generatorOptions.HasFlag(TsGeneratorOptions.Fields));
 
             allProperties.AddRange(propertiesToExport);
 
@@ -155,12 +155,107 @@ namespace CSharpToTypeScript.AlternateGenerators
             var visiblePropertyList = allProperties.Where(p => !p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
                 .ToList();
 
-            string typeName = this.GetTypeName(classModel) ?? string.Empty;
+            if (classModel.ImplementedGenericTypes.Count > 0)
+            {
+                List<TsProperty> properties = new();
+                foreach (var genericType in classModel.ImplementedGenericTypes.Values)
+                {
+                    AppendGenericClassDefinition(classModel, genericType, sb, propertiesToExport, hiddenProperties,
+                        visiblePropertyList, importNames);
+                }
+            }
+            else
+            {
+                AppendClassDefinition(classModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList);
+            }
 
-            string str = this.GetTypeVisibility(classModel, typeName) ? "export " : "";
+            return propertiesToExport;
+        }
 
-            sb.AppendLineIndented(str + "type " + typeName + "FormData = {");
-            var typeNameInCamelCase = ToCamelCase(typeName);
+        protected override IReadOnlyList<TsProperty> AppendTypeDefinition(
+            TsTypeDefinition typeDefintionModel,
+            ScriptBuilder sb,
+            TsGeneratorOptions generatorOptions,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
+        {
+            var propertiesToExport = base.AppendTypeDefinition(typeDefintionModel, sb, generatorOptions, importNames);
+
+            sb.AppendLine();
+
+            var hiddenProperties = propertiesToExport.Where(p => p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
+                .ToList();
+            var visiblePropertyList = propertiesToExport.Where(p => !p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
+                .ToList();
+
+            if (typeDefintionModel.ImplementedGenericTypes.Count > 0)
+            {
+                List<TsProperty> properties = new();
+                foreach (var genericType in typeDefintionModel.ImplementedGenericTypes.Values)
+                {
+                    if (genericType.Any(t => t.Type.IsGenericParameter))
+                    {
+                        throw new NotSupportedException("Partially specified generic argument list is not supported.");
+                    }
+
+                    AppendGenericTypeDefinition(typeDefintionModel, genericType, sb, propertiesToExport, hiddenProperties,
+                        visiblePropertyList, importNames);
+                }
+            }
+            else
+            {
+                AppendTypeDefinition(typeDefintionModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList);
+            }
+
+            return propertiesToExport;
+        }
+
+        protected override IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
+        {
+            List<string> reactHookFormComponentNames = new() { "useForm", "SubmitHandler" };
+
+            reactHookFormComponentNames.AddRange(base.GetReactHookFormComponentNames(classes));
+
+            return reactHookFormComponentNames;
+        }
+
+        protected override bool HasAdditionalImports(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
+        {
+            return (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+                && @namespace.Classes.Any(c => !c.IsIgnored);
+        }
+
+        #region Private Methods
+        private static void AppendButtonRow(ScriptBuilder sb)
+        {
+            sb.AppendLineIndented("<div className=\"row\">");
+            using (sb.IncreaseIndentation())
+            {
+                sb.AppendLineIndented("<div className=\"form-group col-md-12\">");
+                using (sb.IncreaseIndentation())
+                {
+                    sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" disabled={isSubmitting}>Submit</button>");
+                    sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
+                }
+                sb.AppendLineIndented("</div>");
+            }
+            sb.AppendLineIndented("</div>");
+        }
+
+        private void AppendClassDefinition(TsClass classModel, ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport,
+            List<TsProperty> hiddenProperties, List<TsProperty> visiblePropertyList)
+        {
+            string typeName = this.GetTypeName(classModel) ?? throw new ArgumentException("Class type name cannot be blank.", nameof(classModel));
+
+            AppendFormComponentDefinition(classModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList, typeName, typeName);
+        }
+
+        private void AppendFormComponentDefinition(TsModuleMemberWithHierarchy memberModel, ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport,
+            List<TsProperty> hiddenProperties, List<TsProperty> visiblePropertyList, string typeName, string resolverName)
+        {
+            string str = this.GetTypeVisibility(memberModel, typeName) ? "export " : "";
+
+            sb.AppendLineIndented(str + "type " + resolverName + "FormData = {");
+            var typeNameInCamelCase = ToCamelCase(resolverName);
             var hasRequiredConstructorParams = propertiesToExport.Any(p => p.IsRequired && string.IsNullOrEmpty(p.GetDefaultValue()));
             using (sb.IncreaseIndentation())
             {
@@ -171,18 +266,18 @@ namespace CSharpToTypeScript.AlternateGenerators
 
             sb.AppendLine();
 
-            sb.AppendLineIndented(str + "const " + typeName + "Form = (props: " + typeName + "FormData) => {");
+            sb.AppendLineIndented(str + "const " + resolverName + "Form = (props: " + resolverName + "FormData) => {");
 
             using (sb.IncreaseIndentation())
             {
                 sb.AppendLineIndented("const formId = useId();");
-                sb.AppendLineIndented("const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<" + typeName+ ">({");
+                sb.AppendLineIndented("const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<" + typeName + ">({");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("mode: \"onTouched\",");
-                    sb.AppendLineIndented("resolver: " + typeName + "Resolver,");
+                    sb.AppendLineIndented("resolver: " + resolverName + "Resolver,");
                     var defaultValues = "defaultValues: props." + typeNameInCamelCase;
-                    if (!hasRequiredConstructorParams)
+                    if (!hasRequiredConstructorParams && memberModel is TsClass)
                     {
                         defaultValues += " ?? new " + typeName + "()";
                     }
@@ -225,40 +320,31 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             sb.AppendLineIndented("};");
-
-            return propertiesToExport;
         }
 
-        protected override IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
+        private void AppendGenericClassDefinition(TsClass classModel, IReadOnlyList<TsType> genericArguments,
+            ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport, List<TsProperty> hiddenProperties,            
+            List<TsProperty> visiblePropertyList,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
         {
-            var reactHookFormComponentNames = new List<string>() { "useForm", "SubmitHandler", "FieldError" };
+            string typeName = SubstituteTypeParameters(this.GetTypeName(classModel), genericArguments,
+                classModel.NamespaceName, importNames);
+            string resolverName = BuildVariableNameWithGenericArguments(typeName);
 
-            reactHookFormComponentNames.AddRange(base.GetReactHookFormComponentNames(classes));
-
-            return reactHookFormComponentNames;
+            AppendFormComponentDefinition(classModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList, typeName, resolverName);
         }
 
-        protected override bool HasAdditionalImports(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
+        private void AppendGenericTypeDefinition(TsTypeDefinition typeDefinitionModel, IReadOnlyList<TsType> genericArguments,
+            ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport, List<TsProperty> hiddenProperties,
+            List<TsProperty> visiblePropertyList,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
         {
-            return (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && @namespace.Classes.Any(c => !c.IsIgnored);
-        }
+            string typeName = SubstituteTypeParameters(this.GetTypeName(typeDefinitionModel), genericArguments,
+                typeDefinitionModel.NamespaceName, importNames);
+            string resolverName = BuildVariableNameWithGenericArguments(typeName);
 
-        #region Private Methods
-        private static void AppendButtonRow(ScriptBuilder sb)
-        {
-            sb.AppendLineIndented("<div className=\"row\">");
-            using (sb.IncreaseIndentation())
-            {
-                sb.AppendLineIndented("<div className=\"form-group col-md-12\">");
-                using (sb.IncreaseIndentation())
-                {
-                    sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" disabled={isSubmitting}>Submit</button>");
-                    sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
-                }
-                sb.AppendLineIndented("</div>");
-            }
-            sb.AppendLineIndented("</div>");
+            AppendFormComponentDefinition(typeDefinitionModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList,
+                typeName, resolverName);
         }
 
         private static void AppendHiddenInput(ScriptBuilder sb, TsProperty property, string propertyName)
@@ -276,6 +362,10 @@ namespace CSharpToTypeScript.AlternateGenerators
                 else if (tsSystemType.Kind == SystemTypeKind.Number)
                 {
                     sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                }
+                else if (tsSystemType.Kind == SystemTypeKind.Date)
+                {
+                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
                 }
                 else
                 {
@@ -310,6 +400,14 @@ namespace CSharpToTypeScript.AlternateGenerators
                 }
             }
             sb.AppendLineIndented("</div>");
+        }
+
+        private void AppendTypeDefinition(TsTypeDefinition typeDefinitionModel, ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport,
+            List<TsProperty> hiddenProperties, List<TsProperty> visiblePropertyList)
+        {
+            string typeName = this.GetTypeName(typeDefinitionModel) ?? throw new ArgumentException("Type definition name cannot be blank.", nameof(typeDefinitionModel));
+
+            AppendFormComponentDefinition(typeDefinitionModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList, typeName, typeName);
         }
 
         private static void AppendVisibleInput(ScriptBuilder sb, TsProperty property, string propertyName)
@@ -350,6 +448,14 @@ namespace CSharpToTypeScript.AlternateGenerators
                     sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
                         + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
                         + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                }
+                else if (tsSystemType.Kind == SystemTypeKind.Date)
+                {
+                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
+                        + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
                 }
                 else
                 {
@@ -410,6 +516,18 @@ namespace CSharpToTypeScript.AlternateGenerators
                             _ => "text"
                         };
             }
+        }
+
+        private static bool HasBooleanFields(TsNamespace @namespace)
+        {
+            return (@namespace.Classes.Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool))
+                                        || @namespace.TypeDefinitions.Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)));
+        }
+
+        private static bool HasBooleanProperties(TsNamespace @namespace)
+        {
+            return (@namespace.Classes.Any(c => c.Properties.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool))
+                                    || @namespace.TypeDefinitions.Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)));
         }
         #endregion // Private Methods
     }

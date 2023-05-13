@@ -17,6 +17,9 @@ using Process = System.Diagnostics.Process;
 using MessageBox = Community.VisualStudio.Toolkit.MessageBox;
 using Application = System.Windows.Application;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 
 namespace CSharpToTypeScript
 {
@@ -48,6 +51,18 @@ namespace CSharpToTypeScript
         termValues: new[] { "HierSingleSelectionName:.cs$" })]
     public sealed class CSharpToTypeScriptPackage : AsyncPackage
     {
+        public const string DefaultGenerator = "default";
+        public const string ResolverGenerator = "withresolver";
+        public const string FormGenerator = "withform";
+
+        static readonly IReadOnlyDictionary<vsCMElement, string> _ElementNames = new Dictionary<vsCMElement, string>()
+        {
+            {  vsCMElement.vsCMElementEnum, "enum" },
+            {  vsCMElement.vsCMElementClass, "class" },
+            {  vsCMElement.vsCMElementInterface, "interface" },
+            {  vsCMElement.vsCMElementStruct, "struct" },
+        };
+
         const Int32 ProcessingWaitTime = 60 * 1000;
         static readonly string ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net7\CSharpToTypeScript.exe");
 
@@ -76,7 +91,7 @@ namespace CSharpToTypeScript
         #endregion
 
         #pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
-        public static async Task ExecuteCommandAsync(string generatorName, string fileExtension)
+        public static async Task ExecuteCommandAsync(string generatorName, string fileExtension, IReadOnlyList<vsCMElement> elementTypes)
         {
             // Get the DTE object
             if (GetGlobalService(typeof(DTE)) is not DTE dte)
@@ -97,11 +112,31 @@ namespace CSharpToTypeScript
                 return;
             }
 
-            // Get the full name of the class/interface/enum
-            string className = await GetClassNameAsync(dte, document);
-            if (string.IsNullOrEmpty(className))
+            // Get the full name of the class/interface/enum/struct
+            string typeName = await GetTypeNameAsync(dte, document, elementTypes);
+            if (string.IsNullOrEmpty(typeName))
             {
                 return;
+            }
+
+            var typeParamNames = GetTypeParamNames(typeName);
+            if ((typeParamNames.Count > 0 && generatorName == ResolverGenerator)
+                || generatorName == FormGenerator)
+            {
+                ExportOptionsDlg formLayoutDlg = new(generatorName == FormGenerator, typeParamNames);
+                if (await formLayoutDlg.ShowDialogAsync(WindowStartupLocation.CenterOwner) != true)
+                {
+                    return;
+                }
+                typeName = ReplaceTypeParams(typeName, formLayoutDlg.TypeParams);
+                if (generatorName == FormGenerator)
+                {
+                    generatorName += '(' + formLayoutDlg.ColCount.ToString() + ')';
+                }
+            }
+            else
+            {
+                typeName = RemoveTypeParams(typeName);
             }
 
             // Get the project containing the selected item
@@ -155,7 +190,7 @@ namespace CSharpToTypeScript
                         {
                             FileName = ExeFilePath,
                             Arguments = '"' + outputAssmblyPath + "\" "
-                                + className + " \""
+                                + typeName + " \""
                                 + dialog.FileName + "\" "
                                 + generatorName + " "
                                 + "enableNamespace=" + enableNamespace,
@@ -211,7 +246,7 @@ namespace CSharpToTypeScript
             }
         }
 
-        private static async Task<string> GetClassNameAsync(DTE dte, EnvDTE.Document document)
+        private static async Task<string> GetTypeNameAsync(DTE dte, Document document, IReadOnlyList<vsCMElement> elementTypes)
         {
             // Get the TextSelection object
             if (document.Selection is not TextSelection textSelection)
@@ -226,15 +261,17 @@ namespace CSharpToTypeScript
                 var cursorPosition = textSelection.ActivePoint;
 
                 // Get the CodeElement at the cursor position
-                CodeElement? codeElement = document.ProjectItem.FileCodeModel.CodeElementFromPoint(cursorPosition, vsCMElement.vsCMElementClass);
-
-                if (codeElement == null || string.IsNullOrEmpty(codeElement.FullName))
+                foreach (var elementType in elementTypes)
                 {
-                    dte.StatusBar.Text = "No selected class, interface, or enum was found.";
-                    return string.Empty;
+                    CodeElement? codeElement = document.ProjectItem.FileCodeModel.CodeElementFromPoint(cursorPosition, elementType);
+                    if (codeElement != null && !string.IsNullOrEmpty(codeElement.FullName))
+                    {
+                        return codeElement.FullName;
+                    }
                 }
 
-                return codeElement.FullName;
+                dte.StatusBar.Text = "Please select one of the following: " + string.Join(", ", elementTypes.Select(t => _ElementNames[t])) + ".";
+                return string.Empty;
             }
             catch (Exception ex)
             {
@@ -242,6 +279,51 @@ namespace CSharpToTypeScript
                 await messageBox.ShowErrorAsync(ex.Message, ex.InnerException != null ? ex.InnerException.Message : "");
                 return string.Empty;
             }
+        }
+
+        private static IReadOnlyList<string> GetTypeParamNames(string typeName)
+        {
+            var typeParamIndex = typeName.IndexOf('<');
+            if (typeParamIndex < 0 || !typeName.EndsWith(">"))
+            {
+                return Array.Empty<string>();
+            }
+
+            return typeName.Substring(typeParamIndex + 1).TrimEnd('>').Split(',').Select(t => t.Trim()).ToList();
+        }
+
+        private static string RemoveTypeParams(string typeName)
+        {
+            var typeParamIndex = typeName.IndexOf('<');
+            if (typeParamIndex < 0 || !typeName.EndsWith(">"))
+            {
+                return typeName;
+            }
+
+            return typeName.Substring(0, typeParamIndex) + '`' + (typeName.Substring(typeParamIndex).Count(c => c == ',') + 1);
+        }
+
+        private static string ReplaceTypeParams(string typeName, IReadOnlyList<string> typeParams)
+        {
+            var typeParamIndex = typeName.IndexOf('<');
+            if (typeParamIndex < 0 || !typeName.EndsWith(">"))
+            {
+                return typeName;
+            }
+
+            return '"' + typeName.Substring(0, typeParamIndex) + '`' + typeParams.Count + '[' 
+                + string.Join(",", typeParams.Select(p => FormatTypeParam(p))) 
+                + "]\"";
+        }
+
+        private static string FormatTypeParam(string typeParam)
+        {
+            if (typeParam.StartsWith("System.") && !typeParam.Contains(','))
+            {
+                return '[' + Type.GetType(typeParam).AssemblyQualifiedName + ']';
+            }
+
+            return '[' + typeParam + ']';
         }
 
         private static async Task<bool> ValidateOutputAssemblyPathAsync(string outputAssmblyPath, string projectName, string documentPath)

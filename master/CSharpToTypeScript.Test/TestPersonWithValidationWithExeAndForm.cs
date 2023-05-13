@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
@@ -18,6 +19,50 @@ namespace CSharpToTypeScript.Test
         [TestCleanup]
         public void TestCleanup()
         {
+        }
+
+        [TestMethod]
+        public void TestGenerateFormWithInvalidAssembly()
+        {
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "InvalidTypeDefinition.d.tsx");
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            CSharpToTypeScriptProgram.Run("InvalidAssembly.dll", "CSharpToTypeScript.Test.InvalidTypeDefinition", filePath, "withform(abc)");
+
+            Assert.IsFalse(File.Exists(filePath));
+        }
+
+
+        [TestMethod]
+        public void TestGenerateFormWithInvalidType()
+        {
+            var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "InvalidTypeDefinition.d.tsx");
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.InvalidTypeDefinition", filePath, "withform(abc)");
+
+            Assert.IsFalse(File.Exists(filePath));
+        }
+
+
+        [TestMethod]
+        public void TestGenerateFormWithException()
+        {
+            var exception = Assert.ThrowsException<TargetInvocationException>(() =>
+            {
+                var filePath = Path.Combine(this.TestContext.TestRunDirectory!, "PersonWithValidation.d.tsx");
+
+                CSharpToTypeScriptProgram.Run("CSharpToTypeScript.Test.PersonWithValidation", filePath, "withform(abc)");
+            });
+
+            Assert.IsNotNull(exception.InnerException);
+            Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
         }
 
         [TestMethod]

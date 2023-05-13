@@ -16,7 +16,15 @@ namespace CSharpToTypeScript.Test
 
         public static string GetTestDataFileContents(string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(), @"TestData\src", testDataFileName + ".ts"));
 
+        public static string GetTestResolverFileContents(string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(), @"TestData\src", testDataFileName + "WithResolver.ts"));
+
         public static string GetTestFormFileContents(string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(),
             @"TestData\src", testDataFileName + (testDataFileName == TsGeneratorWithForm.BootstrapUtilsNamespace ? ".tsx" : "Form.tsx")));
+
+        public static string GetTestDataFileContents(string subFolfer, string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(), @"TestData\src", subFolfer, testDataFileName + ".ts"));
+
+        public static string GetTestFormFileContents(string subFolfer, string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(),
+            @"TestData\src", subFolfer, testDataFileName + (testDataFileName == TsGeneratorWithForm.BootstrapUtilsNamespace ? ".tsx" : "Form.tsx")));
+
     }
 }

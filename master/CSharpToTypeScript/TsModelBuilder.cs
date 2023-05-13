@@ -11,6 +11,8 @@ namespace CSharpToTypeScript
 
         internal Dictionary<Type, TsClass> Classes { get; set; }
 
+        internal Dictionary<Type, TsTypeDefinition> TypeDefinitions { get; set; }
+
         internal Dictionary<Type, TsInterface> Interfaces { get; set; }
 
         internal Dictionary<Type, TsEnum> Enums { get; set; }
@@ -19,9 +21,10 @@ namespace CSharpToTypeScript
         {
             TsModuleService = tsModuleService ?? new TsModuleService();
 
-            this.Classes = new Dictionary<Type, TsClass>();
-            this.Interfaces = new Dictionary<Type, TsInterface>();
-            this.Enums = new Dictionary<Type, TsEnum>();
+            Classes = new Dictionary<Type, TsClass>();
+            Interfaces = new Dictionary<Type, TsInterface>();
+            Enums = new Dictionary<Type, TsEnum>();
+            TypeDefinitions = new Dictionary<Type, TsTypeDefinition>();
         }
 
         public TsModuleMember Add<T>() => this.Add<T>(true);
@@ -51,11 +54,12 @@ namespace CSharpToTypeScript
                     return enumType;
 
                 case TsTypeFamily.Class:
-                    if (clrType.IsNullableValueType())
-                        return this.Add(clrType.GetNullableValueType(), includeReferences, typeConvertors);
+                    System.Diagnostics.Debug.Assert(!clrType.IsNullableValueType());
 
                     if (Classes.TryGetValue(clrType, out TsClass? classType))
+                    {
                         return classType;
+                    }
 
                     if (clrType.IsGenericType)
                     {
@@ -80,12 +84,45 @@ namespace CSharpToTypeScript
                         this.Add(tsInterface.Type);
                     return classType;
 
-                case TsTypeFamily.Interface:
+                case TsTypeFamily.TypeDefinition:
                     if (clrType.IsNullableValueType())
                         return this.Add(clrType.GetNullableValueType(), includeReferences, typeConvertors);
 
+                    if (TypeDefinitions.TryGetValue(clrType, out TsTypeDefinition? typeDefinitionType))
+                    {
+                        return typeDefinitionType;
+                    }
+
+                    if (clrType.IsGenericType)
+                    {
+                        ProcessGenericDefinitions(clrType, includeReferences, typeConvertors);
+                    }
+
+                    typeDefinitionType = TsModuleService.GetOrAddTsTypeDefinition(clrType);
+                    this.TypeDefinitions[clrType] = typeDefinitionType;
+
+                    if (clrType.IsGenericParameter)
+                        typeDefinitionType.IsIgnored = true;
+
+                    if (clrType.IsGenericType)
+                        typeDefinitionType.IsIgnored = true;
+
+                    if (includeReferences)
+                    {
+                        this.AddReferences(typeDefinitionType, typeConvertors);
+                        foreach (TsProperty tsProperty in typeDefinitionType.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                            this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
+                    }
+
+                    return typeDefinitionType;
+
+                case TsTypeFamily.Interface:
+                    System.Diagnostics.Debug.Assert(!clrType.IsNullableValueType());
+
                     if (Interfaces.TryGetValue(clrType, out TsInterface? interfaceType))
+                    {
                         return interfaceType;
+                    }
 
                     if (clrType.IsGenericType)
                     {
@@ -94,20 +131,23 @@ namespace CSharpToTypeScript
 
                     interfaceType = TsModuleService.GetOrAddTsInterface(clrType);
                     this.Interfaces[clrType] = interfaceType;
-                    if (clrType.IsGenericParameter)
-                        interfaceType.IsIgnored = true;
+
+                    // Generic parameter would never be added to a model directly.
+                    System.Diagnostics.Debug.Assert (!clrType.IsGenericParameter);
+
                     if (clrType.IsGenericType)
                         interfaceType.IsIgnored = true;
-                    if (interfaceType.BaseType != null)
-                        this.Add(interfaceType.BaseType.Type);
+
                     if (includeReferences)
                     {
                         this.AddReferences(interfaceType, typeConvertors);
                         foreach (TsProperty tsProperty in interfaceType.Properties.Where(p => p.PropertyType.Type.IsEnum))
                             this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                     }
+
                     foreach (TsType tsType in interfaceType.Interfaces)
                         this.Add(tsType.Type);
+
                     return interfaceType;
 
                 default:
@@ -134,11 +174,27 @@ namespace CSharpToTypeScript
                     if (!this.Classes.ContainsKey(genericTypeDefinition))
                     {
                         TsClass classModel = TsModuleService.GetOrAddTsClass(genericTypeDefinition);
+                        classModel.ImplementedGenericTypes[clrType] = TsModuleService.BuildGenericArgumentList(clrType);
                         this.Classes[genericTypeDefinition] = classModel;
                         if (includeReferences)
                         {
                             this.AddReferences(classModel, typeConvertors);
                             foreach (TsProperty tsProperty in classModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                                this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
+                        }
+                    }
+                    break;
+
+                case TsTypeFamily.TypeDefinition:
+                    if (!this.TypeDefinitions.ContainsKey(genericTypeDefinition))
+                    {
+                        TsTypeDefinition typeDefinitionModel = TsModuleService.GetOrAddTsTypeDefinition(genericTypeDefinition);
+                        typeDefinitionModel.ImplementedGenericTypes[clrType] = TsModuleService.BuildGenericArgumentList(clrType);
+                        this.TypeDefinitions[genericTypeDefinition] = typeDefinitionModel;
+                        if (includeReferences)
+                        {
+                            this.AddReferences(typeDefinitionModel, typeConvertors);
+                            foreach (TsProperty tsProperty in typeDefinitionModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
                                 this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                         }
                     }
@@ -159,7 +215,7 @@ namespace CSharpToTypeScript
                     break;
 
                 default:
-                    throw new ArgumentException(string.Format("Type '{0}' isn't class or struct. Only classes and structures can be added to the model", clrType.FullName));
+                    throw new ArgumentException(string.Format("Type '{0}' isn't an enum, a class, an interface, or a struct. Only enums, classes, interfaces, and structures can be added to the model", clrType.FullName));
             }
         }
 
@@ -175,7 +231,7 @@ namespace CSharpToTypeScript
             foreach (Type clrType in assembly.GetTypes().Where(t => t.GetCustomAttribute<DataContractAttribute>(false) != null 
                     && (TsType.GetTypeFamily(t) == TsTypeFamily.Class 
                         || TsType.GetTypeFamily(t) == TsTypeFamily.Enum
-                        || TsType.GetTypeFamily(t) == TsTypeFamily.Class)))
+                        || TsType.GetTypeFamily(t) == TsTypeFamily.Interface)))
                 this.Add(clrType);
         }
 
@@ -193,35 +249,38 @@ namespace CSharpToTypeScript
                 switch (TsType.GetTypeFamily(tsProperty.PropertyType.Type))
                 {
                     case TsTypeFamily.Collection:
-                        Type? enumerableType = TsType.GetEnumerableType(tsProperty.PropertyType.Type);
-                        while (enumerableType != null)
+                        Type? enumeratedType = TsType.GetEnumeratedType(tsProperty.PropertyType.Type);
+                        while (enumeratedType != null)
                         {
-                            switch (TsType.GetTypeFamily(enumerableType))
+                            switch (TsType.GetTypeFamily(enumeratedType))
                             {
                                 case TsTypeFamily.Collection:
-                                    Type type2 = enumerableType;
-                                    enumerableType = TsType.GetEnumerableType(enumerableType);
-                                    if (enumerableType == type2)
+                                    Type temp = enumeratedType;
+                                    enumeratedType = TsType.GetEnumeratedType(enumeratedType);
+                                    if (enumeratedType == temp)
                                     {
-                                        enumerableType = null;
+                                        enumeratedType = null;
                                         continue;
                                     }
                                     continue;
                                 case TsTypeFamily.Class:
-                                    this.Add(enumerableType);
-                                    enumerableType = null;
+                                case TsTypeFamily.TypeDefinition:
+                                case TsTypeFamily.Interface:
+                                    this.Add(enumeratedType);
+                                    enumeratedType = null;
                                     continue;
                                 case TsTypeFamily.Enum:
-                                    this.AddEnumIfNotAdded(TsModuleService.GetOrAddTsEnum(enumerableType));
-                                    enumerableType = null;
+                                    this.AddEnumIfNotAdded(TsModuleService.GetOrAddTsEnum(enumeratedType));
+                                    enumeratedType = null;
                                     continue;
                                 default:
-                                    enumerableType = null;
+                                    enumeratedType = null;
                                     continue;
                             }
                         }
                         continue;
                     case TsTypeFamily.Class:
+                    case TsTypeFamily.TypeDefinition:
                     case TsTypeFamily.Interface:
                         if (typeConvertors == null || !typeConvertors.ContainsKey(tsProperty.PropertyType.Type))
                         {
@@ -240,24 +299,26 @@ namespace CSharpToTypeScript
                 switch (TsType.GetTypeFamily(genericArgument.Type))
                 {
                     case TsTypeFamily.Collection:
-                        Type? enumerableType = TsType.GetEnumerableType(genericArgument.Type);
-                        if (enumerableType != null)
+                        Type? enumeratedType = TsType.GetEnumeratedType(genericArgument.Type);
+                        if (enumeratedType == null)
                         {
-                            switch (TsType.GetTypeFamily(enumerableType))
-                            {
-                                case TsTypeFamily.Class:
-                                    this.Add(enumerableType);
-                                    continue;
-                                case TsTypeFamily.Enum:
-                                    this.AddEnumIfNotAdded(TsModuleService.GetOrAddTsEnum(enumerableType));
-                                    continue;
-                                default:
-                                    continue;
-                            }
-                        }
-                        else
                             continue;
+                        }
+                        switch (TsType.GetTypeFamily(enumeratedType))
+                        {
+                            case TsTypeFamily.Class:
+                            case TsTypeFamily.TypeDefinition:
+                            case TsTypeFamily.Interface:
+                                this.Add(enumeratedType);
+                                continue;
+                            case TsTypeFamily.Enum:
+                                this.AddEnumIfNotAdded(TsModuleService.GetOrAddTsEnum(enumeratedType));
+                                continue;
+                            default:
+                                continue;
+                        }
                     case TsTypeFamily.Class:
+                    case TsTypeFamily.TypeDefinition:
                     case TsTypeFamily.Interface:
                         this.Add(genericArgument.Type);
                         continue;

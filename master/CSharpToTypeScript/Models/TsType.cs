@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using CSharpToTypeScript.Extensions;
 
@@ -7,6 +8,13 @@ namespace CSharpToTypeScript.Models
     [DebuggerDisplay("TsType - Type: {ClrType}")]
     public class TsType
     {
+        public static readonly IReadOnlyList<string> ExcludedNamespacePrefixes = new List<string>()
+        {
+            "System.",
+            "Microsoft.",
+            "Newtonsoft.",
+        };
+
         public static readonly TsType Any = new(typeof(object));
 
         public Type Type { get; private set; }
@@ -24,21 +32,44 @@ namespace CSharpToTypeScript.Models
         {
             if (type.IsInterface)
                 return TsTypeFamily.Interface;
+
             if (type.IsNullableValueType())
                 return TsType.GetTypeFamily(type.GetNullableValueType());
-            int num = type == typeof(string) ? 1 : 0;
-            bool flag = typeof(IEnumerable).IsAssignableFrom(type);
-            if (num != 0 || type.IsPrimitive || TsSystemType.TryGet(type, out _))
+
+            if (type == typeof(string) || type.IsPrimitive || TsSystemType.TryGet(type, out _))
                 return TsTypeFamily.System;
-            if (flag)
+
+            if (typeof(IEnumerable).IsAssignableFrom(type))
                 return TsTypeFamily.Collection;
+
             if (type.IsEnum)
                 return TsTypeFamily.Enum;
-            return type.IsClass && type.FullName != "System.Object" || type.IsValueType || type.IsInterface ? TsTypeFamily.Class : TsTypeFamily.Type;
+
+            if (type.IsValueType)
+            {
+                if ((type.IsTypeDefinition | type.IsGenericType)
+                    && (type.GetProperties().Length > 0 || type.GetFields().Length > 0) )
+                {
+                    return TsTypeFamily.TypeDefinition;
+                }
+
+                return TsTypeFamily.Type;
+            }
+
+            if (!string.IsNullOrEmpty(type.FullName) 
+                && ExcludedNamespacePrefixes.Any(p => type.FullName.StartsWith(p)))
+                return TsTypeFamily.Type;
+
+            return type.IsClass ? TsTypeFamily.Class : TsTypeFamily.Type;
         }
 
         internal static TsType Create(ITsModuleService tsModuleService, Type type)
         {
+            if (tsModuleService.IsProcessing(type) || type.IsGenericParameter)
+            {
+                return new TsType(type);
+            }
+
             switch (TsType.GetTypeFamily(type))
             {
                 case TsTypeFamily.System:
@@ -47,6 +78,8 @@ namespace CSharpToTypeScript.Models
                     return new TsCollection(tsModuleService, type);
                 case TsTypeFamily.Class:
                     return tsModuleService.GetOrAddTsClass(type);
+                case TsTypeFamily.TypeDefinition:
+                    return tsModuleService.GetOrAddTsTypeDefinition(type);
                 case TsTypeFamily.Interface:
                     return tsModuleService.GetOrAddTsInterface(type);
                 case TsTypeFamily.Enum:
@@ -56,15 +89,17 @@ namespace CSharpToTypeScript.Models
             }
         }
 
-        internal static Type? GetEnumerableType(Type type)
+        internal static Type? GetEnumeratedType(Type type)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 return type.GetGenericArguments()[0];
-            foreach (Type type1 in type.GetInterfaces())
+
+            foreach (Type @interface in type.GetInterfaces())
             {
-                if (type1.IsGenericType && type1.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                    return type1.GetGenericArguments()[0];
+                if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    return @interface.GetGenericArguments()[0];
             }
+
             return null;
         }
     }

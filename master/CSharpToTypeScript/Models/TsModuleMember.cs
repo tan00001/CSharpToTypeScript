@@ -43,6 +43,12 @@ namespace CSharpToTypeScript.Models
 
         public string Name { get; set; }
 
+        public IList<TsInterface> Interfaces { get; internal set; }
+
+        public virtual IReadOnlyList<TsType> GenericArguments { get; protected set; }
+
+        public IDictionary<Type, IReadOnlyList<TsType>> ImplementedGenericTypes { get; private set; }
+
         public DisplayAttribute? Display { get; private set; }
         public DataContractAttribute? DataContract { get; private set; }
         protected JsonIgnoreAttribute? Ignore { get; private set; }
@@ -56,34 +62,29 @@ namespace CSharpToTypeScript.Models
             private set;
         }
 
-        public virtual HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace)
+        public virtual HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
             var dependentTypes = new HashSet<TsModuleMember>();
 
             for (var parent = this.Type.BaseType; parent != null; parent = parent.BaseType)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == parent);
+                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == parent && !m.Type.IsGenericParameter);
                 if (dependentMember != null)
                 {
                     dependentTypes.Add(dependentMember);
                 }
             }
 
-            GetDependentTypes(dependentTypes, this.Type.GetInterfaces(), tsNamespace);
+            GetDependentTypes(dependentTypes, this.Interfaces, tsNamespace, generatorOptions);
 
             return dependentTypes;
         }
 
-        private static void GetDependentTypes(HashSet<TsModuleMember> dependentTypes, IList<Type> interfaces, TsNamespace tsNamespace)
+        protected virtual void GetDependentTypes(HashSet<TsModuleMember> dependentTypes, IList<TsInterface> interfaces,
+            TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
-            foreach (var @interface in interfaces)
-            {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == @interface);
-                if (dependentMember != null)
-                {
-                    dependentTypes.Add(dependentMember);
-                }
-            }
+            // We are only interested in interfaces with actual properties to export. The default behavior is do nothing.
+            // Let the overriding function do the work.
         }
 
         public static string GetModuleName(Type type)
@@ -103,10 +104,37 @@ namespace CSharpToTypeScript.Models
             return (dataContract?.Namespace ?? type.Namespace) + str;
         }
 
-        protected TsModuleMember(Type type)
+        public virtual bool IsExportable(TsGeneratorOptions generatorOptions)
+        {
+            return !Type.IsGenericParameter;
+        }
+
+        protected TsModuleMember(ITsModuleService tsModuleService, Type type)
           : base(type)
         {
             this.Name = this.Type.Name;
+
+            Interfaces = Type.GetInterfaces().Where(@interface =>
+                    @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null
+                    && @interface.GetCustomAttribute<NotMappedAttribute>(false) == null)
+                .Select(t => tsModuleService.GetOrAddTsInterface(t)).ToList();
+
+            ImplementedGenericTypes = new Dictionary<Type, IReadOnlyList<TsType>>();
+
+            if (type.IsGenericType)
+            {
+                this.GenericArguments = type.GetGenericArguments()
+                    .Select(t => TsType.Create(tsModuleService, t))
+                    .ToList();
+                if (DataContract == null || string.IsNullOrEmpty(DataContract.Name))
+                {
+                    this.Name = type.Name.Remove(type.Name.IndexOf('`'));
+                }
+            }
+            else
+            {
+                this.GenericArguments = Array.Empty<TsType>();
+            }
 
             Display = this.Type.GetCustomAttribute<DisplayAttribute>(false);
 

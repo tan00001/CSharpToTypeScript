@@ -7,6 +7,7 @@
         Class,
         Enum,
         Type,
-        Interface
+        Interface,
+        TypeDefinition
     }
 }

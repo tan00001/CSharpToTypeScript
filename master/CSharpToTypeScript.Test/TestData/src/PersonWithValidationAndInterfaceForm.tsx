@@ -1,5 +1,5 @@
 ﻿import { useId } from 'react';
-import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
+import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export interface IPersonWithValidation {

@@ -38,6 +38,7 @@ namespace CSharpToTypeScript.Models
         public DataMemberAttribute? DataMember { get; set; }
         public DisplayAttribute? Display { get; set; }
         public UIHintAttribute? UiHint { get; set; }
+        public DataTypeAttribute? DataType { get; private set; }
         protected NotMappedAttribute? NotMapped { get; set; }
         protected JsonIgnoreAttribute? JsonIgnore { get; set; }
         public JsonPropertyNameAttribute? JsonPropertyName { get; set; }
@@ -76,6 +77,7 @@ namespace CSharpToTypeScript.Models
             JsonPropertyName = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
             UiHint = propertyInfo.GetCustomAttribute<UIHintAttribute>(false);
             NotMapped = propertyInfo.GetCustomAttribute<NotMappedAttribute>(false);
+            DataType = propertyInfo.GetCustomAttribute<DataTypeAttribute>(false);
 
             var compare = propertyInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
@@ -104,7 +106,7 @@ namespace CSharpToTypeScript.Models
             var range = propertyInfo.GetCustomAttribute<RangeAttribute>(false);
             if (range != null)
             {
-                ValidationRules.Add(new RangeRule(range));
+                ValidationRules.Add(new RangeRule(range, DataType));
             }
 
             var regularExpression = propertyInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
@@ -167,6 +169,7 @@ namespace CSharpToTypeScript.Models
             JsonPropertyName = fieldInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
             UiHint = fieldInfo.GetCustomAttribute<UIHintAttribute>(false);
             NotMapped = fieldInfo.GetCustomAttribute<NotMappedAttribute>(false);
+            DataType = fieldInfo.GetCustomAttribute<DataTypeAttribute>(false);
 
             var compare = fieldInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
@@ -195,7 +198,7 @@ namespace CSharpToTypeScript.Models
             var range = fieldInfo.GetCustomAttribute<RangeAttribute>(false);
             if (range != null)
             {
-                ValidationRules.Add(new RangeRule(range));
+                ValidationRules.Add(new RangeRule(range, DataType));
             }
 
             var regularExpression = fieldInfo.GetCustomAttribute<RegularExpressionAttribute>(false);

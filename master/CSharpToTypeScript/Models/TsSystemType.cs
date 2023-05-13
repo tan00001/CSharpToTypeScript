@@ -64,6 +64,12 @@
                 case Type t when t == typeof(char):
                     tsSystemType = SystemTypeKind.Number;
                     return true;
+                case Type t when t == typeof(TimeSpan):
+                    tsSystemType = SystemTypeKind.String;
+                    return true;
+                case Type t when t == typeof(Guid):
+                    tsSystemType = SystemTypeKind.String;
+                    return true;
                 case Type t when t == typeof(string):
                     tsSystemType = SystemTypeKind.String;
                     return true;

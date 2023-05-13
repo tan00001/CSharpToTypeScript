@@ -6,25 +6,49 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <CSharpToTypeScriptOutputFolder>H:\Projects\CSharpToTypeScript\master\CSharpToTypeScript.Test</CSharpToTypeScriptOutputFolder>
+	<CollectCoverage>true</CollectCoverage>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+    <CoverletOutput>$(MSBuildProjectDirectory)/TestResults/</CoverletOutput>
+    <ReportGeneratorOutput>$(MSBuildProjectDirectory)/TestResults/html</ReportGeneratorOutput>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="coverlet.msbuild" Version="3.2.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
     <PackageReference Include="coverlet.collector" Version="3.2.0" />
+    <PackageReference Include="ReportGenerator" Version="5.1.20" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CSharpToTypeScript\CSharpToTypeScript.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="TestData\src\CSharpToTypeScript.TestNamespace.TestMethod2.ts">
+    <None Update="TestData\src\PersonWithFieldValues.ts">
       <SubType>Code</SubType>
     </None>
-    <None Update="TestData\src\CSharpToTypeScript.TestNamespace.TestMethod1.ts">
+    <None Update="TestData\src\RangeValidationRule\PersonWithBirthDateRangeForm - Copy.tsx">
       <SubType>Code</SubType>
     </None>
-    <None Update="TestData\src\PersonPlusAddressAndUiHints2Form.tsx">
+    <None Update="TestData\src\RangeValidationRule\PersonWithBirthDateRangeForm.tsx">
+      <SubType>Code</SubType>
+    </None>
+    <None Update="TestData\src\RequiredValidationRule\PersonRequiresAnyForm.tsx">
+      <SubType>Code</SubType>
+    </None>
+    <None Update="TestData\src\RequiredValidationRule\PersonRequiresIdForm.tsx">
+      <SubType>Code</SubType>
+    </None>
+    <None Update="TestData\src\RequiredValidationRule\PersonRequiresBirthDateForm.tsx">
       <SubType>Code</SubType>
     </None>
   </ItemGroup>
+  <Target Name="GenerateHtmlCoverageReport" AfterTargets="VSTest" Condition="'$(CollectCoverage)' == 'true'">
+    <ItemGroup>
+      <ReportFiles Include="$(CoverletOutput)coverage.cobertura.xml" />
+    </ItemGroup>
+    <ReportGenerator ReportFiles="@(ReportFiles)" TargetDirectory="$(ReportGeneratorOutput)" ReportTypes="Html" />
+  </Target>
 </Project>

@@ -38,9 +38,6 @@ namespace CSharpToTypeScript
         {
             interfaceModel.Module = tsModuleService.GetModule(interfaceModel.ModuleName);
 
-            if (interfaceModel.BaseType != null && interfaceModel.BaseType != TsType.Any)
-                interfaceModel.BaseType = this.ResolveType(tsModuleService, interfaceModel.BaseType, false);
-
             for (int index = 0; index < interfaceModel.Interfaces.Count; ++index)
             {
                 var resolvedType = this.ResolveType(tsModuleService, interfaceModel.Interfaces[index], false);

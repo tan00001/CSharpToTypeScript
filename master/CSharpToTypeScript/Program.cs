@@ -18,10 +18,15 @@ if (args.Length > 5 && args[5] == "LaunchDebugger")
 }
 #endif
 
-var assembly = Assembly.LoadFrom(args[0]);
-if (assembly == null)
+Assembly assembly;
+
+try
 {
-    Console.WriteLine("Unable to load assembly \"" + args[0] + "\".");
+    assembly = Assembly.LoadFrom(args[0]);
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Unable to load assembly \"" + args[0] + "\". Error: \"" + ex.Message + "\".");
     return;
 }
 
@@ -73,17 +78,8 @@ static int GetColCount(string formLayout)
 {
     const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>).";
 
-    if (string.IsNullOrWhiteSpace(formLayout))
-    {
-        throw new ArgumentException("Form layout cannot be blank.", nameof(formLayout));
-    }
-
-    if (!formLayout.StartsWith("withform(", StringComparison.OrdinalIgnoreCase))
-    {
-        throw new ArgumentException(errorMessage, nameof(formLayout));
-    }
-
     var gridSize = formLayout.Substring("withform(".Length).TrimEnd(')');
+
     if (!Int32.TryParse(gridSize, out int colCount)
         || colCount <= 0
         || colCount > TsGeneratorWithForm.MaxColCount)

@@ -6,6 +6,8 @@ namespace CSharpToTypeScript
     {
         void AppendClassDoc(ScriptBuilder sb, TsClass classModel, string? className);
 
+        void AppendTypeDefinitionDoc(ScriptBuilder sb, TsTypeDefinition typeDefinitionModel, string? className);
+
         void AppendInterfaceDoc(ScriptBuilder sb, TsInterface interfaceModel, string? className);
 
         void AppendPropertyDoc(

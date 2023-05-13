@@ -1,5 +1,5 @@
 ﻿import { useId } from 'react';
-import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
+import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getCheckBoxClassName, getErrorMessage } from './BootstrapUtils';
 
 export class Person {
@@ -53,12 +53,6 @@ export const PersonResolver: Resolver<Person> = async (values) => {
 		errors.isAddressResidential = {
 			type: 'required',
 			message: 'Address is residential is required.'
-		};
-	}
-	if ((values.isAddressResidential?.length ?? 0) > 50) {
-		errors.isAddressResidential = {
-			type: 'maxLength',
-			message: 'Address is residential cannot exceed 50 characters.'
 		};
 	}
 	if (!values.lastName) {

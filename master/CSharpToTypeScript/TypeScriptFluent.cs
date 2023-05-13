@@ -39,6 +39,7 @@ namespace CSharpToTypeScript
             switch (member)
             {
                 case TsInterface _:
+                case TsTypeDefinition _:
                 case TsClass _:
                 case TsEnum _:
                     return new TypeScriptFluentModuleMember(this, member);
@@ -103,7 +104,7 @@ namespace CSharpToTypeScript
 
         public IReadOnlyDictionary<string, TsGeneratorOutput> Generate() => this._scriptGenerator.Generate(this._modelBuilder);
 
-        public IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsGeneratorOptions output) => this._scriptGenerator.Generate(this._modelBuilder, output);
+        public IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsGeneratorOptions options) => this._scriptGenerator.Generate(this._modelBuilder, options);
 
         public override string ToString()
         {

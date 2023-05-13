@@ -4,8 +4,8 @@
     {
         public ICollection<TsEnumValue> Values { get; private set; }
 
-        public TsEnum(Type type)
-          : base(type)
+        public TsEnum(ITsModuleService tsModuleService, Type type)
+          : base(tsModuleService, type)
         {
             if (!this.Type.IsEnum)
                 throw new ArgumentException("ClrType isn't enum.");

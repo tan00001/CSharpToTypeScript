@@ -14,6 +14,8 @@
 
         public IEnumerable<TsClass> Classes => this._members.OfType<TsClass>();
 
+        public IEnumerable<TsTypeDefinition> TypeDefinitions => this._members.OfType<TsTypeDefinition>();
+
         public IEnumerable<TsInterface> Interfaces => this._members.OfType<TsInterface>();
 
         public IEnumerable<TsEnum> Enums => this._members.OfType<TsEnum>();
@@ -26,13 +28,13 @@
             toAdd.Namespace = this;
         }
 
-        internal IReadOnlyCollection<TsModuleMember> GetDependentMembers(TsNamespace tsNamespace)
+        internal IReadOnlyCollection<TsModuleMember> GetDependentMembers(TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
             HashSet<TsModuleMember>? dependentTypes = null;
 
             foreach (var member in this._members)
             {
-                var memberDependentTypes = member.GetDependentTypes(tsNamespace);
+                var memberDependentTypes = member.GetDependentTypes(tsNamespace, generatorOptions);
                 if (memberDependentTypes.Count == 0)
                 {
                     continue;
@@ -49,6 +51,11 @@
             }
 
             return dependentTypes ?? (IReadOnlyCollection<TsModuleMember>)Array.Empty<TsModuleMember>();
+        }
+
+        public bool HasExportableMembers(TsGeneratorOptions generatorOptions)
+        {
+            return Members.Any(m => m.IsExportable(generatorOptions));
         }
 
         internal void Remove(TsModuleMember toRemove) => this._members.Remove(toRemove);

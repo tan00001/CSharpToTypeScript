@@ -1,5 +1,5 @@
 ﻿import { useId } from 'react';
-import { useForm, SubmitHandler, FieldError, Resolver, FieldErrors } from 'react-hook-form';
+import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export const enum Gender {
@@ -47,7 +47,7 @@ export const PersonWithNullableNameForm = (props: PersonWithNullableNameFormData
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-dateOfBirth"}>DateOfBirth:</label>
-				<input type="date" className={getClassName(touchedFields.dateOfBirth, errors.dateOfBirth)} id={formId + "-dateOfBirth"} {...register("dateOfBirth")} />
+				<input type="date" className={getClassName(touchedFields.dateOfBirth, errors.dateOfBirth)} id={formId + "-dateOfBirth"} {...register("dateOfBirth", { valueAsDate: true })} />
 				{getErrorMessage(errors.dateOfBirth)}
 			</div>
 			<div className="form-group col-md-4">
