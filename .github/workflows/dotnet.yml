@@ -30,6 +30,8 @@ jobs:
         dotnet restore master/CSharpToTypeScript.vsix/CSharpToTypeScriptNoDeployment.vsix.csproj
     - name: Build CSharpToTypeScript
       run: dotnet build master/CSharpToTypeScript/CSharpToTypeScript.csproj --no-restore
+    - name: Build TestAssembly
+      run: dotnet build master/TestAssembly/TestAssembly.csproj --no-restore
     - name: Build CSharpToTypeScript.Test
       run: dotnet build master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj --no-restore
     - name: Test CSharpToTypeScript

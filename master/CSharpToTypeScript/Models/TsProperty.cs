@@ -116,10 +116,10 @@ namespace CSharpToTypeScript.Models
             }
 
             var required = propertyInfo.GetCustomAttribute<RequiredAttribute>(false);
-            if (required != null)
+            if (required != null || DataMember?.IsRequired == true)
             {
                 IsRequired = true;
-                ValidationRules.Add(new RequiredRule(required));
+                ValidationRules.Add(new RequiredRule(required, DataMember));
             }
 
             var stringLength = propertyInfo.GetCustomAttribute<StringLengthAttribute>(false);
@@ -208,9 +208,9 @@ namespace CSharpToTypeScript.Models
             }
 
             var required = fieldInfo.GetCustomAttribute<RequiredAttribute>(false);
-            if (required != null)
+            if (required != null || DataMember?.IsRequired == true)
             {
-                ValidationRules.Add(new RequiredRule(required));
+                ValidationRules.Add(new RequiredRule(required, DataMember));
             }
 
             var stringLength = fieldInfo.GetCustomAttribute<StringLengthAttribute>(false);

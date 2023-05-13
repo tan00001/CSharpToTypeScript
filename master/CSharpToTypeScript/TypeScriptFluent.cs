@@ -115,7 +115,7 @@ namespace CSharpToTypeScript
                 return string.Join("\r\n", results.Select(r => r.Value.Script));
             }
 
-            return string.Join("\r\n", results.Select(r => "namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value.Script) + "\r\n}\r\n"));
+            return string.Join("\r\n", results.Select(r => "export namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value.Script) + "\r\n}\r\n"));
         }
 
         private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n")

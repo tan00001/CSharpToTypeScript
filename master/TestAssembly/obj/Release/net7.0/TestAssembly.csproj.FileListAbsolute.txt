@@ -1,0 +1,12 @@
+H:\Projects\CSharpToTypeScript\master\TestAssembly\bin\Release\net7.0\TestAssembly.deps.json
+H:\Projects\CSharpToTypeScript\master\TestAssembly\bin\Release\net7.0\TestAssembly.dll
+H:\Projects\CSharpToTypeScript\master\TestAssembly\bin\Release\net7.0\TestAssembly.pdb
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.csproj.AssemblyReference.cache
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.GeneratedMSBuildEditorConfig.editorconfig
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.AssemblyInfoInputs.cache
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.AssemblyInfo.cs
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.csproj.CoreCompileInputs.cache
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.dll
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\refint\TestAssembly.dll
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\TestAssembly.pdb
+H:\Projects\CSharpToTypeScript\master\TestAssembly\obj\Release\net7.0\ref\TestAssembly.dll

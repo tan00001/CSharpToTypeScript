@@ -24,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CSharpToTypeScript\CSharpToTypeScript.csproj" />
+    <ProjectReference Include="..\TestAssembly\TestAssembly.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="TestData\src\PersonWithFieldValues.ts">

@@ -21,8 +21,6 @@ namespace CSharpToTypeScript
         protected readonly TsClassDependencyComparer TsClassComparer = new();
         protected readonly TsInterfaceDependencyComparer TsInterfaceComparer = new();
 
-        public IReadOnlyDictionary<Type, TsTypeFormatter> Formaters => new Dictionary<Type, TsTypeFormatter>((IDictionary<Type, TsTypeFormatter>)this._typeFormatters._formatters);
-
         public string IndentationString { get; set; }
 
         public bool GenerateConstEnums { get; set; }
@@ -426,21 +424,13 @@ namespace CSharpToTypeScript
             sb.AppendFormatIndented("{0}class {1}", str, typeName);
             if (classModel.BaseType != null)
             {
-                if (classModel.BaseType is TsInterface)
-                {
-                    sb.AppendFormat(" implements {0}", FormatTypeName(classModel.NamespaceName, classModel.BaseType, importNames));
-                }
-                else
-                {
-                    sb.AppendFormat(" extends {0}", FormatTypeName(classModel.NamespaceName, classModel.BaseType, importNames));
-                }
+                sb.AppendFormat(" extends {0}", FormatTypeName(classModel.NamespaceName, classModel.BaseType, importNames));
             }
 
             if (classModel.Interfaces.Count > 0)
             {
                 string?[] array = classModel.Interfaces.Select(t => FormatTypeName(classModel.NamespaceName, t, importNames)).ToArray();
-                string format = classModel.BaseType is TsInterface ? ", {0}" : " implements {0}";
-                sb.AppendFormat(format, string.Join(", ", array));
+                sb.AppendFormat(" implements {0}", string.Join(", ", array));
             }
 
             sb.AppendLine(" {");

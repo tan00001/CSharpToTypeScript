@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Reflection.Metadata;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript.AlternateGenerators
@@ -150,9 +151,9 @@ namespace CSharpToTypeScript.AlternateGenerators
 
             sb.AppendLine();
 
-            var hiddenProperties = allProperties.Where(p => p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
+            var hiddenProperties = allProperties.Where(p => p.IsHidden).OrderBy(a => GetPropertyOrdinal(a))
                 .ToList();
-            var visiblePropertyList = allProperties.Where(p => !p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
+            var visiblePropertyList = allProperties.Where(p => !p.IsHidden).OrderBy(a => GetPropertyOrdinal(a))
                 .ToList();
 
             if (classModel.ImplementedGenericTypes.Count > 0)
@@ -172,6 +173,21 @@ namespace CSharpToTypeScript.AlternateGenerators
             return propertiesToExport;
         }
 
+        protected string GetPropertyOrdinal(TsProperty a)
+        {
+            if (a.Display?.Order != null)
+            {
+                return a.Display.Order.ToString("000");
+            }
+
+            if (a.DataMember?.Order > 0)
+            {
+                return a.DataMember.Order.ToString("000");
+            }
+
+            return this.FormatPropertyName(a);
+        }
+
         protected override IReadOnlyList<TsProperty> AppendTypeDefinition(
             TsTypeDefinition typeDefintionModel,
             ScriptBuilder sb,
@@ -182,9 +198,9 @@ namespace CSharpToTypeScript.AlternateGenerators
 
             sb.AppendLine();
 
-            var hiddenProperties = propertiesToExport.Where(p => p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
+            var hiddenProperties = propertiesToExport.Where(p => p.IsHidden).OrderBy(a => GetPropertyOrdinal(a))
                 .ToList();
-            var visiblePropertyList = propertiesToExport.Where(p => !p.IsHidden).OrderBy(a => a.Display?.Order.ToString("000") ?? this.FormatPropertyName(a))
+            var visiblePropertyList = propertiesToExport.Where(p => !p.IsHidden).OrderBy(a => GetPropertyOrdinal(a))
                 .ToList();
 
             if (typeDefintionModel.ImplementedGenericTypes.Count > 0)

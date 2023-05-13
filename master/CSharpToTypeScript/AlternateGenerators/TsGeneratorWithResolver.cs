@@ -59,8 +59,8 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             var baseClassesByNamespace = @namespace.Classes.Where(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
-                .Where(c => c.BaseType != null && c.BaseType is TsClass baseClass && baseClass.Namespace != @namespace)
-                .Select(c => (TsClass)c.BaseType!)
+                .Where(c => c.BaseType != null && c.BaseType.Namespace != @namespace)
+                .Select(c => c.BaseType!)
                 .GroupBy(c => c.NamespaceName);
             foreach (var baseClasses in baseClassesByNamespace)
             {
@@ -165,9 +165,9 @@ namespace CSharpToTypeScript.AlternateGenerators
                 }
 
                 sb.AppendLine();
-                if (memberModel is TsClass tsClass && tsClass.BaseType is TsClass baseClass)
+                if (memberModel is TsClass tsClass && tsClass.BaseType != null)
                 {
-                    var baseTypeName = FormatTypeName(memberModel.NamespaceName, baseClass, importNames);
+                    var baseTypeName = FormatTypeName(memberModel.NamespaceName, tsClass.BaseType, importNames);
                     sb.AppendLineIndented("const baseResults = await " + baseTypeName + "Resolver(values, undefined, {} as ResolverOptions<" + baseTypeName + ">);");
                     sb.AppendLineIndented("return {");
                     using (sb.IncreaseIndentation())

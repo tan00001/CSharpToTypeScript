@@ -27,6 +27,27 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
     }
 
     [DataContract(Name = "Person")]
+    public class PersonWithAgeRangeAndMessage
+    {
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "First Name", Order = 1)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? FirstName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Last Name", Order = 2)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? LastName { get; set; }
+
+        [Range(20, 120, ErrorMessage = "Age is not between 20 and 120.")]
+        [Display(Order = 3)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public Int32? Age { get; set; }
+    }
+
+    [DataContract(Name = "Person")]
     public class PersonWithBirthDateRange
     {
         [Required]
@@ -90,27 +111,6 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
     }
 
     [DataContract(Name = "Person")]
-    public class PersonWithBadDepositAmountRange
-    {
-        [Required]
-        [StringLength(50)]
-        [Display(Name = "First Name", Order = 1)]
-        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
-        public string? FirstName { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        [Display(Name = "Last Name", Order = 2)]
-        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
-        public string? LastName { get; set; }
-
-        [Range(typeof(string), "AAA", "BBB")]
-        [Display(Order = 3), DataType(DataType.Currency)]
-        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
-        public string? DepositAmount { get; set; }
-    }
-
-    [DataContract(Name = "Person")]
     public class PersonWithContractLengthRange
     {
         [Required]
@@ -132,7 +132,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
     }
 
     [DataContract(Name = "Person")]
-    public class PersonWithBadContractLengthRange
+    public class PersonWithContractLengthRange2
     {
         [Required]
         [StringLength(50)]
@@ -146,7 +146,28 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public string? LastName { get; set; }
 
-        [Range(typeof(string), "a:00:00:0", "b:00:00:0", ErrorMessage = "Contract length must be between a and b days.")]
+        [Range(24 * 3600 * 1000, 48 * 3600 * 1000, ErrorMessage = "Contract length must be between 100 and 200 days.")]
+        [Display(Order = 3), DataType(DataType.Duration)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public TimeSpan? ContractLength { get; set; }
+    }
+
+    [DataContract(Name = "Person")]
+    public class PersonWithContractLengthRange3
+    {
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "First Name", Order = 1)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? FirstName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Last Name", Order = 2)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? LastName { get; set; }
+
+        [Range(100D * 24 * 3600 * 1000, 200D * 24 * 3600 * 1000, ErrorMessage = "Contract length must be between 100 and 200 days.")]
         [Display(Order = 3), DataType(DataType.Duration)]
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public TimeSpan? ContractLength { get; set; }
@@ -206,6 +227,21 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
             var expectedData = Utilities.GetTestFormFileContents(nameof(RangeValidationRule), nameof(PersonWithAgeRange));
+
+            Assert.AreEqual(expectedData, personTypeScript.Replace("'./BootstrapUtils'", "'../BootstrapUtils'"));
+        }
+
+        [TestMethod]
+        public void TestNumberRangeWithMessage()
+        {
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                .For<PersonWithAgeRangeAndMessage>();
+
+            string personTypeScript = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+            var expectedData = Utilities.GetTestFormFileContents(nameof(RangeValidationRule), nameof(PersonWithAgeRangeAndMessage));
 
             Assert.AreEqual(expectedData, personTypeScript.Replace("'./BootstrapUtils'", "'../BootstrapUtils'"));
         }
@@ -275,27 +311,33 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         }
 
         [TestMethod]
-        public void TestCurrencyRangeException()
+        public void TestDurationRange2()
         {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
-                    .For<PersonWithBadDepositAmountRange>();
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                .For<PersonWithContractLengthRange2>();
 
-                string personTypeScript = ts.ToString();
-            });
+            string personTypeScript = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+            var expectedData = Utilities.GetTestFormFileContents(nameof(RangeValidationRule), nameof(PersonWithContractLengthRange2));
+
+            Assert.AreEqual(expectedData, personTypeScript.Replace("'./BootstrapUtils'", "'../BootstrapUtils'"));
         }
 
         [TestMethod]
-        public void TestDurationRangeException()
+        public void TestDurationRange3()
         {
-            Assert.ThrowsException<ArgumentException>(() =>
-            { 
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
-                    .For<PersonWithBadContractLengthRange>();
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                .For<PersonWithContractLengthRange3>();
 
-                string personTypeScript = ts.ToString();
-            });
+            string personTypeScript = ts.ToString();
+
+            Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+            var expectedData = Utilities.GetTestFormFileContents(nameof(RangeValidationRule), nameof(PersonWithContractLengthRange));
+
+            Assert.AreEqual(expectedData, personTypeScript.Replace("'./BootstrapUtils'", "'../BootstrapUtils'"));
         }
 
         [TestMethod]

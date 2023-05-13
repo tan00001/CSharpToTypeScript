@@ -372,7 +372,7 @@ namespace CSharpToTypeScript.Models
         {
             if (_DataType == null)
             {
-                return false;
+                return _Range.OperandType == typeof(DateTime) || _Range.OperandType == typeof(DateTimeOffset);
             };
 
             return _DataType.DataType == DataType.Date || _DataType.DataType == DataType.DateTime || _DataType.DataType == DataType.Time;
@@ -385,15 +385,30 @@ namespace CSharpToTypeScript.Models
 
         private bool IsDurationType()
         {
-            return _DataType?.DataType == DataType.Duration;
+            return _Range.OperandType == typeof(TimeSpan) ||  _DataType?.DataType == DataType.Duration;
         }
 
         private static bool TryParseDuration(object durationSetting, out decimal duration)
         {
+            if (durationSetting is int durationInt)
+            {
+                duration = durationInt;
+                return true;
+            }
+
+            if (durationSetting is double durationDouble)
+            {
+                duration = Convert.ToDecimal(durationDouble);
+                return true;
+            }
+
+            System.Diagnostics.Debug.Assert(durationSetting is string);
+            string durationString = (string)durationSetting;
+
             duration = 0;
 
-            var parts = durationSetting.ToString()?.Split(':').Reverse().ToList();
-            if (parts == null)
+            var parts = durationString.Split(':', StringSplitOptions.RemoveEmptyEntries).Reverse().ToList();
+            if (parts.Count == 0)
             {
                 return false;
             }

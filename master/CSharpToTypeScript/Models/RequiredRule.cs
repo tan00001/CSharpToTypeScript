@@ -1,14 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace CSharpToTypeScript.Models
 {
     public class RequiredRule : ITsValidationRule
     {
-        readonly RequiredAttribute _Required;
+        readonly RequiredAttribute? _Required;
 
-        public RequiredRule(RequiredAttribute required) 
+        readonly DataMemberAttribute? _DataMember;
+
+        public RequiredRule(RequiredAttribute? required, DataMemberAttribute? dataMember) 
         {
             _Required = required;
+            _DataMember = dataMember;
         }
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
@@ -18,7 +22,14 @@ namespace CSharpToTypeScript.Models
                 switch (tsSystemType.Kind)
                 {
                     case SystemTypeKind.Number:
-                        sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
+                        if (!DisallowAllDefaultValues())
+                        {
+                            sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
+                        }
+                        else
+                        {
+                            sb.AppendLineIndented("if (!values." + propertyName + ") {");
+                        }
                         break;
 
                     case SystemTypeKind.Date:
@@ -26,7 +37,14 @@ namespace CSharpToTypeScript.Models
                         break;
 
                     case SystemTypeKind.Bool:
-                        sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== false) {");
+                        if (!DisallowAllDefaultValues())
+                        {
+                            sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== false) {");
+                        }
+                        else
+                        {
+                            sb.AppendLineIndented("if (!values." + propertyName + ") {");
+                        }
                         break;
 
                     default:
@@ -36,7 +54,14 @@ namespace CSharpToTypeScript.Models
             }
             else if (property.PropertyType is TsEnum)
             {
-                sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
+                if (!DisallowAllDefaultValues())
+                {
+                    sb.AppendLineIndented("if (!values." + propertyName + " && values." + propertyName + " !== 0) {");
+                }
+                else
+                {
+                    sb.AppendLineIndented("if (!values." + propertyName + ") {");
+                }
             }
             else
             {
@@ -49,12 +74,17 @@ namespace CSharpToTypeScript.Models
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'required',");
-                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Required.ErrorMessage) ? _Required.ErrorMessage 
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Required?.ErrorMessage) ? _Required?.ErrorMessage 
                         : (property.GetDisplayName() + " is required.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
             sb.AppendLineIndented("}");
+        }
+
+        private bool DisallowAllDefaultValues()
+        {
+            return _DataMember?.EmitDefaultValue != null && _DataMember?.EmitDefaultValue == false;
         }
     }
 }

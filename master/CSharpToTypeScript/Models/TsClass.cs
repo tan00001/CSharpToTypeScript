@@ -12,7 +12,7 @@ namespace CSharpToTypeScript.Models
 
         public ICollection<TsProperty> Constants { get; private set; }
 
-        public TsType? BaseType { get; internal set; }
+        public TsClass? BaseType { get; internal set; }
 
         public TsClass(ITsModuleService tsModuleService, Type type)
           : base(tsModuleService, type)
@@ -30,27 +30,27 @@ namespace CSharpToTypeScript.Models
                 .Select(fi => new TsProperty(tsModuleService, fi))
                 .ToList();
 
-            if (this.Type.BaseType != null && this.Type.BaseType != typeof(object) && this.Type.BaseType != typeof(ValueType))
-                this.BaseType = new TsType(this.Type.BaseType);
+            if (this.Type.BaseType != null && TsType.GetTypeFamily(this.Type.BaseType) == TsTypeFamily.Class)
+                this.BaseType = tsModuleService.GetOrAddTsClass(this.Type.BaseType);
         }
 
         public virtual List<TsProperty> GetBaseProperties(bool includeProperties, bool includeFields)
         {
-            if (BaseType is not TsClass baseClassType)
+            if (BaseType == null)
             {
                 return new List<TsProperty>();
             }
 
-            var baseProperties = baseClassType.GetBaseProperties(includeProperties, includeFields);
+            var baseProperties = BaseType.GetBaseProperties(includeProperties, includeFields);
 
             if (includeProperties)
             {
-                baseProperties.AddRange(baseClassType.Properties);
+                baseProperties.AddRange(BaseType.Properties);
             }
 
             if (includeFields)
             {
-                baseProperties.AddRange(baseClassType.Fields);
+                baseProperties.AddRange(BaseType.Fields);
             }
 
             return baseProperties;
@@ -58,21 +58,21 @@ namespace CSharpToTypeScript.Models
 
         public virtual List<TsProperty> GetBaseRequiredProperties(bool includeProperties, bool includeFields)
         {
-            if (BaseType is not TsClass baseClassType)
+            if (BaseType == null)
             {
                 return new List<TsProperty>();
             }
 
-            var baseRequiredProperties = baseClassType.GetBaseRequiredProperties(includeProperties, includeFields);
+            var baseRequiredProperties = BaseType.GetBaseRequiredProperties(includeProperties, includeFields);
 
             if (includeProperties)
             {
-                baseRequiredProperties.AddRange(baseClassType.Properties.Where(p => p.IsRequired));
+                baseRequiredProperties.AddRange(BaseType.Properties.Where(p => p.IsRequired));
             }
 
             if (includeFields)
             {
-                baseRequiredProperties.AddRange(baseClassType.Fields.Where(p => p.IsRequired));
+                baseRequiredProperties.AddRange(BaseType.Fields.Where(p => p.IsRequired));
             }
 
             return baseRequiredProperties;

@@ -7,14 +7,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpToTypeScript.Test", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{E99050FD-0093-4CAC-B439-520CE73A2F12}"
 	ProjectSection(SolutionItems) = preProject
+		..\OutputFolderSettingScreenshot.png = ..\OutputFolderSettingScreenshot.png
 		..\README.md = ..\README.md
 		..\VSMenuScreenShot.png = ..\VSMenuScreenShot.png
-		..\OutputFolderSettingScreenshot.png = ..\OutputFolderSettingScreenshot.png
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpToTypeScript.vsix", "CSharpToTypeScript.vsix\CSharpToTypeScript.vsix.csproj", "{811424E1-BC97-44C1-A89B-4925CE39BF6B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpToTypeScript", "CSharpToTypeScript\CSharpToTypeScript.csproj", "{3B981F70-2475-4BCC-B7E1-93F60776FA0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAssembly", "TestAssembly\TestAssembly.csproj", "{563BED0C-BD69-4D98-979E-5E3595045278}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,18 @@ Global
 		{3B981F70-2475-4BCC-B7E1-93F60776FA0D}.Release|arm64.Build.0 = Release|Any CPU
 		{3B981F70-2475-4BCC-B7E1-93F60776FA0D}.Release|x86.ActiveCfg = Release|Any CPU
 		{3B981F70-2475-4BCC-B7E1-93F60776FA0D}.Release|x86.Build.0 = Release|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Debug|arm64.Build.0 = Debug|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Debug|x86.Build.0 = Debug|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Release|arm64.ActiveCfg = Release|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Release|arm64.Build.0 = Release|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Release|x86.ActiveCfg = Release|Any CPU
+		{563BED0C-BD69-4D98-979E-5E3595045278}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

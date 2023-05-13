@@ -228,11 +228,23 @@ namespace CSharpToTypeScript
 
         public void Add(Assembly assembly)
         {
-            foreach (Type clrType in assembly.GetTypes().Where(t => t.GetCustomAttribute<DataContractAttribute>(false) != null 
-                    && (TsType.GetTypeFamily(t) == TsTypeFamily.Class 
-                        || TsType.GetTypeFamily(t) == TsTypeFamily.Enum
-                        || TsType.GetTypeFamily(t) == TsTypeFamily.Interface)))
+            foreach (Type clrType in assembly.GetTypes().Where<Type>(t => IsExportedByDefault(t)))
                 this.Add(clrType);
+        }
+
+        private static bool IsExportedByDefault(Type t)
+        {
+            if (t.GetCustomAttribute<DataContractAttribute>(false) == null)
+            {
+                return false;
+            }
+
+            var typeFamily = TsType.GetTypeFamily(t);
+
+            return typeFamily == TsTypeFamily.Class
+                || typeFamily == TsTypeFamily.Enum
+                || typeFamily == TsTypeFamily.Interface
+                || typeFamily == TsTypeFamily.TypeDefinition;
         }
 
         public TsModel Build()

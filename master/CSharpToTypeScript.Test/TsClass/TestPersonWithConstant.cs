@@ -8,13 +8,13 @@ namespace CSharpToTypeScript.Test.TsClass
         public const int MaxDescriptionLength = 1000;
 
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Range(0, int.MaxValue)]
         public int Id { get; set; }
 
         [StringLength(MaxDescriptionLength)]
-        public string Description;
+        public string Description = string.Empty;
     }
 
 

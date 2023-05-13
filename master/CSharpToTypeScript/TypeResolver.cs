@@ -20,9 +20,6 @@ namespace CSharpToTypeScript
         {
             classModel.Module = tsModuleService.GetModule(classModel.ModuleName);
 
-            if (classModel.BaseType != null && classModel.BaseType != TsType.Any)
-                classModel.BaseType = this.ResolveType(tsModuleService, classModel.BaseType, false);
-
             for (int index = 0; index < classModel.Interfaces.Count; ++index)
             {
                 var resolvedType = this.ResolveType(tsModuleService, classModel.Interfaces[index], false);
@@ -60,9 +57,6 @@ namespace CSharpToTypeScript
                 return;
 
             property.PropertyType = this.ResolveType(tsModuleService, property.PropertyType);
-
-            if (property.GenericArguments == null)
-                return;
 
             for (int index = 0; index < property.GenericArguments.Count; ++index)
             {

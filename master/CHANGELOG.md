@@ -1,6 +1,16 @@
 # Change log
 All notable changes to CSharpToTypeScript will be documented in this file.
 
+## 1.0.0.9 (2023-05-13)
+
+### Added
+
+* Support `DataMemberAttribute`. When `DataMemberAttribute.EmitDefaultValue` is set to false, it is considered as equivalent to `RequiredAttribute.DisallowAllDefaultValues`.
+* Support `DataMemberAttribute.Order` in addition to `DisplayAttribute.Order`. `DisplayAttribute.Order` takes precedence when present.
+* `RangeAttribute.OperandType` is used when `DateTypeAttribute` is not set.
+* Export Options dialog box can now only be resized horizontally, with the minimum width set to the startup width.
+* Error messages in the Export Options dialog box are now set as tool tips.
+
 ## 1.0.0.8 (2023-05-12)
 
 ### Changed
