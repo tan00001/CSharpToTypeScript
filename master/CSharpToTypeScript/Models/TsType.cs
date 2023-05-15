@@ -15,6 +15,19 @@ namespace CSharpToTypeScript.Models
             "Newtonsoft.",
         };
 
+        private readonly HashSet<CustomValidationRule> _ImplementedCustomValidationRules = new(CustomValidationRule.Comparer);
+
+        /// <summary>
+        /// Custom validation rules this type implements
+        /// </summary>
+        public virtual IReadOnlySet<CustomValidationRule> ImplementedCustomValidationRules
+        {
+            get
+            {
+                return _ImplementedCustomValidationRules;
+            }
+        }
+
         public static readonly TsType Any = new(typeof(object));
 
         public Type Type { get; private set; }
@@ -61,6 +74,11 @@ namespace CSharpToTypeScript.Models
                 return TsTypeFamily.Type;
 
             return type.IsClass ? TsTypeFamily.Class : TsTypeFamily.Type;
+        }
+
+        public void AddImplementedCustomValidationRule(CustomValidationRule rule)
+        {
+            _ImplementedCustomValidationRules.Add(rule);
         }
 
         internal static TsType Create(ITsModuleService tsModuleService, Type type)

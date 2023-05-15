@@ -14,7 +14,19 @@ namespace TestAssembly
         [DataMember]
         public int Id { get; set; }
 
+        [CustomValidation(typeof(CustomerAccount), nameof(ValidateBalance))]
+        [CustomValidation(typeof(CustomerAccount), nameof(ValidateBalance2))]
         [DataMember(IsRequired = true, EmitDefaultValue = false)]
         public decimal? Balance { get; set; }
+
+        public virtual ValidationResult ValidateBalance(object value)
+        {
+            return new ValidationResult(value != null ? null : "Value cannot be null");
+        }
+
+        public virtual ValidationResult ValidateBalance2(object value, ValidationContext context)
+        {
+            return new ValidationResult(value != null ? null : "Value cannot be null");
+        }
     }
 }

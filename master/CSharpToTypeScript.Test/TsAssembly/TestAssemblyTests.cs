@@ -6,6 +6,8 @@ namespace CSharpToTypeScript.Test.TsAssembly;
 [TestClass]
 public class TestAssemblyTests : IDisposable
 {
+    const string ImportReactHookForm = "import { Resolver, FieldErrors, FieldError } from 'react-hook-form';\r\n\r\n";
+
     private bool disposedValue;
 
     public TestContext TestContext { get; set; } = null!;
@@ -35,6 +37,24 @@ public class TestAssemblyTests : IDisposable
         var expectedData = Utilities.GetTestDataFileContents("TsAssembly", "All");
 
         Assert.AreEqual(expectedData, personTypeScript);
+    }
+
+    [TestMethod]
+    public void TestAllResolvers()
+    {
+        var testAssemby = typeof(TestAssembly.Person).Assembly;
+
+        var ts = TypeScript.Definitions(new TsGeneratorWithResolver(false))
+           .For(testAssemby);
+
+        var personTypeScript = ts.ToString();
+
+        Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
+
+        var expectedData = Utilities.GetTestFormFileContents("TsAssembly", "All");
+
+        Assert.AreEqual(expectedData, ImportReactHookForm +
+            personTypeScript.Replace('\t' + ImportReactHookForm, ""));
     }
 
     protected virtual void Dispose(bool disposing)

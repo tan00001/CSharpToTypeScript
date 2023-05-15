@@ -50,8 +50,7 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
             base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, dependencies, importIndices);
 
-            bool hasForms = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) || tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(c => !IsIgnored(c)));
+            bool hasForms = HasMemeberInfoForOutput(@namespace, tsGeneratorOptions);
 
             if (hasForms)
             {

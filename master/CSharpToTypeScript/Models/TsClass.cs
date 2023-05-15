@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 
 namespace CSharpToTypeScript.Models
 {
@@ -75,29 +77,59 @@ namespace CSharpToTypeScript.Models
             return baseRequiredProperties;
         }
 
+        public override IReadOnlyList<CustomValidationRule> GetCustomValidations(TsGeneratorOptions generatorOptions)
+        {
+            var customValidations = base.GetCustomValidations(generatorOptions);
+
+            if (!generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+            {
+                return customValidations;
+            }
+
+            return Properties.SelectMany(p => p.ValidationRules.Where(r => r is CustomValidationRule))
+                .Cast<CustomValidationRule>()
+                .Union(customValidations, CustomValidationRule.Comparer)
+                .ToList();
+        }
+
         public override HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
             var dependentTypes = base.GetDependentTypes(tsNamespace, generatorOptions);
 
             foreach (var field in Fields)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == field.PropertyType.Type && !m.Type.IsGenericParameter);
-                if (dependentMember != null)
-                {
-                    dependentTypes.Add(dependentMember);
-                }
+                dependentTypes.UnionWith(tsNamespace.Members.Where(m => (m.Type == field.PropertyType.Type)
+                    && !m.Type.IsGenericParameter));
             }
 
             foreach (var constant in Constants)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == constant.PropertyType.Type && !m.Type.IsGenericParameter);
-                if (dependentMember != null)
-                {
-                    dependentTypes.Add(dependentMember);
-                }
+                dependentTypes.UnionWith(tsNamespace.Members.Where(m => m.Type == constant.PropertyType.Type
+                    && !m.Type.IsGenericParameter));
             }
 
             return dependentTypes;
+        }
+
+        public override bool HasMemeberInfoForOutput(TsGeneratorOptions generatorOptions)
+        {
+            if (base.HasMemeberInfoForOutput(generatorOptions))
+            {
+                return true;
+            }
+
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields)
+                && Fields.Any(f => !f.HasIgnoreAttribute))
+            {
+                return true;
+            }
+
+            if (BaseType == null)
+            {
+                return false;
+            }
+
+            return BaseType.HasMemeberInfoForOutput(generatorOptions);
         }
 
         public override bool IsExportable(TsGeneratorOptions generatorOptions)

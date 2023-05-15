@@ -475,15 +475,7 @@ namespace CSharpToTypeScript
 
             using (sb.IncreaseIndentation())
             {
-                var properties = propertiesToExport.Where(p => !p.HasIgnoreAttribute).OrderBy(p => this.FormatPropertyName(p)).ToList();
-
-                foreach (TsProperty property in properties)
-                {
-                    this._docAppender.AppendPropertyDoc(sb, property, this.FormatPropertyNameWithOptionalModifier(property),
-                        this.FormatPropertyType(namespaceName, property, importNames));
-                    sb.AppendLineIndented(string.Format("{0}: {1};", this.FormatPropertyNameWithOptionalModifier(property),
-                        this.FormatPropertyType(namespaceName, property, importNames)));
-                }
+                List<TsProperty> properties = AppendProperties(sb, classModel, importNames, propertiesToExport, namespaceName);
 
                 var requiredProperties = properties.Where(p => p.IsRequired).ToList();
                 if (requiredProperties.Count > 0)
@@ -526,6 +518,23 @@ namespace CSharpToTypeScript
             return propertiesToExport;
         }
 
+        protected virtual List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            List<TsProperty> propertiesToExport, string namespaceName)
+        {
+            var properties = propertiesToExport.Where(p => !p.HasIgnoreAttribute).OrderBy(p => this.FormatPropertyName(p)).ToList();
+
+            foreach (TsProperty property in properties)
+            {
+                this._docAppender.AppendPropertyDoc(sb, property, this.FormatPropertyNameWithOptionalModifier(property),
+                    this.FormatPropertyType(namespaceName, property, importNames));
+                sb.AppendLineIndented(string.Format("{0}: {1};", this.FormatPropertyNameWithOptionalModifier(property),
+                    this.FormatPropertyType(namespaceName, property, importNames)));
+            }
+
+            return properties;
+        }
+
         protected virtual IReadOnlyList<TsProperty> AppendTypeDefinition(
             TsTypeDefinition typeDefinitionModel,
             ScriptBuilder sb,
@@ -551,15 +560,7 @@ namespace CSharpToTypeScript
 
             using (sb.IncreaseIndentation())
             {
-                var properties = propertiesToExport.Where(p => !p.HasIgnoreAttribute).OrderBy(p => this.FormatPropertyName(p)).ToList();
-
-                foreach (TsProperty property in properties)
-                {
-                    this._docAppender.AppendPropertyDoc(sb, property, this.FormatPropertyNameWithOptionalModifier(property),
-                        this.FormatPropertyType(namespaceName, property, importNames));
-                    sb.AppendLineIndented(string.Format("{0}: {1};", this.FormatPropertyNameWithOptionalModifier(property),
-                        this.FormatPropertyType(namespaceName, property, importNames)));
-                }
+                AppendProperties(sb, typeDefinitionModel, importNames, propertiesToExport, namespaceName);
             }
             sb.AppendLineIndented("};");
             this._generatedTypeDefinitions.Add(typeDefinitionModel);

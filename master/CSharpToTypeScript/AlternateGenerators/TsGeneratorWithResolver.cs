@@ -18,8 +18,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
-            if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(c => !IsIgnored(c))))
+            if (HasMemeberInfoForOutput(@namespace, generatorOptions))
             {
                 sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace, generatorOptions))
                     + " } from 'react-hook-form';");
@@ -31,6 +30,12 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             return base.AppendImports(@namespace, sb, generatorOptions, dependencies);
+        }
+
+        protected bool HasMemeberInfoForOutput(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
+        {
+            return @namespace.Classes.Any(c => !IsIgnored(c) && c.HasMemeberInfoForOutput(generatorOptions)) 
+                || @namespace.TypeDefinitions.Any(d => !IsIgnored(d) && d.HasMemeberInfoForOutput(generatorOptions));
         }
 
         protected override void AppendAdditionalImports(
@@ -89,6 +94,21 @@ namespace CSharpToTypeScript.AlternateGenerators
             return propertiesToExport;
         }
 
+        protected override List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            List<TsProperty> propertiesToExport, string namespaceName)
+        {
+            foreach (var customValidationRule in tsModuleMemberWithHierarchy.ImplementedCustomValidationRules)
+            {
+                customValidationRule.ValidatorTypeName = FormatTypeName(namespaceName, tsModuleMemberWithHierarchy, importNames);
+                foreach (var targetType in customValidationRule.TargetTypes)
+                {
+                    customValidationRule.AddValidationFunction(sb, FormatTypeName(namespaceName, targetType, importNames));
+                }
+            }
+            return base.AppendProperties(sb, tsModuleMemberWithHierarchy, importNames, propertiesToExport, namespaceName);
+        }
+
         protected override IReadOnlyList<TsProperty> AppendTypeDefinition(
             TsTypeDefinition typeDefinitionModel,
             ScriptBuilder sb,
@@ -128,6 +148,13 @@ namespace CSharpToTypeScript.AlternateGenerators
                 && @namespace.Classes.Any(c => !IsIgnored(c) && c.BaseType != null))
             {
                 reactHookFormComponentNames.Add("ResolverOptions");
+            }
+
+            if (@namespace.Classes.Any(c => !IsIgnored(c) && c.GetCustomValidations(generatorOptions).Count > 0)
+                || @namespace.Interfaces.Any(d => !IsIgnored(d) && d.GetCustomValidations(generatorOptions).Count > 0)
+                || @namespace.TypeDefinitions.Any(d => !IsIgnored(d) && d.GetCustomValidations(generatorOptions).Count > 0))
+            {
+                reactHookFormComponentNames.Add("FieldError");
             }
 
             return reactHookFormComponentNames;

@@ -25,20 +25,7 @@
 /master/CSharpToTypeScript.Test/CSharpToTypeScript.Test.csproj.user
 /master/CSharpToTypeScript/Properties/launchSettings.json
 /master/CSharpToTypeScript/CSharpToTypeScript.csproj.user
-/Version1.0.0.9/.vs/CSharpToTypeScript/FileContentIndex
-/Version1.0.0.9/.vs
-/Version1.0.0.9/CSharpToTypeScript/bin
-/Version1.0.0.9/CSharpToTypeScript/obj
-/Version1.0.0.9/CSharpToTypeScript/CSharpToTypeScript.csproj.user
-/Version1.0.0.9/CSharpToTypeScript.Test/bin
-/Version1.0.0.9/CSharpToTypeScript.Test/obj
-/Version1.0.0.9/CSharpToTypeScript.Test/TestData/node_modules
-/Version1.0.0.9/CSharpToTypeScript.Test/TestResults
-/Version1.0.0.9/CSharpToTypeScript.vsix/bin
-/Version1.0.0.9/CSharpToTypeScript.vsix/obj
-/Version1.0.0.9/TestAssembly/bin
-/Version1.0.0.9/TestAssembly/obj
-/Version1.0.0.9/TestResults
+
 /master/TestAssembly/bin/Debug/net7.0/TestAssembly.pdb
 /master/TestAssembly/bin/Debug/net7.0/TestAssembly.dll
 /master/TestAssembly/bin/Release/net7.0/TestAssembly.dll
@@ -60,3 +47,5 @@
 /master/TestAssembly/obj/TestAssembly.csproj.nuget.dgspec.json
 /master/TestAssembly/obj/project.nuget.cache
 /master/TestAssembly/obj/project.assets.json
+/master/TestAssembly/obj/Debug/net7.0
+/master/TestAssembly/bin/Debug/net7.0

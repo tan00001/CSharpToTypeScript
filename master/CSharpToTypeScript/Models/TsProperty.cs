@@ -35,6 +35,7 @@ namespace CSharpToTypeScript.Models
         }
 
         public List<ITsValidationRule> ValidationRules { get; private set; }
+
         public DataMemberAttribute? DataMember { get; set; }
         public DisplayAttribute? Display { get; set; }
         public UIHintAttribute? UiHint { get; set; }
@@ -79,7 +80,7 @@ namespace CSharpToTypeScript.Models
             NotMapped = memberInfo.GetCustomAttribute<NotMappedAttribute>(false);
             DataType = memberInfo.GetCustomAttribute<DataTypeAttribute>(false);
 
-            AddValidationRules(memberInfo);
+            AddValidationRules(tsModuleService, memberInfo);
         }
 
         public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo)
@@ -97,7 +98,7 @@ namespace CSharpToTypeScript.Models
                 this.ConstantValue = null;
         }
 
-        private void AddValidationRules(MemberInfo memberInfo)
+        private void AddValidationRules(ITsModuleService tsModuleService, MemberInfo memberInfo)
         {
             var compare = memberInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
@@ -152,6 +153,12 @@ namespace CSharpToTypeScript.Models
             if (url != null)
             {
                 ValidationRules.Add(new UrlRule(url));
+            }
+
+            foreach(var customValidation in memberInfo.GetCustomAttributes<CustomValidationAttribute>(false))
+            {
+                var customValidationRule = new CustomValidationRule(customValidation);
+                ValidationRules.Add(customValidationRule);
             }
         }
 
