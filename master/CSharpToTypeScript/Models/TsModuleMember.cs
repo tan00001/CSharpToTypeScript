@@ -62,17 +62,20 @@ namespace CSharpToTypeScript.Models
             private set;
         }
 
+        /// <summary>
+        /// Get members of tsNamespace that depend on this current module member.
+        /// tsNamespace is different from the namespace of the this current module member.
+        /// </summary>
+        /// <param name="tsNamespace"></param>
+        /// <param name="generatorOptions"></param>
+        /// <returns></returns>
         public virtual HashSet<TsModuleMember> GetDependentTypes(TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
             var dependentTypes = new HashSet<TsModuleMember>();
 
             for (var parent = this.Type.BaseType; parent != null; parent = parent.BaseType)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == parent && !m.Type.IsGenericParameter);
-                if (dependentMember != null)
-                {
-                    dependentTypes.Add(dependentMember);
-                }
+                dependentTypes.UnionWith(tsNamespace.Members.Where(m => m.Type == parent && !m.Type.IsGenericParameter));
             }
 
             GetDependentTypes(dependentTypes, this.Interfaces, tsNamespace, generatorOptions);

@@ -81,23 +81,38 @@ namespace CSharpToTypeScript.Models
 
             foreach (var field in Fields)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == field.PropertyType.Type && !m.Type.IsGenericParameter);
-                if (dependentMember != null)
-                {
-                    dependentTypes.Add(dependentMember);
-                }
+                dependentTypes.UnionWith(tsNamespace.Members.Where(m => (m.Type == field.PropertyType.Type)
+                    && !m.Type.IsGenericParameter));
             }
 
             foreach (var constant in Constants)
             {
-                var dependentMember = tsNamespace.Members.FirstOrDefault(m => m.Type == constant.PropertyType.Type && !m.Type.IsGenericParameter);
-                if (dependentMember != null)
-                {
-                    dependentTypes.Add(dependentMember);
-                }
+                dependentTypes.UnionWith(tsNamespace.Members.Where(m => m.Type == constant.PropertyType.Type
+                    && !m.Type.IsGenericParameter));
             }
 
             return dependentTypes;
+        }
+
+        public override bool HasMemeberInfoForOutput(TsGeneratorOptions generatorOptions)
+        {
+            if (base.HasMemeberInfoForOutput(generatorOptions))
+            {
+                return true;
+            }
+
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields)
+                && Fields.Any(f => !f.HasIgnoreAttribute))
+            {
+                return true;
+            }
+
+            if (BaseType == null)
+            {
+                return false;
+            }
+
+            return BaseType.HasMemeberInfoForOutput(generatorOptions);
         }
 
         public override bool IsExportable(TsGeneratorOptions generatorOptions)
