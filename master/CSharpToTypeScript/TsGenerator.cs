@@ -1,4 +1,5 @@
-﻿using CSharpToTypeScript.Extensions;
+﻿using System.Reflection.Metadata;
+using CSharpToTypeScript.Extensions;
 using CSharpToTypeScript.Models;
 
 namespace CSharpToTypeScript
@@ -182,28 +183,28 @@ namespace CSharpToTypeScript
           TsGeneratorOptions generatorOptions,
           IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
-            List<TsClass> moduleClasses = @namespace.Classes.Where(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
+            List<TsClass> classes = @namespace.Classes.Where(c => !IsIgnored(c))
                 .OrderBy(c => this.GetTypeName(c))
                 .ToList();
-            List<TsTypeDefinition> moduleTypeDefinitions = @namespace.TypeDefinitions.Where(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
-                .OrderBy(c => this.GetTypeName(c))
+            List<TsTypeDefinition> typeDefinitions = @namespace.TypeDefinitions.Where(d => !IsIgnored(d))
+                .OrderBy(GetTypeName)
                 .ToList();
-            List<TsInterface> moduleInterfaces = @namespace.Interfaces.Where(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
-                .OrderBy(c => this.GetTypeName(c))
+            List<TsInterface> interfaces = @namespace.Interfaces.Where(i => !IsIgnored(i))
+                .OrderBy(GetTypeName)
                 .ToList();
-            List<TsEnum> moduleEnums = @namespace.Enums.Where(e => !this._typeConvertors.IsConvertorRegistered(e.Type) && !e.IsIgnored)
-                .OrderBy(e => this.GetTypeName(e))
+            List<TsEnum> enums = @namespace.Enums.Where(e => !IsIgnored(e))
+                .OrderBy(GetTypeName)
                 .ToList();
 
-            if (generatorOptions == TsGeneratorOptions.Enums && moduleEnums.Count == 0
-                || moduleEnums.Count == 0 && moduleClasses.Count == 0 && moduleTypeDefinitions.Count == 0 && moduleInterfaces.Count == 0
+            if (generatorOptions == TsGeneratorOptions.Enums && enums.Count == 0
+                || enums.Count == 0 && classes.Count == 0 && typeDefinitions.Count == 0 && interfaces.Count == 0
                 || generatorOptions == TsGeneratorOptions.Properties 
-                    && !moduleClasses.Any(c => c.Fields.Any() || c.Properties.Any())
-                    && !moduleTypeDefinitions.Any(c => c.Fields.Any() || c.Properties.Any())
-                    && !moduleInterfaces.Any(i => i.Properties.Any())
+                    && !classes.Any(c => c.Fields.Any() || c.Properties.Any())
+                    && !typeDefinitions.Any(c => c.Fields.Any() || c.Properties.Any())
+                    && !interfaces.Any(i => i.Properties.Any())
                 || generatorOptions == TsGeneratorOptions.Constants 
-                    && !moduleTypeDefinitions.Any(c => c.Constants.Any())
-                    && !moduleClasses.Any(c => c.Constants.Any()))
+                    && !typeDefinitions.Any(c => c.Constants.Any())
+                    && !classes.Any(c => c.Constants.Any()))
                 return TypeScriptFileType;
 
             string namespaceName = this.FormatNamespaceName(@namespace);
@@ -214,16 +215,16 @@ namespace CSharpToTypeScript
                 using (sb.IncreaseIndentation())
                 {
                     AppendImports(@namespace, sb, generatorOptions, dependencies);
-                    fileType = AppendNamespace(sb, generatorOptions, moduleClasses, moduleTypeDefinitions,
-                        moduleInterfaces, moduleEnums, new Dictionary<string, IReadOnlyDictionary<string, Int32>>());
+                    fileType = AppendNamespace(sb, generatorOptions, classes, typeDefinitions,
+                        interfaces, enums, new Dictionary<string, IReadOnlyDictionary<string, Int32>>());
                 }
                 sb.AppendLine("}");
             }
             else
             {
                 var importedNames = AppendImports(@namespace, sb, generatorOptions, dependencies);
-                fileType = AppendNamespace(sb, generatorOptions, moduleClasses, moduleTypeDefinitions,
-                    moduleInterfaces, moduleEnums, importedNames);
+                fileType = AppendNamespace(sb, generatorOptions, classes, typeDefinitions,
+                    interfaces, enums, importedNames);
             }
 
             return fileType;
@@ -286,77 +287,41 @@ namespace CSharpToTypeScript
         }
 
         protected virtual string AppendNamespace(ScriptBuilder sb, TsGeneratorOptions generatorOptions,
-            IReadOnlyList<TsClass> moduleClasses, 
-            IReadOnlyList<TsTypeDefinition> moduleTypeDefinitions,
-            IReadOnlyList<TsInterface> moduleInterfaces,
-            IReadOnlyList<TsEnum> moduleEnums, 
+            IReadOnlyList<TsClass> classes, 
+            IReadOnlyList<TsTypeDefinition> typeDefinitions,
+            IReadOnlyList<TsInterface> interfaces,
+            IReadOnlyList<TsEnum> enums, 
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
             int generatedSectionCount = 0;
 
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Constants))
-            {
-                var constants = moduleClasses.Where(c => !c.IsIgnored).SelectMany(c => c.Constants.Where(ct => !ct.HasIgnoreAttribute)).ToList();
-                if (constants.Count > 0)
-                {
-                    string namespaceName = FormatNamespaceName(moduleClasses[0].Namespace!);
+            generatedSectionCount = AppendNamceSpaceConstants(sb, generatorOptions, classes, typeDefinitions, importNames,
+                generatedSectionCount);
 
-                    for (var i = 0; i < constants.Count; ++i)
-                    {
-                        var ct = constants[i];
-                        this.AppendConstantDefinition(namespaceName, ct, sb, importNames);
-                    }
-                    ++generatedSectionCount;
-                }
+            generatedSectionCount = AppendNameSpaceEnums(sb, generatorOptions, enums, generatedSectionCount);
 
-                constants = moduleTypeDefinitions.Where(c => !c.IsIgnored).SelectMany(c => c.Constants.Where(ct => !ct.HasIgnoreAttribute)).ToList();
-                if (constants.Count > 0)
-                {
-                    string namespaceName = FormatNamespaceName(moduleTypeDefinitions[0].Namespace!);
+            AppendNamespaceMembersWithHierarchies(sb, generatorOptions, classes, typeDefinitions, interfaces,
+                importNames, generatedSectionCount);
 
-                    for (var i = 0; i < constants.Count; ++i)
-                    {
-                        var ct = constants[i];
-                        this.AppendConstantDefinition(namespaceName, ct, sb, importNames);
-                    }
-                    ++generatedSectionCount;
-                }
-            }
+            return TypeScriptFileType;
+        }
 
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Enums))
-            {
-                var enums = moduleEnums.Where(e => !e.IsIgnored).ToList();
-
-                if (enums.Count > 0)
-                {
-                    if (generatedSectionCount > 0)
-                    {
-                        sb.AppendLine();
-                    }
-
-                    for (var i = 0; i < enums.Count; ++i)
-                    {
-                        TsEnum enumModel = moduleEnums[i];
-                        this.AppendEnumDefinition(enumModel, sb, generatorOptions);
-                        if (i < moduleEnums.Count - 1)
-                        {
-                            sb.AppendLine();
-                        }
-                        ++generatedSectionCount;
-                    }
-                }
-            }
-
+        protected virtual void AppendNamespaceMembersWithHierarchies(ScriptBuilder sb, TsGeneratorOptions generatorOptions,
+            IReadOnlyList<TsClass> classes, IReadOnlyList<TsTypeDefinition> typeDefinitions,
+            IReadOnlyList<TsInterface> interfaces, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            int generatedSectionCount)
+        {
             if (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
             {
-                var interfaces = moduleInterfaces.Where(i => !i.IsIgnored).OrderBy(i => i, TsInterfaceComparer).ThenBy(i => this.GetTypeName(i)).ToList();
-
                 if (interfaces.Count > 0)
                 {
                     if (generatedSectionCount > 0)
                     {
                         sb.AppendLine();
                     }
+
+                    interfaces = interfaces.OrderBy(i => i, TsInterfaceComparer)
+                        .ThenBy(GetTypeName).ToList();
 
                     for (var i = 0; i < interfaces.Count; ++i)
                     {
@@ -370,13 +335,14 @@ namespace CSharpToTypeScript
                     }
                 }
 
-                var typeDefinitions = moduleTypeDefinitions.Where(c => !c.IsIgnored).OrderBy(c => this.GetTypeName(c)).ToList();
                 if (typeDefinitions.Count > 0)
                 {
                     if (generatedSectionCount > 0)
                     {
                         sb.AppendLine();
                     }
+
+                    typeDefinitions = typeDefinitions.OrderBy(GetTypeName).ToList();
 
                     for (var i = 0; i < typeDefinitions.Count; ++i)
                     {
@@ -389,13 +355,15 @@ namespace CSharpToTypeScript
                     }
                 }
 
-                var classes = moduleClasses.Where(c => !c.IsIgnored).OrderBy(c => c, TsClassComparer).ThenBy(c => this.GetTypeName(c)).ToList();
                 if (classes.Count > 0)
                 {
                     if (generatedSectionCount > 0)
                     {
                         sb.AppendLine();
                     }
+
+                    classes = classes.Where(c => !IsIgnored(c)).OrderBy(c => c, TsClassComparer)
+                        .ThenBy(GetTypeName).ToList();
 
                     for (var i = 0; i < classes.Count; ++i)
                     {
@@ -408,8 +376,70 @@ namespace CSharpToTypeScript
                     }
                 }
             }
+        }
 
-            return TypeScriptFileType;
+        protected virtual int AppendNameSpaceEnums(ScriptBuilder sb, TsGeneratorOptions generatorOptions,
+            IReadOnlyList<TsEnum> enums, int generatedSectionCount)
+        {
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Enums))
+            {
+                if (enums.Count > 0)
+                {
+                    if (generatedSectionCount > 0)
+                    {
+                        sb.AppendLine();
+                    }
+
+                    for (var i = 0; i < enums.Count; ++i)
+                    {
+                        TsEnum enumModel = enums[i];
+                        this.AppendEnumDefinition(enumModel, sb, generatorOptions);
+                        if (i < enums.Count - 1)
+                        {
+                            sb.AppendLine();
+                        }
+                        ++generatedSectionCount;
+                    }
+                }
+            }
+
+            return generatedSectionCount;
+        }
+
+        protected int AppendNamceSpaceConstants(ScriptBuilder sb, TsGeneratorOptions generatorOptions, 
+            IReadOnlyList<TsClass> classes, IReadOnlyList<TsTypeDefinition> typeDefinitions, 
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames, int generatedSectionCount)
+        {
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Constants))
+            {
+                var constants = classes.SelectMany(c => c.Constants.Where(ct => !ct.HasIgnoreAttribute)).ToList();
+                if (constants.Count > 0)
+                {
+                    string namespaceName = FormatNamespaceName(classes[0].Namespace!);
+
+                    for (var i = 0; i < constants.Count; ++i)
+                    {
+                        var ct = constants[i];
+                        this.AppendConstantDefinition(namespaceName, ct, sb, importNames);
+                    }
+                    ++generatedSectionCount;
+                }
+
+                constants = typeDefinitions.SelectMany(c => c.Constants.Where(ct => !ct.HasIgnoreAttribute)).ToList();
+                if (constants.Count > 0)
+                {
+                    string namespaceName = FormatNamespaceName(typeDefinitions[0].Namespace!);
+
+                    for (var i = 0; i < constants.Count; ++i)
+                    {
+                        var ct = constants[i];
+                        this.AppendConstantDefinition(namespaceName, ct, sb, importNames);
+                    }
+                    ++generatedSectionCount;
+                }
+            }
+
+            return generatedSectionCount;
         }
 
         protected virtual IReadOnlyList<TsProperty> AppendClassDefinition(
@@ -576,21 +606,6 @@ namespace CSharpToTypeScript
             return typeName;
         }
 
-        private static string BuildImportName(string typeName, int usageCount)
-        {
-            if (typeName.Length < 1)
-            {
-                throw new Exception("Type name cannot be blank.");
-            }
-
-            if (usageCount == 0)
-            {
-                return "imp" + char.ToUpper(typeName[0]) + typeName.Substring(1);
-            }
-
-            return "imp" + char.ToUpper(typeName[0]) + typeName.Substring(1) + usageCount;
-        }
-
         protected virtual void AppendInterfaceDefinition(
           TsInterface interfaceModel,
           ScriptBuilder sb,
@@ -660,9 +675,24 @@ namespace CSharpToTypeScript
             sb.AppendLine();
         }
 
-        public string FormatNamespaceName(TsNamespace @namespace) => this._namespaceNameFormatter(@namespace);
+        protected static string BuildImportName(string typeName, int usageCount)
+        {
+            if (typeName.Length < 1)
+            {
+                throw new Exception("Type name cannot be blank.");
+            }
 
-        public string FormatPropertyNameWithOptionalModifier(TsProperty property)
+            if (usageCount == 0)
+            {
+                return "imp" + char.ToUpper(typeName[0]) + typeName.Substring(1);
+            }
+
+            return "imp" + char.ToUpper(typeName[0]) + typeName.Substring(1) + usageCount;
+        }
+
+        protected string FormatNamespaceName(TsNamespace @namespace) => this._namespaceNameFormatter(@namespace);
+
+        protected string FormatPropertyNameWithOptionalModifier(TsProperty property)
         {
             string propertyName = this._memberFormatter(property);
             if (!property.IsRequired)
@@ -670,12 +700,12 @@ namespace CSharpToTypeScript
             return propertyName;
         }
 
-        public string FormatPropertyName(TsProperty property)
+        protected string FormatPropertyName(TsProperty property)
         {
             return this._memberFormatter(property);
         }
 
-        public string FormatPropertyType(string currentNamespaceName, TsProperty property,
+        protected string FormatPropertyType(string currentNamespaceName, TsProperty property,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
             string? qualifiedTypeName = this.GetFullyQualifiedTypeName(property.PropertyType);
@@ -695,7 +725,7 @@ namespace CSharpToTypeScript
             return typeName;
         }
 
-        public string? GetFullyQualifiedTypeName(TsType? type)
+        protected string? GetFullyQualifiedTypeName(TsType? type)
         {
             if (type == null)
             {
@@ -721,7 +751,7 @@ namespace CSharpToTypeScript
             return type.Type.IsGenericParameter || string.IsNullOrEmpty(namespaceName) ? this.GetTypeName(type) : namespaceName + "." + this.GetTypeName(type);
         }
 
-        public string GetCollectionModuleName(TsCollection collectionType)
+        protected string GetCollectionModuleName(TsCollection collectionType)
         {
             if (collectionType.ItemsType is TsModuleMember tsModuleMember
                 && !this._typeConvertors.IsConvertorRegistered(collectionType.ItemsType.Type)
@@ -737,16 +767,21 @@ namespace CSharpToTypeScript
             return string.Empty;
         }
 
-        public string? GetTypeName(TsType type) => this._typeConvertors.IsConvertorRegistered(type.Type) ? this._typeConvertors.ConvertType(type.Type)
-            : this._typeFormatters.FormatType(type);
-
-        public static string GetPropertyConstantValue(TsProperty property)
+        protected static string GetPropertyConstantValue(TsProperty property)
         {
             string str = property.PropertyType.Type == typeof(string) ? "\"" : "";
             return str + property.ConstantValue?.ToString() + str;
         }
 
-        public bool GetTypeVisibility(TsType tsType, string? typeName) => this._typeVisibilityFormatter(tsType, typeName);
+        protected string? GetTypeName(TsType type) => this._typeConvertors.IsConvertorRegistered(type.Type) ? this._typeConvertors.ConvertType(type.Type)
+            : this._typeFormatters.FormatType(type);
+
+        protected bool GetTypeVisibility(TsType tsType, string? typeName) => this._typeVisibilityFormatter(tsType, typeName);
+
+        protected bool IsIgnored(TsModuleMember tsModuleMember)
+        {
+            return tsModuleMember.IsIgnored || this._typeConvertors.IsConvertorRegistered(tsModuleMember.Type);
+        }
 
         protected static string ToCamelCase(string s) => s.Length > 0 ? (char.ToLower(s[0]) + s.Substring(1)) : s;
     }

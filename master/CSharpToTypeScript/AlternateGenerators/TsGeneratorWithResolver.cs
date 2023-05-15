@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CSharpToTypeScript.Models;
 using System;
+using System.Collections.Generic;
 
 namespace CSharpToTypeScript.AlternateGenerators
 {
@@ -11,19 +12,6 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
         }
 
-        protected virtual IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
-        {
-            if (classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored && c.BaseType != null))
-            {
-                return new string[]{ "Resolver", "FieldErrors", "ResolverOptions" };
-            }
-            else
-            {
-                return new string[] { "Resolver", "FieldErrors" };
-            }
-        }
-
-
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
@@ -31,10 +19,9 @@ namespace CSharpToTypeScript.AlternateGenerators
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
             if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
-                    || @namespace.TypeDefinitions.Any(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)))
+                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(c => !IsIgnored(c))))
             {
-                sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace.Classes))
+                sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace, generatorOptions))
                     + " } from 'react-hook-form';");
 
                 if (dependencies.Count == 0 && !HasAdditionalImports(@namespace, generatorOptions))
@@ -58,7 +45,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                 return;
             }
 
-            var baseClassesByNamespace = @namespace.Classes.Where(c => !this._typeConvertors.IsConvertorRegistered(c.Type) && !c.IsIgnored)
+            var baseClassesByNamespace = @namespace.Classes.Where(c => !IsIgnored(c))
                 .Where(c => c.BaseType != null && c.BaseType.Namespace != @namespace)
                 .Select(c => c.BaseType!)
                 .GroupBy(c => c.NamespaceName);
@@ -80,7 +67,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
             sb.AppendLine();
 
-            var propertyList = propertiesToExport.ToImmutableSortedDictionary(a => this.FormatPropertyName(a), a => a);
+            var propertyList = propertiesToExport.ToImmutableSortedDictionary(FormatPropertyName, a => a);
 
             if (classModel.ImplementedGenericTypes.Count > 0)
             {
@@ -128,6 +115,39 @@ namespace CSharpToTypeScript.AlternateGenerators
             return propertiesToExport;
         }
 
+        protected static string BuildVariableNameWithGenericArguments(string typeName)
+        {
+            return typeName.Replace("<", "").Replace(", ", "").TrimEnd('>');
+        }
+
+        protected virtual IReadOnlyList<string> GetReactHookFormComponentNames(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
+        {
+            List<string> reactHookFormComponentNames = new() { "Resolver", "FieldErrors" };
+
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties)
+                && @namespace.Classes.Any(c => !IsIgnored(c) && c.BaseType != null))
+            {
+                reactHookFormComponentNames.Add("ResolverOptions");
+            }
+
+            return reactHookFormComponentNames;
+        }
+
+        protected string SubstituteTypeParameters(string? typeName, IReadOnlyList<TsType> genericArguments,
+            string namespaceName, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
+        {
+            if (string.IsNullOrEmpty(typeName))
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            var argumentIndex = typeName.IndexOf('<');
+
+            return string.Concat(typeName.AsSpan(0, argumentIndex), "<", string.Join(", ", genericArguments
+                .Select(a => this.FormatTypeName(namespaceName, a, importNames))), ">");
+        }
+
+        #region Private Methods
         private void AppendClassDefinition(TsClass classModel, ScriptBuilder sb, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames, ImmutableSortedDictionary<string, TsProperty> propertyList)
         {
             string typeName = this.GetTypeName(classModel) ?? throw new ArgumentException("Class type name cannot be blank.", nameof(classModel));
@@ -192,7 +212,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             sb.AppendLineIndented("};");
         }
 
-
         private void AppendTypeDefinition(TsTypeDefinition typeDefinitionModel, ScriptBuilder sb, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames, ImmutableSortedDictionary<string, TsProperty> propertyList)
         {
             string typeName = this.GetTypeName(typeDefinitionModel) ?? throw new ArgumentException("Struct type name cannot be blank.", nameof(typeDefinitionModel));
@@ -208,25 +227,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             string resolverName = BuildVariableNameWithGenericArguments(typeName);
             AppendResolverDefinition(typeDefinitionModel, sb, importNames, propertyList, typeName, resolverName);
         }
-
-
-        protected static string BuildVariableNameWithGenericArguments(string typeName)
-        {
-            return typeName.Replace("<", "").Replace(", " , "").TrimEnd('>');
-        }
-
-        protected string SubstituteTypeParameters(string? typeName, IReadOnlyList<TsType> genericArguments,
-            string namespaceName, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
-        {
-            if (string.IsNullOrEmpty(typeName))
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            var argumentIndex = typeName.IndexOf('<');
-
-            return string.Concat(typeName.AsSpan(0, argumentIndex), "<", string.Join(", ", genericArguments
-                .Select(a => this.FormatTypeName(namespaceName, a, importNames))), ">");
-        }
+        #endregion // Private Methods
     }
 }

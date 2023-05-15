@@ -33,7 +33,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
             if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !c.IsIgnored) || @namespace.TypeDefinitions.Any(c => !c.IsIgnored)))
+                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(d => !IsIgnored(d))))
             {
                 sb.AppendLine("import { useId } from 'react';");
             }
@@ -51,7 +51,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, dependencies, importIndices);
 
             bool hasForms = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) || tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !c.IsIgnored) || @namespace.TypeDefinitions.Any(c => !c.IsIgnored));
+                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(c => !IsIgnored(c)));
 
             if (hasForms)
             {
@@ -121,7 +121,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             IReadOnlyList<TsEnum> moduleEnums, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
             bool hasForms = (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (moduleClasses.Any(c => !c.IsIgnored) || moduleTypeDefinitions.Any(d => !d.IsIgnored));
+                && (moduleClasses.Any(c => !IsIgnored(c)) || moduleTypeDefinitions.Any(d => !IsIgnored(d)));
 
             var fileType = base.AppendNamespace(sb, generatorOptions, moduleClasses, moduleTypeDefinitions,
                 moduleInterfaces, moduleEnums, importNames);
@@ -225,11 +225,11 @@ namespace CSharpToTypeScript.AlternateGenerators
             return propertiesToExport;
         }
 
-        protected override IReadOnlyList<string> GetReactHookFormComponentNames(IEnumerable<TsClass> classes)
+        protected override IReadOnlyList<string> GetReactHookFormComponentNames(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
         {
             List<string> reactHookFormComponentNames = new() { "useForm", "SubmitHandler" };
 
-            reactHookFormComponentNames.AddRange(base.GetReactHookFormComponentNames(classes));
+            reactHookFormComponentNames.AddRange(base.GetReactHookFormComponentNames(@namespace, generatorOptions));
 
             return reactHookFormComponentNames;
         }
@@ -237,7 +237,7 @@ namespace CSharpToTypeScript.AlternateGenerators
         protected override bool HasAdditionalImports(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
         {
             return (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && @namespace.Classes.Any(c => !c.IsIgnored);
+                && @namespace.Classes.Any(c => !IsIgnored(c));
         }
 
         #region Private Methods

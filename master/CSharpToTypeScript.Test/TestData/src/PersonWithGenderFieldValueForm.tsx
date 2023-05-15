@@ -109,7 +109,12 @@ export const PersonWithValidationForm = (props: PersonWithValidationFormData) =>
 };
 
 export class PersonWithGenderFieldValue extends PersonWithValidation {
-	gender?: Gender;
+	gender: Gender | null;
+
+	constructor(gender?: Gender | null, name?: string) {
+		super(name);
+		this.gender = gender ?? null;
+	}
 }
 
 export const PersonWithGenderFieldValueResolver: Resolver<PersonWithGenderFieldValue> = async (values) => {
@@ -153,7 +158,6 @@ export const PersonWithGenderFieldValueForm = (props: PersonWithGenderFieldValue
 			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-gender"}>Gender:</label>
 				<select className={getClassName(touchedFields.gender, errors.gender)} id={formId + "-gender"} {...register("gender", { valueAsNumber: true })}>
-					<option value="">Select a Gender</option>
 					<option value="0">Unknown</option>
 					<option value="1">Male</option>
 					<option value="2">Female</option>
