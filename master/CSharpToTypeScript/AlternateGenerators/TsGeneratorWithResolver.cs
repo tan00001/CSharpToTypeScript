@@ -18,8 +18,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
-            if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(c => !IsIgnored(c))))
+            if (HasMemeberInfoForOutput(@namespace, generatorOptions))
             {
                 sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace, generatorOptions))
                     + " } from 'react-hook-form';");
@@ -31,6 +30,12 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             return base.AppendImports(@namespace, sb, generatorOptions, dependencies);
+        }
+
+        protected bool HasMemeberInfoForOutput(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
+        {
+            return @namespace.Classes.Any(c => !IsIgnored(c) && c.HasMemeberInfoForOutput(generatorOptions)) 
+                || @namespace.TypeDefinitions.Any(d => !IsIgnored(d) && d.HasMemeberInfoForOutput(generatorOptions));
         }
 
         protected override void AppendAdditionalImports(

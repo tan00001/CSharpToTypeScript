@@ -1,4 +1,7 @@
-﻿namespace CSharpToTypeScript.Models
+﻿using System.Reflection;
+using System.Runtime.Serialization;
+
+namespace CSharpToTypeScript.Models
 {
     internal class TsModuleService : ITsModuleService
     {
@@ -64,13 +67,13 @@
             TsModule module = GetModule(moduleName);
 
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
-                clrType.Name, out TsModuleMember? tsModuleMember))
+                GetTsTypeName(clrType), out TsModuleMember? tsModuleMember))
             {
                 _TypesBeingProcessed.Push(clrType);
-                tsModuleMember = new TsClass(this, clrType);
-                module.Add(tsModuleMember);
+                var tsClass = new TsClass(this, clrType);
+                module.Add(tsClass);
                 _TypesBeingProcessed.Pop();
-                return (TsClass)tsModuleMember;
+                return tsClass;
             }
 
             if (tsModuleMember is TsClass classType)
@@ -87,18 +90,18 @@
             TsModule module = GetModule(moduleName);
 
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
-                clrType.Name, out TsModuleMember? tsModuleMember))
+                GetTsTypeName(clrType), out TsModuleMember? tsModuleMember))
             {
                 _TypesBeingProcessed.Push(clrType);
-                tsModuleMember = new TsTypeDefinition(this, clrType);
-                module.Add(tsModuleMember);
+                var tsTypeDefinition = new TsTypeDefinition(this, clrType);
+                module.Add(tsTypeDefinition);
                 _TypesBeingProcessed.Pop();
-                return (TsTypeDefinition)tsModuleMember;
+                return tsTypeDefinition;
             }
 
-            if (tsModuleMember is TsTypeDefinition classType)
+            if (tsModuleMember is TsTypeDefinition typeDefinition)
             {
-                return classType;
+                return typeDefinition;
             }
 
             throw new Exception("Name conflict. \"" + tsModuleMember!.Name + "\" is defined more than once.");
@@ -110,11 +113,11 @@
             TsModule module = GetModule(moduleName);
 
             if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
-                clrType.Name, out TsModuleMember? tsModuleMember))
+                GetTsTypeName(clrType), out TsModuleMember? tsModuleMember))
             {
-                tsModuleMember = new TsInterface(this, clrType);
-                module.Add(tsModuleMember);
-                return (TsInterface)tsModuleMember;
+                var tsInterface = new TsInterface(this, clrType);
+                module.Add(tsInterface);
+                return tsInterface;
             }
 
             if (tsModuleMember is TsInterface interfaceType)
@@ -151,5 +154,18 @@
             return _TypesBeingProcessed.Contains(type);
         }
         #endregion // IModuleService
+
+        #region Private Methods
+        private static string GetTsTypeName(Type type)
+        {
+            var dataContract = type.GetCustomAttribute<DataContractAttribute>(false);
+            if (dataContract != null && !string.IsNullOrEmpty(dataContract.Name))
+            {
+                return dataContract.Name;
+            }
+
+            return type.Name;
+        }
+        #endregion
     }
 }

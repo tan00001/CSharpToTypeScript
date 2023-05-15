@@ -28,6 +28,13 @@
             toAdd.Namespace = this;
         }
 
+        /// <summary>
+        /// Get members of tsNamespace that depend on this current namespace.
+        /// tsNamespace is different from this current namespace.
+        /// </summary>
+        /// <param name="tsNamespace"></param>
+        /// <param name="generatorOptions"></param>
+        /// <returns></returns>
         internal IReadOnlyCollection<TsModuleMember> GetDependentMembers(TsNamespace tsNamespace, TsGeneratorOptions generatorOptions)
         {
             HashSet<TsModuleMember>? dependentTypes = null;

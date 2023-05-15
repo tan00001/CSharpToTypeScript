@@ -35,6 +35,7 @@ namespace CSharpToTypeScript.Models
         }
 
         public List<ITsValidationRule> ValidationRules { get; private set; }
+
         public DataMemberAttribute? DataMember { get; set; }
         public DisplayAttribute? Display { get; set; }
         public UIHintAttribute? UiHint { get; set; }
