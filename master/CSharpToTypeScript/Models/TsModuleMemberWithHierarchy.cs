@@ -1,8 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection;
-using System.Text.Json.Serialization;
-
-namespace CSharpToTypeScript.Models
+﻿namespace CSharpToTypeScript.Models
 {
     // This can be either an interface or a class
     public abstract class TsModuleMemberWithHierarchy : TsModuleMember

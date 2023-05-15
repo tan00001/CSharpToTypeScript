@@ -1,7 +1,7 @@
 ﻿import { Resolver, FieldErrors } from 'react-hook-form';
 
 export class PersonWithFieldValues {
-	age?: number;
+	age?: number | null;
 	id?: number;
 	location?: string | null;
 	name: string;

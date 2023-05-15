@@ -51,13 +51,12 @@ namespace CSharpToTypeScript.Models
             }
         }
 
-        public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo)
+        private TsProperty(ITsModuleService tsModuleService, MemberInfo memberInfo, Type type, bool isNullableReferenceType)
         {
-            this.MemberInfo = propertyInfo;
-            this.Name = propertyInfo.Name;
+            this.MemberInfo = memberInfo;
+            this.Name = memberInfo.Name;
             this.ValidationRules = new List<ITsValidationRule>();
 
-            Type type = propertyInfo.PropertyType;
             if (type.IsNullableValueType())
             {
                 type = type.GetNullableValueType();
@@ -65,170 +64,95 @@ namespace CSharpToTypeScript.Models
             }
             else
             {
-                IsNullable = propertyInfo.IsNullableReferenceType();
+                IsNullable = isNullableReferenceType;
             }
 
-            this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => new TsType(o)).ToArray() : Array.Empty<TsType>();
+            this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => new TsType(o)).ToArray() 
+                : Array.Empty<TsType>();
             this.PropertyType = TsType.Create(tsModuleService, type);
 
-            DataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>(false);
-            Display = propertyInfo.GetCustomAttribute<DisplayAttribute>(false);
-            JsonIgnore = propertyInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
-            JsonPropertyName = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
-            UiHint = propertyInfo.GetCustomAttribute<UIHintAttribute>(false);
-            NotMapped = propertyInfo.GetCustomAttribute<NotMappedAttribute>(false);
-            DataType = propertyInfo.GetCustomAttribute<DataTypeAttribute>(false);
+            DataMember = memberInfo.GetCustomAttribute<DataMemberAttribute>(false);
+            Display = memberInfo.GetCustomAttribute<DisplayAttribute>(false);
+            JsonIgnore = memberInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
+            JsonPropertyName = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
+            UiHint = memberInfo.GetCustomAttribute<UIHintAttribute>(false);
+            NotMapped = memberInfo.GetCustomAttribute<NotMappedAttribute>(false);
+            DataType = memberInfo.GetCustomAttribute<DataTypeAttribute>(false);
 
-            var compare = propertyInfo.GetCustomAttribute<CompareAttribute>(false);
+            AddValidationRules(memberInfo);
+        }
+
+        public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo)
+            : this(tsModuleService, propertyInfo, propertyInfo.PropertyType, propertyInfo.IsNullableReferenceType())
+        {
+            this.ConstantValue = null;
+        }
+
+        public TsProperty(ITsModuleService tsModuleService, FieldInfo fieldInfo)
+            : this(tsModuleService, fieldInfo, fieldInfo.FieldType, fieldInfo.IsNullableReferenceType())
+        {
+            if (fieldInfo.IsLiteral && !fieldInfo.IsInitOnly)
+                this.ConstantValue = fieldInfo.GetValue(null);
+            else
+                this.ConstantValue = null;
+        }
+
+        private void AddValidationRules(MemberInfo memberInfo)
+        {
+            var compare = memberInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
             {
                 ValidationRules.Add(new CompareRule(compare));
             }
 
-            var creditCard = propertyInfo.GetCustomAttribute<CreditCardAttribute>(false);
+            var creditCard = memberInfo.GetCustomAttribute<CreditCardAttribute>(false);
             if (creditCard != null)
             {
                 ValidationRules.Add(new CreditCardRule(creditCard));
             }
 
-            var emailAddress = propertyInfo.GetCustomAttribute<EmailAddressAttribute>(false);
+            var emailAddress = memberInfo.GetCustomAttribute<EmailAddressAttribute>(false);
             if (emailAddress != null)
             {
                 ValidationRules.Add(new EmailAddressRule(emailAddress));
             }
 
-            var phone = propertyInfo.GetCustomAttribute<PhoneAttribute>(false);
+            var phone = memberInfo.GetCustomAttribute<PhoneAttribute>(false);
             if (phone != null)
             {
                 ValidationRules.Add(new PhoneNumberRule(phone));
             }
 
-            var range = propertyInfo.GetCustomAttribute<RangeAttribute>(false);
+            var range = memberInfo.GetCustomAttribute<RangeAttribute>(false);
             if (range != null)
             {
                 ValidationRules.Add(new RangeRule(range, DataType));
             }
 
-            var regularExpression = propertyInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
+            var regularExpression = memberInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
             if (regularExpression != null)
             {
                 ValidationRules.Add(new RegularExpressionRule(regularExpression));
             }
 
-            var required = propertyInfo.GetCustomAttribute<RequiredAttribute>(false);
+            var required = memberInfo.GetCustomAttribute<RequiredAttribute>(false);
             if (required != null || DataMember?.IsRequired == true)
             {
                 IsRequired = true;
                 ValidationRules.Add(new RequiredRule(required, DataMember));
             }
 
-            var stringLength = propertyInfo.GetCustomAttribute<StringLengthAttribute>(false);
+            var stringLength = memberInfo.GetCustomAttribute<StringLengthAttribute>(false);
             if (stringLength != null)
             {
                 ValidationRules.Add(new StringLengthRule(stringLength));
             }
 
-            var url = propertyInfo.GetCustomAttribute<UrlAttribute>(false);
+            var url = memberInfo.GetCustomAttribute<UrlAttribute>(false);
             if (url != null)
             {
                 ValidationRules.Add(new UrlRule(url));
             }
-
-            this.ConstantValue = null;
-        }
-
-        public TsProperty(ITsModuleService tsModuleService, FieldInfo fieldInfo)
-        {
-            this.MemberInfo = fieldInfo;
-            this.Name = fieldInfo.Name;
-            this.ValidationRules = new List<ITsValidationRule>();
-
-            if (fieldInfo.ReflectedType?.IsGenericType == true)
-            {
-                this.PropertyType = !fieldInfo.ReflectedType?.GetGenericTypeDefinition()?.GetProperty(fieldInfo.Name)?.PropertyType.IsGenericParameter == true ?
-                    TsType.Create(tsModuleService, fieldInfo.FieldType) : TsType.Any;
-            }
-            else
-            {
-                Type type = fieldInfo.FieldType;
-                if (type.IsNullableValueType())
-                {
-                    type = type.GetNullableValueType();
-                }
-                else
-                {
-                    IsNullable = fieldInfo.IsNullableReferenceType();
-                }
-                this.PropertyType = TsType.Create(tsModuleService, type);
-            }
-            this.GenericArguments = Array.Empty<TsType>();
-
-            DataMember = fieldInfo.GetCustomAttribute<DataMemberAttribute>(false);
-            Display = fieldInfo.GetCustomAttribute<DisplayAttribute>(false);
-            JsonIgnore = fieldInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
-            JsonPropertyName = fieldInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
-            UiHint = fieldInfo.GetCustomAttribute<UIHintAttribute>(false);
-            NotMapped = fieldInfo.GetCustomAttribute<NotMappedAttribute>(false);
-            DataType = fieldInfo.GetCustomAttribute<DataTypeAttribute>(false);
-
-            var compare = fieldInfo.GetCustomAttribute<CompareAttribute>(false);
-            if (compare != null)
-            {
-                ValidationRules.Add(new CompareRule(compare));
-            }
-
-            var creditCard = fieldInfo.GetCustomAttribute<CreditCardAttribute>(false);
-            if (creditCard != null)
-            {
-                ValidationRules.Add(new CreditCardRule(creditCard));
-            }
-
-            var emailAddress = fieldInfo.GetCustomAttribute<EmailAddressAttribute>(false);
-            if (emailAddress != null)
-            {
-                ValidationRules.Add(new EmailAddressRule(emailAddress));
-            }
-
-            var phone = fieldInfo.GetCustomAttribute<PhoneAttribute>(false);
-            if (phone != null)
-            {
-                ValidationRules.Add(new PhoneNumberRule(phone));
-            }
-
-            var range = fieldInfo.GetCustomAttribute<RangeAttribute>(false);
-            if (range != null)
-            {
-                ValidationRules.Add(new RangeRule(range, DataType));
-            }
-
-            var regularExpression = fieldInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
-            if (regularExpression != null)
-            {
-                ValidationRules.Add(new RegularExpressionRule(regularExpression));
-            }
-
-            var required = fieldInfo.GetCustomAttribute<RequiredAttribute>(false);
-            if (required != null || DataMember?.IsRequired == true)
-            {
-                ValidationRules.Add(new RequiredRule(required, DataMember));
-            }
-
-            var stringLength = fieldInfo.GetCustomAttribute<StringLengthAttribute>(false);
-            if (stringLength != null)
-            {
-                ValidationRules.Add(new StringLengthRule(stringLength));
-            }
-
-            var url = fieldInfo.GetCustomAttribute<UrlAttribute>(false);
-            if (url != null)
-            {
-                ValidationRules.Add(new UrlRule(url));
-            }
-
-            if (fieldInfo.IsLiteral && !fieldInfo.IsInitOnly)
-                this.ConstantValue = fieldInfo.GetValue(null);
-            else
-                this.ConstantValue = null;
         }
 
         /// <summary>
