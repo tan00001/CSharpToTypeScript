@@ -96,17 +96,19 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         protected override List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
-            List<TsProperty> propertiesToExport, string namespaceName)
+            List<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
         {
             foreach (var customValidationRule in tsModuleMemberWithHierarchy.ImplementedCustomValidationRules)
             {
                 customValidationRule.ValidatorTypeName = FormatTypeName(namespaceName, tsModuleMemberWithHierarchy, importNames);
+
                 foreach (var targetType in customValidationRule.TargetTypes)
                 {
-                    customValidationRule.AddValidationFunction(sb, FormatTypeName(namespaceName, targetType, importNames));
+                    customValidationRule.AddValidationFunction(sb, FormatTypeName(namespaceName, targetType, importNames),
+                        targetType, generatorOptions);
                 }
             }
-            return base.AppendProperties(sb, tsModuleMemberWithHierarchy, importNames, propertiesToExport, namespaceName);
+            return base.AppendProperties(sb, tsModuleMemberWithHierarchy, importNames, propertiesToExport, namespaceName, generatorOptions);
         }
 
         protected override IReadOnlyList<TsProperty> AppendTypeDefinition(

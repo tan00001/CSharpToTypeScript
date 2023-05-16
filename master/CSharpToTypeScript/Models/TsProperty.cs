@@ -34,6 +34,14 @@ namespace CSharpToTypeScript.Models
             }
         }
 
+        public bool IsValueType
+        {
+            get
+            {
+                return PropertyType.Type.IsValueType;
+            }
+        }
+
         public List<ITsValidationRule> ValidationRules { get; private set; }
 
         public DataMemberAttribute? DataMember { get; set; }

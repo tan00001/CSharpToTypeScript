@@ -19,14 +19,32 @@ namespace TestAssembly
         [DataMember(IsRequired = true, EmitDefaultValue = false)]
         public decimal? Balance { get; set; }
 
-        public virtual ValidationResult ValidateBalance(object value)
+        public virtual ValidationResult? ValidateBalance(object? value)
         {
-            return new ValidationResult(value != null ? null : "Value cannot be null");
+            if (value is decimal balance)
+            {
+                if (balance > 0)
+                {
+                    return ValidationResult.Success;
+                }
+                return new ValidationResult("Balance cannot be less than 0.");
+            }
+            return new ValidationResult("Balance data type is incorrect.");
         }
 
-        public virtual ValidationResult ValidateBalance2(object value, ValidationContext context)
+        public virtual ValidationResult? ValidateBalance2(object? value, ValidationContext context)
         {
-            return new ValidationResult(value != null ? null : "Value cannot be null");
+            if (context.ObjectInstance is CustomerAccount values)
+            {
+                #region CSharpToTypeScript
+                if ((values.Balance != null && values.Balance > 0) || values.Id == 0)
+                {
+                    return ValidationResult.Success;
+                }
+                return new ValidationResult("Balance must be greater than 0 when Id is not 0.");
+                #endregion // CSharpToTypeScript
+            }
+            return new ValidationResult("Balance data type is incorrect.");
         }
     }
 }

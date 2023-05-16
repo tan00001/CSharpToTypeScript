@@ -15,6 +15,16 @@ namespace CSharpToTypeScript.Models
                 .Select(pi => new TsProperty(tsModuleService, pi)).ToList();
         }
 
+        public virtual IReadOnlyList<TsProperty> GetMemeberInfoForOutput(TsGeneratorOptions generatorOptions)
+        {
+            if (!generatorOptions.HasFlag(TsGeneratorOptions.Properties))
+            {
+                return Array.Empty<TsProperty>();
+            }
+
+            return Properties.Where(p => !p.HasIgnoreAttribute).ToArray();
+        }
+
         /// <summary>
         /// Get members of tsNamespace that depend on this current module member.
         /// tsNamespace is different from the namespace of the this current module member.

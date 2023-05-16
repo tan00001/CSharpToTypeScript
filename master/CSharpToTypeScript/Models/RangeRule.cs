@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CSharpToTypeScript.Extensions;
 
 namespace CSharpToTypeScript.Models
 {
@@ -20,6 +21,20 @@ namespace CSharpToTypeScript.Models
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
         {
+            // When Minimum or Maximum is null or empty string, server side validation might throw exception. Generating client side
+            // validation script in such case is pointless.
+            if (property.IsValueType)
+            {
+                _Range.IsValid(Activator.CreateInstance(property.PropertyType.Type));
+                System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()));
+                System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()));
+            }
+            else
+            {
+                _Range.IsValid(null);
+            }
+
+
             if (property.PropertyType is TsSystemType tsSystemType)
             {
                 if (tsSystemType.Kind == SystemTypeKind.Number)
@@ -27,13 +42,12 @@ namespace CSharpToTypeScript.Models
                     sb.AppendLineIndented("if (values." + propertyName + " || values." + propertyName + " === 0) {");
                     using (sb.IncreaseIndentation())
                     {
-                        if (_Range.Maximum != null)
+                        if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                         {
                             AppendMaxNumberRule(sb, propertyName, property);
                         }
-
-                        if (_Range.Minimum != null)
-                        {
+                        if (!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()))
+                        { 
                             AppendMinNumberRule(sb, propertyName, property);
                         }
                     }
@@ -46,12 +60,11 @@ namespace CSharpToTypeScript.Models
                     using (sb.IncreaseIndentation())
                     {
                         sb.AppendLineIndented("const propValue: number = values." + propertyName + ".getTime();");
-                        if (_Range.Maximum != null)
+                        if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                         {
                             AppendMaxDateRule(sb, propertyName, property);
                         }
-
-                        if (_Range.Minimum != null)
+                        if (!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()))
                         {
                             AppendMinDateRule(sb, propertyName, property);
                         }
@@ -67,12 +80,11 @@ namespace CSharpToTypeScript.Models
                 if (IsDateType())
                 {
                     sb.AppendLineIndented("const propValue: number = Date.parse(values." + propertyName + ");");
-                    if (_Range.Maximum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                     {
                         AppendMaxDateStringRule(sb, propertyName, property);
                     }
-
-                    if (_Range.Minimum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()))
                     {
                         AppendMinDateStringRule(sb, propertyName, property);
                     }
@@ -80,12 +92,11 @@ namespace CSharpToTypeScript.Models
                 else if (IsCurrencyType())
                 {
                     sb.AppendLineIndented("const propValue: number = parseFloat(values." + propertyName + @".replace(/\D/g, ''));");
-                    if (_Range.Maximum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                     {
                         AppendMaxCurrencyRule(sb, propertyName, property);
                     }
-
-                    if (_Range.Minimum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()))
                     {
                         AppendMinCurrencyRule(sb, propertyName, property);
                     }
@@ -94,24 +105,22 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("const multipliers = [1000, 60000, 3600000, 86400000];");
                     sb.AppendLineIndented("const parts = values." + propertyName + ".split(':').reverse().map(parseFloat);");
-                    if (_Range.Maximum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                     {
                         AppendMaxDurationRule(sb, propertyName, property);
                     }
-
-                    if (_Range.Minimum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()))
                     {
                         AppendMinDurationRule(sb, propertyName, property);
                     }
                 }
                 else
                 {
-                    if (_Range.Maximum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                     {
                         AppendMaxRule(sb, propertyName, property);
                     }
-
-                    if (_Range.Minimum != null)
+                    if (!string.IsNullOrWhiteSpace(_Range.Minimum.ToString()))
                     {
                         AppendMinRule(sb, propertyName, property);
                     }

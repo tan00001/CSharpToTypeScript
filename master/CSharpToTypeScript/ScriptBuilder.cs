@@ -8,6 +8,8 @@ namespace CSharpToTypeScript
 
         public string IndentationString { get; set; }
 
+        public Int32 TabSize { get; set; } = 4;
+
         public int IndentationLevels { get; private set; }
 
         public ScriptBuilder()

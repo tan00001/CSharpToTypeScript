@@ -39,7 +39,12 @@ namespace CSharpToTypeScript.Models
             this.Type = type;
         }
 
-        public bool IsCollection() => TsType.GetTypeFamily(this.Type) == TsTypeFamily.Collection;
+        public bool IsCollection() => GetTypeFamily() == TsTypeFamily.Collection;
+
+        internal TsTypeFamily GetTypeFamily()
+        {
+            return GetTypeFamily(Type);
+        }
 
         internal static TsTypeFamily GetTypeFamily(Type type)
         {
@@ -70,7 +75,7 @@ namespace CSharpToTypeScript.Models
             }
 
             if (!string.IsNullOrEmpty(type.FullName) 
-                && ExcludedNamespacePrefixes.Any(p => type.FullName.StartsWith(p)))
+                && ExcludedNamespacePrefixes.Any(p => type.FullName.StartsWith(p) || p.StartsWith(type.FullName)))
                 return TsTypeFamily.Type;
 
             return type.IsClass ? TsTypeFamily.Class : TsTypeFamily.Type;

@@ -1,5 +1,6 @@
 ﻿using CSharpToTypeScript.AlternateGenerators;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Runtime.Serialization;
 
@@ -173,9 +174,20 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         public TimeSpan? ContractLength { get; set; }
     }
 
-    public interface IAnyComparable
+    [NotMapped]
+    public class AnyComparable : IComparable<AnyComparable>
     {
         decimal AnyNumber { get; }
+
+        public int CompareTo(AnyComparable? other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            return AnyNumber.CompareTo(other.AnyNumber);
+        }
     }
 
     [DataContract(Name = "Person")]
@@ -193,10 +205,10 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public string? LastName { get; set; }
 
-        [Range(typeof(string), "'zh-HZ'", "'en-US'", ErrorMessage = "This is for testing only. IAnyComparable range does not really make any sense.")]
+        [Range(typeof(string), "'en-US'", "'zh-HZ'", ErrorMessage = "This is for testing only. IAnyComparable range does not really make any sense.")]
         [Display(Order = 3)]
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
-        public IAnyComparable? AnyComparable { get; set; }
+        public AnyComparable? AnyComparable { get; set; }
     }
 
     [TestClass]

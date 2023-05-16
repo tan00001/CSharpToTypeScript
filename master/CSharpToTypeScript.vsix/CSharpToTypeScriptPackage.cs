@@ -205,8 +205,8 @@ namespace CSharpToTypeScript
                         process.Start();
 
                         // Optionally, read the standard output and standard error streams if needed
-                        string output = await process.StandardOutput.ReadToEndAsync();
-                        string error = await process.StandardError.ReadToEndAsync();
+                        var readStdoutTask = process.StandardOutput.ReadToEndAsync();
+                        var readStdErrTask = process.StandardError.ReadToEndAsync();
 
                         // Wait for the process to exit
                         if (!process.WaitForExit(ProcessingWaitTime))
@@ -220,6 +220,9 @@ namespace CSharpToTypeScript
                             }
                             process.WaitForExit();
                         }
+
+                        string output = await readStdoutTask;
+                        string error = await readStdErrTask;
 
                         if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
                         {

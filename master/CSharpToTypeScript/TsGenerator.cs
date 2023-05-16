@@ -457,9 +457,10 @@ namespace CSharpToTypeScript
                 sb.AppendFormat(" extends {0}", FormatTypeName(classModel.NamespaceName, classModel.BaseType, importNames));
             }
 
-            if (classModel.Interfaces.Count > 0)
+            var classInterfaces = classModel.Interfaces.Where(i => !i.IsExcludedFromExport()).ToList();
+            if (classInterfaces.Count > 0)
             {
-                string?[] array = classModel.Interfaces.Select(t => FormatTypeName(classModel.NamespaceName, t, importNames)).ToArray();
+                string?[] array = classInterfaces.Select(t => FormatTypeName(classModel.NamespaceName, t, importNames)).ToArray();
                 sb.AppendFormat(" implements {0}", string.Join(", ", array));
             }
 
@@ -475,7 +476,7 @@ namespace CSharpToTypeScript
 
             using (sb.IncreaseIndentation())
             {
-                List<TsProperty> properties = AppendProperties(sb, classModel, importNames, propertiesToExport, namespaceName);
+                List<TsProperty> properties = AppendProperties(sb, classModel, importNames, propertiesToExport, namespaceName, generatorOptions);
 
                 var requiredProperties = properties.Where(p => p.IsRequired).ToList();
                 if (requiredProperties.Count > 0)
@@ -520,7 +521,7 @@ namespace CSharpToTypeScript
 
         protected virtual List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
-            List<TsProperty> propertiesToExport, string namespaceName)
+            List<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
         {
             var properties = propertiesToExport.Where(p => !p.HasIgnoreAttribute).OrderBy(p => this.FormatPropertyName(p)).ToList();
 
@@ -560,7 +561,7 @@ namespace CSharpToTypeScript
 
             using (sb.IncreaseIndentation())
             {
-                AppendProperties(sb, typeDefinitionModel, importNames, propertiesToExport, namespaceName);
+                AppendProperties(sb, typeDefinitionModel, importNames, propertiesToExport, namespaceName, generatorOptions);
             }
             sb.AppendLineIndented("};");
             this._generatedTypeDefinitions.Add(typeDefinitionModel);
@@ -784,6 +785,6 @@ namespace CSharpToTypeScript
             return tsModuleMember.IsIgnored || this._typeConvertors.IsConvertorRegistered(tsModuleMember.Type);
         }
 
-        protected static string ToCamelCase(string s) => s.Length > 0 ? (char.ToLower(s[0]) + s.Substring(1)) : s;
+        public static string ToCamelCase(string s) => s.Length > 0 ? (char.ToLower(s[0]) + s.Substring(1)) : s;
     }
 }

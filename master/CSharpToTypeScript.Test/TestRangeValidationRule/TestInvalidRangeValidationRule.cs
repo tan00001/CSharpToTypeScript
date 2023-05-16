@@ -62,7 +62,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public string? LastName { get; set; }
 
-        [Range(typeof(string), "AAA", "100000")]
+        [Range(typeof(string), "100000", "AAA")]
         [Display(Order = 3), DataType(DataType.Currency)]
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public string? DepositAmount { get; set; }
@@ -104,7 +104,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public string? LastName { get; set; }
 
-        [Range(typeof(string), "a:00:00:0", "10:00:00:0", ErrorMessage = "Contract length must be between a and 100 days.")]
+        [Range(typeof(string), "10:00:00:0", "a:00:00:0", ErrorMessage = "Contract length must be between a and 100 days.")]
         [Display(Order = 3), DataType(DataType.Duration)]
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public TimeSpan? ContractLength { get; set; }
@@ -138,6 +138,42 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [Display(Order = 3), DataType(DataType.Duration)]
         [UIHint("", "HTML", new object[] { "colSpan", "1" })]
         public TimeSpan? ContractLength { get; set; }
+    }
+
+    [DataContract(Name = "Person")]
+    public class PersonWithBadContractLengthRangeMin3
+    {
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "First Name", Order = 1)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? FirstName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Last Name", Order = 2)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? LastName { get; set; }
+
+        [Range(typeof(decimal), "0", "", ErrorMessage = "Contract length must be between a and 100 days.")]
+        [Display(Order = 3), DataType(DataType.Duration)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public decimal? ContractLength { get; set; }
+    }
+
+    public class PersonWithNullableDecimalRange
+    {
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "First Name", Order = 1)]
+        [UIHint("", "HTML", new object[] { "colSpan", "1" })]
+        public string? Name { get; set; }
+
+        [Required, Range(typeof(decimal), "0", "", ErrorMessage = "Invalid income amount per pay period.")]
+        [Display(Order = 2)]
+        [UIHint("", "HTML", new object[] { "colSpan", "2" })]
+        public decimal? Income { get; set; }
+
     }
 
     [TestClass]
@@ -218,10 +254,34 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestDurationRangeMin2Exception()
         {
-            Assert.ThrowsException<ArgumentException>(() =>
+            Assert.ThrowsException<FormatException>(() =>
             {
                 var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
                     .For<PersonWithBadContractLengthRangeMin2>();
+
+                string personTypeScript = ts.ToString();
+            });
+        }
+
+        [TestMethod]
+        public void TestDurationRangeMin3Exception()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                    .For<PersonWithBadContractLengthRangeMin3>();
+
+                string personTypeScript = ts.ToString();
+            });
+        }
+
+        [TestMethod]
+        public void TesNullableDecimalRangeException()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                    .For<PersonWithNullableDecimalRange>();
 
                 string personTypeScript = ts.ToString();
             });

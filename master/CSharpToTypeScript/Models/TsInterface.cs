@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
-using System.Reflection;
-using System.Text.Json.Serialization;
+﻿using System.Diagnostics;
 
 namespace CSharpToTypeScript.Models
 {
@@ -11,6 +8,11 @@ namespace CSharpToTypeScript.Models
         public TsInterface(ITsModuleService tsModuleService, Type type)
           : base(tsModuleService, type)
         {
+        }
+
+        public bool IsExcludedFromExport()
+        {
+            return TsType.ExcludedNamespacePrefixes.Any(p => this.Name.StartsWith(p) || p.StartsWith(this.Name));
         }
     }
 }

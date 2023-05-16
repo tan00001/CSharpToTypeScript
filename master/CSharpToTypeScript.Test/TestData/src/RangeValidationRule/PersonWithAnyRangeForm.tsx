@@ -2,12 +2,8 @@
 import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from '../BootstrapUtils';
 
-export interface IAnyComparable {
-	anyNumber?: number;
-}
-
 export class Person {
-	anyComparable?: IAnyComparable | null;
+	anyComparable?: AnyComparable | null;
 	firstName: string | null;
 	lastName: string | null;
 
@@ -21,13 +17,13 @@ export const PersonResolver: Resolver<Person> = async (values) => {
 	const errors: FieldErrors<Person> = {};
 
 	if (values.anyComparable) {
-		if (values.anyComparable > 'en-US') {
+		if (values.anyComparable > 'zh-HZ') {
 			errors.anyComparable = {
 				type: 'max',
 				message: 'This is for testing only. IAnyComparable range does not really make any sense.'
 			};
 		}
-		if (values.anyComparable < 'zh-HZ') {
+		if (values.anyComparable < 'en-US') {
 			errors.anyComparable = {
 				type: 'min',
 				message: 'This is for testing only. IAnyComparable range does not really make any sense.'

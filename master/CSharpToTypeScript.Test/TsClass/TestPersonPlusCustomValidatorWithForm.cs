@@ -47,18 +47,36 @@ namespace CSharpToTypeScript.Test.TsClass
         [StringLength(50)]
         [Display(Name = "ZIP", Order = 6)]
         [UIHint("", "HTML", new object[] { "colSpan", "3" })]
-        [CustomValidation(typeof(PersonPlusCustomValidator), nameof(ValidateBalance))]
-        [CustomValidation(typeof(PersonPlusCustomValidator), nameof(ValidateBalance2))]
+        [CustomValidation(typeof(PersonPlusCustomValidator), nameof(ValidateZip))]
+        [CustomValidation(typeof(PersonPlusCustomValidator), nameof(ValidateZip2))]
         public string? Zip { get; set; }
 
-        public virtual ValidationResult ValidateBalance(object value)
+        public virtual ValidationResult? ValidateZip(object? value)
         {
-            return new ValidationResult(value != null ? null : "Value cannot be null");
+            if (value is string zip)
+            {
+                if (zip.Length != 5)
+                {
+                    return ValidationResult.Success;
+                }
+                return new ValidationResult("Balance cannot be less than 0.");
+            }
+            return new ValidationResult("ZIP data type is incorrect.");
         }
 
-        public virtual ValidationResult ValidateBalance2(object value, ValidationContext context)
+        public virtual ValidationResult? ValidateZip2(object value, ValidationContext context)
         {
-            return new ValidationResult(value != null ? null : "Value cannot be null");
+            if (context.ObjectInstance is PersonPlusCustomValidator values)
+            {
+                #region CSharpToTypeScript
+                if (values.Zip?.Length == 5 || (values.FirstName == null && values.LastName == null))
+                {
+                    return ValidationResult.Success;
+                }
+                return new ValidationResult("ZIP code is required when name is specified.");
+                #endregion // CSharpToTypeScript
+            }
+            return new ValidationResult("ZIP data type is incorrect.");
         }
     }
 
@@ -89,9 +107,10 @@ namespace CSharpToTypeScript.Test.TsClass
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonPlusCustomValidator));
+            var expectedData = Utilities.GetTestFormFileContents("TsClass", nameof(PersonPlusCustomValidator));
+            var expectedDataRelease = Utilities.GetTestFormFileContents("TsClass", nameof(PersonPlusCustomValidator) + "Release");
 
-            Assert.AreEqual(expectedData, personTypeScript);
+            Assert.IsTrue(expectedData == personTypeScript || expectedDataRelease == personTypeScript);
         }
 
         protected virtual void Dispose(bool disposing)

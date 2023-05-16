@@ -3,17 +3,15 @@ import { Resolver, FieldErrors, FieldError } from 'react-hook-form';
 export namespace TestAssembly {
 	export class CustomerAccount {
 		static ValidateBalance(values: CustomerAccount): FieldError | undefined {
+			// if (value is decimal balance)
 			// {
-			//     if (value is decimal balance)
+			//     if (balance > 0)
 			//     {
-			//         if (balance > 0)
-			//         {
-			//             return ValidationResult.Success;
-			//         }
-			//         return new ValidationResult("Balance cannot be less than 0.");
+			//         return ValidationResult.Success;
 			//     }
-			//     return new ValidationResult("Balance data type is incorrect.");
+			//     return new ValidationResult("Balance cannot be less than 0.");
 			// }
+			// return new ValidationResult("Balance data type is incorrect.");
 			// TODO: Please implement this function.
 			return {
 				type: "custom",

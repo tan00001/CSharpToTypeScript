@@ -52,9 +52,10 @@ public class TestAssemblyTests : IDisposable
         Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
         var expectedData = Utilities.GetTestFormFileContents("TsAssembly", "All");
+        var expectedDataRelease = Utilities.GetTestFormFileContents("TsAssembly", "AllRelease");
 
-        Assert.AreEqual(expectedData, ImportReactHookForm +
-            personTypeScript.Replace('\t' + ImportReactHookForm, ""));
+        personTypeScript = ImportReactHookForm + personTypeScript.Replace('\t' + ImportReactHookForm, "");
+        Assert.IsTrue(expectedData == personTypeScript || expectedDataRelease == personTypeScript);
     }
 
     protected virtual void Dispose(bool disposing)
