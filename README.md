@@ -15,6 +15,7 @@ CSharpToTypeScript generates Typescript code, React-Hook-Form Resolver code, and
 3. Support generic types. For generating React Hook Form resolvers and React + Bootstrap forms, generic types with specific type parameters are supported.
 4. Utilization of C# attributes in TypeScript data validation, variable names, label text, error messages, displayed texts for enumerated values, etc.
 5. Customizable column count in generated TypeScript XML forms.
+6. Process `CustomValidationAttribute`. The TypeScript generated for `CustomValidationAttribute` contains commented C# source code and still needs to be updated manually. Code in a `region` marked as `CSharpyToTypeScript` is convertded into TypeScript, although manual editing may still be needed.
 
 Start with the C# class
 
