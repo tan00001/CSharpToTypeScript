@@ -175,7 +175,8 @@ namespace CSharpToTypeScript
             if (dialog.ShowDialog(Application.Current.MainWindow) == true)
             {
                 var directoryName = Path.GetDirectoryName(dialog.FileName);
-                if (string.Compare(directoryName, scriptOutputFolder, true) != 0)
+                if (string.Compare(directoryName, scriptOutputFolder.TrimEnd(Path.DirectorySeparatorChar,
+                        Path.AltDirectorySeparatorChar), true) != 0)
                 {
                     using var projectSettings = new ProjectSettings(project.FullName);
                     projectSettings.SetScriptOutputFolder(directoryName);

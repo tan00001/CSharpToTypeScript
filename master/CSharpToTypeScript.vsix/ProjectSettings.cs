@@ -15,10 +15,14 @@ namespace CSharpToTypeScript
 
         readonly Project Project;
 
+        readonly string ProjectPath;
+
         public ProjectSettings(string projectFilePath)
         {
             Project = ProjectCollection.GlobalProjectCollection.LoadedProjects.FirstOrDefault(p => string.Compare(p.FullPath, projectFilePath, true) == 0)
                 ?? new Project(projectFilePath);
+
+            ProjectPath = Path.GetDirectoryName(projectFilePath);
         }
 
         public string GetScriptOutputFolder()
@@ -26,8 +30,11 @@ namespace CSharpToTypeScript
             var scriptOutputFolder = Project.GetPropertyValue("CSharpToTypeScriptOutputFolder");
             if (string.IsNullOrEmpty(scriptOutputFolder))
             {
-                scriptOutputFolder = Path.GetDirectoryName(Project.FullPath);
-                SetScriptOutputFolder(scriptOutputFolder);
+                scriptOutputFolder = ProjectPath;
+            }
+            else
+            {
+                return Path.Combine(ProjectPath, scriptOutputFolder);
             }
 
             return scriptOutputFolder;
@@ -41,7 +48,7 @@ namespace CSharpToTypeScript
 
         public void SetScriptOutputFolder(string scriptOutputFolder)
         {
-            Project.SetProperty("CSharpToTypeScriptOutputFolder", scriptOutputFolder);
+            Project.SetProperty("CSharpToTypeScriptOutputFolder", GetRelativePath(ProjectPath, scriptOutputFolder));
             Project.Save();
         }
 
@@ -64,12 +71,47 @@ namespace CSharpToTypeScript
             }
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~ProjectSettings()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
+        /// <summary>
+        /// Creates a relative path from one file or folder to another.
+        /// </summary>
+        /// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
+        /// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
+        /// <returns>The relative path from the start directory to the end path.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="fromPath"/> or <paramref name="toPath"/> is <c>null</c>.</exception>
+        /// <exception cref="UriFormatException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        private static string GetRelativePath(string fromPath, string toPath)
+        {
+            Uri fromUri = new (AppendDirectorySeparatorChar(fromPath));
+            Uri toUri = new (AppendDirectorySeparatorChar(toPath));
+
+            if (fromUri.Scheme != toUri.Scheme)
+            {
+                return toPath;
+            }
+
+            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            if (string.Equals(toUri.Scheme, Uri.UriSchemeFile, StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            }
+
+            return relativePath;
+        }
+
+        private static string AppendDirectorySeparatorChar(string path)
+        {
+            // Append a slash only if the path is a directory and does not have a slash.
+            if (!Path.HasExtension(path) &&
+                !path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                return path + Path.DirectorySeparatorChar;
+            }
+
+            return path;
+        }
 
         void IDisposable.Dispose()
         {

@@ -1,11 +1,17 @@
 # Change log
 All notable changes to CSharpToTypeScript will be documented in this file.
 
+## 1.0.1.1 (2023-05-16)
+
+### Added
+
+* Support `select` control for string properties using `UIHintAttribute`.
+
 ## 1.0.1.0 (2023-05-15)
 
 ### Added
 
-* Process `CustomValidationAttribute`. The TypeScript generated for `CustomValidationAttribute` contains commented C# source code and still needs to be updated manually. Code in a `region` marked as `CSharpyToTypeScript` is convertded into TypeScript, although manual editing may still be needed.
+* Process `CustomValidationAttribute`. The TypeScript generated for `CustomValidationAttribute` contains commented C# source code and still needs to be updated manually. Code in a `region` marked as `CSharpyToTypeScript` is converted into TypeScript, although manual editing may still be needed.
 
 ### Updated
 * Support for `RangeAttribute` now tries to confirm server side setup as well. Test for runtime error report range setup errors.

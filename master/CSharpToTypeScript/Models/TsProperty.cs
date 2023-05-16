@@ -12,6 +12,10 @@ namespace CSharpToTypeScript.Models
     public class TsProperty
     {
         public const string UiHintHidden = "hidden";
+        public const string UiHintSelect = "select";
+        public const string UiHintColSpan = "colSpan";
+        public const string UiHintTypeContainingOptions = "typeContainingOptions";
+        public const string UiHintNameOfOptions = "nameOfOptions";
 
         public string Name { get; set; }
 
@@ -181,7 +185,7 @@ namespace CSharpToTypeScript.Models
                 return defaultColSpan;
             }
 
-            if (UiHint.ControlParameters.TryGetValue("colSpan", out object? colSpanSetting)
+            if (UiHint.ControlParameters.TryGetValue(UiHintColSpan, out object? colSpanSetting)
                 && colSpanSetting is string colSpanString)
             {
                 if (colSpanString == "*")
