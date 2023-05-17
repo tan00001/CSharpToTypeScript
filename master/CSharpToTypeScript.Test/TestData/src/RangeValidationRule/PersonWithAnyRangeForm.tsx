@@ -92,7 +92,7 @@ export const PersonForm = (props: PersonFormData) => {
 		<div className="row mb-3">
 			<div className="form-group col-md-12">
 				<label htmlFor="anyComparable">AnyComparable:</label>
-				<input type="text" className={getClassName(touchedFields.anyComparable, errors.anyComparable)} id="anyComparable" {...register("anyComparable")} />
+				<input type="text" className={getClassName(touchedFields.anyComparable, errors.anyComparable)} id={formId + "-anyComparable"} {...register("anyComparable")} />
 				{getErrorMessage(errors.anyComparable)}
 			</div>
 		</div>

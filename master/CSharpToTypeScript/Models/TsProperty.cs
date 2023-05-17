@@ -16,6 +16,7 @@ namespace CSharpToTypeScript.Models
         public const string UiHintColSpan = "colSpan";
         public const string UiHintTypeContainingOptions = "typeContainingOptions";
         public const string UiHintNameOfOptions = "nameOfOptions";
+        public const string UiHintReadOnly = "readOnly";
 
         public string Name { get; set; }
 

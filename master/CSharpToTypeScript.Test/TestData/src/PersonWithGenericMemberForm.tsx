@@ -57,7 +57,7 @@ export const PersonWithGenericMemberDateForm = (props: PersonWithGenericMemberDa
 			</div>
 			<div className="form-group col-md-4">
 				<label htmlFor="testMember">TestMember:</label>
-				<input type="text" className={getClassName(touchedFields.testMember, errors.testMember)} id="testMember" {...register("testMember")} />
+				<input type="text" className={getClassName(touchedFields.testMember, errors.testMember)} id={formId + "-testMember"} {...register("testMember")} />
 				{getErrorMessage(errors.testMember)}
 			</div>
 		</div>

@@ -158,7 +158,7 @@ export const PersonForm = (props: PersonFormData) => {
 		<div className="row mb-3">
 			<div className="form-group col-md-12">
 				<label htmlFor="cars">Cars:</label>
-				<input type="text" className={getClassName(touchedFields.cars, errors.cars)} id="cars" {...register("cars")} />
+				<input type="text" className={getClassName(touchedFields.cars, errors.cars)} id={formId + "-cars"} {...register("cars")} />
 				{getErrorMessage(errors.cars)}
 			</div>
 		</div>

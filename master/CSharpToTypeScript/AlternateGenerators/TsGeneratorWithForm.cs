@@ -429,6 +429,8 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         private static void AppendVisibleInput(ScriptBuilder sb, TsModuleMemberWithHierarchy memberModel, TsProperty property, string propertyName)
         {
+            bool isReadOnly = property.UiHint != null && property.UiHint.ControlParameters.TryGetValue(TsProperty.UiHintReadOnly,
+                out var readOnlySetting) && readOnlySetting != null && readOnlySetting is Boolean readOnly && readOnly == true;
             if (property.UiHint?.UIHint == TsProperty.UiHintSelect)
             {
                 var typeContainingOptions = property.UiHint.ControlParameters[TsProperty.UiHintTypeContainingOptions];
@@ -503,7 +505,8 @@ namespace CSharpToTypeScript.AlternateGenerators
                     var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                     sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                     sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
+                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName 
+                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                         + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
                 }
                 else if (tsSystemType.Kind == SystemTypeKind.Date)
@@ -511,7 +514,8 @@ namespace CSharpToTypeScript.AlternateGenerators
                     var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                     sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                     sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
+                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName 
+                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                         + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
                 }
                 else
@@ -519,7 +523,8 @@ namespace CSharpToTypeScript.AlternateGenerators
                     var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                     sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
                     sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
+                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                         + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
                 }
             }
@@ -527,8 +532,9 @@ namespace CSharpToTypeScript.AlternateGenerators
             {
                 var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                 sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + displayPrompt + "</label>");
-                sb.AppendLineIndented("<input type=\"text\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id=\"" + propertyName
-                    + "\" {...register(\"" + propertyName + "\")} />");
+                sb.AppendLineIndented("<input type=\"text\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                    + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
+                    + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
             }
         }
 

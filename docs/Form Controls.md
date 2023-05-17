@@ -38,3 +38,16 @@
         public decimal? Balance { get; set; }
     }
     ```
+* Make an input control read-only, you can use the `System.ComponentModel.DataAnnotations.UIHintAttribute`:
+```
+    public class CustomerAccount
+    {
+        public static readonly string[] AccountTypes = new string[]{ "checking", "saving" };
+
+        [UIHint("hidden")]    
+        public int Id { get; set; }
+
+        [UIHint("", "HTML",  new object[] { "readOny", true })]
+        public decimal? Balance { get; set; }
+    }
+```

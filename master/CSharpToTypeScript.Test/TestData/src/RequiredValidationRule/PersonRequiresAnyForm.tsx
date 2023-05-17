@@ -85,7 +85,7 @@ export const PersonForm = (props: PersonFormData) => {
 		<div className="row mb-3">
 			<div className="form-group col-md-12">
 				<label htmlFor="timeZoneInfo">TimeZoneInfo:</label>
-				<input type="text" className={getClassName(touchedFields.timeZoneInfo, errors.timeZoneInfo)} id="timeZoneInfo" {...register("timeZoneInfo")} />
+				<input type="text" className={getClassName(touchedFields.timeZoneInfo, errors.timeZoneInfo)} id={formId + "-timeZoneInfo"} {...register("timeZoneInfo")} />
 				{getErrorMessage(errors.timeZoneInfo)}
 			</div>
 		</div>
