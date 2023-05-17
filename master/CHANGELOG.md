@@ -6,6 +6,7 @@ All notable changes to CSharpToTypeScript will be documented in this file.
 ### Added
 
 * Support `select` control for string properties using `UIHintAttribute`.
+* Support `readonly` attribute on input controls.
 
 ## 1.0.1.0 (2023-05-15)
 
