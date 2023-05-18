@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CSharpToTypeScript.95c0dd1a-0be9-4027-a4c8-3e58659d3c35" Version="1.0.1.1" Language="en-US" Publisher="Programount Inc." />
+        <Identity Id="CSharpToTypeScript.95c0dd1a-0be9-4027-a4c8-3e58659d3c35" Version="1.0.1.2" Language="en-US" Publisher="Programount Inc." />
         <DisplayName>CSharpToTypeScript</DisplayName>
         <Description>Generate Typescript code from a C# class definition.</Description>
         <MoreInfo>https://github.com/tan00001/CSharpToTypeScript</MoreInfo>
