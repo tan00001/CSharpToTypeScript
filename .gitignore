@@ -51,3 +51,5 @@
 /master/TestAssembly/bin/Debug/net7.0
 /master/TestAssembly/obj/TestAssembly.csproj.nuget.g.props
 /master/.vs/ProjectEvaluation
+/master/TestAssembly/bin/Release/net7.0
+/master/TestAssembly/obj/Release/net7.0
