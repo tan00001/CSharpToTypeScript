@@ -175,9 +175,16 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         protected string GetPropertyOrdinal(TsProperty a)
         {
-            if (a.Display?.Order != null)
+            try
             {
-                return a.Display.Order.ToString("000");
+                if (a.Display?.Order != null)
+                {
+                    return a.Display.Order.ToString("000");
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // When Order is not set, .NET 8 won't allow access at all
             }
 
             if (a.DataMember?.Order > 0)
@@ -491,11 +498,12 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
             else if (property.PropertyType is TsSystemType tsSystemType)
             {
+                var inputType = GetInputType(property, tsSystemType.Kind);
                 if (tsSystemType.Kind == SystemTypeKind.Bool)
                 {
                     // The prompt is different here in that there is no trailing ":"
                     var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName();
-                    sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                    sb.AppendLineIndented("<input type=\"" + inputType
                         + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
                         + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
                     sb.AppendLineIndented("<label className=\"form-check-label ms-1\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
@@ -504,7 +512,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                 {
                     var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                     sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                    sb.AppendLineIndented("<input type=\"" + inputType
                         + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName 
                         + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                         + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
@@ -513,7 +521,7 @@ namespace CSharpToTypeScript.AlternateGenerators
                 {
                     var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                     sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
+                    sb.AppendLineIndented("<input type=\"" + inputType
                         + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName 
                         + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                         + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
@@ -522,17 +530,20 @@ namespace CSharpToTypeScript.AlternateGenerators
                 {
                     var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                     sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<input type=\"" + GetInputType(property, tsSystemType.Kind)
-                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                    sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : ("<input type=\"" + inputType + '"')
+                        + " className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
                         + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                         + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
                 }
             }
             else
             {
+                var inputType = GetInputType(property);
                 var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
                 sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + displayPrompt + "</label>");
-                sb.AppendLineIndented("<input type=\"text\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : ("<input type=\"" + inputType + '"')
+                    + " className={getClassName(touchedFields." 
+                    + propertyName + ", errors." + propertyName
                     + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
                     + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
             }
@@ -553,6 +564,16 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             return totalColSpanSoFar + nextColSpan.Value > MaxColCount;
+        }
+
+        private static string GetInputType(TsProperty property)
+        {
+            if (!string.IsNullOrEmpty(property.UiHint?.UIHint))
+            {
+                return property.UiHint.UIHint;
+            }
+
+            return "text";
         }
 
         private static string GetInputType(TsProperty property, SystemTypeKind kind)

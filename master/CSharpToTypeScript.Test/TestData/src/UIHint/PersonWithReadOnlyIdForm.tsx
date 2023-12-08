@@ -92,7 +92,7 @@ export const PersonWithReadOnlyIdForm = (props: PersonWithReadOnlyIdFormData) =>
 		<div className="row mb-3">
 			<div className="form-group col-md-12">
 				<label htmlFor={formId + "-location"}>Location:</label>
-				<select className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location", { valueAsNumber: true })}>
+				<select className={getClassName(touchedFields.location, errors.location)} id={formId + "-location"} {...register("location")}>
 					<option value="">Select a Location</option>
 					<option value="NY">NY</option>
 					<option value="CA">CA</option>

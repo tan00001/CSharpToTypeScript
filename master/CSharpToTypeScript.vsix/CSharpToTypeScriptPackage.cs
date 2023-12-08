@@ -20,6 +20,8 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Windows.Media;
 
 namespace CSharpToTypeScript
 {
@@ -64,7 +66,8 @@ namespace CSharpToTypeScript
         };
 
         const Int32 ProcessingWaitTime = 60 * 1000;
-        static readonly string ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net7\CSharpToTypeScript.exe");
+        static readonly string ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net8\CSharpToTypeScript.exe");
+        static readonly string Net7ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net7\CSharpToTypeScript.exe");
 
         public static RatingPrompt RatingPrompt { get; private set; } = null!;
 
@@ -112,6 +115,23 @@ namespace CSharpToTypeScript
                 return;
             }
 
+            // Get the project containing the selected item
+            var project = document.ProjectItem.ContainingProject;
+            if (project == null)
+            {
+                dte.StatusBar.Text = "No project was found.";
+                return;
+            }
+
+            string documentPath = document.FullName;
+
+            // Get the output assembly path
+            string outputAssmblyPath = project.GetOutputAssmblyPathForActiveConfiguration();
+            if (!await ValidateOutputAssemblyPathAsync(outputAssmblyPath, project.Name, documentPath))
+            {
+                return;
+            }
+
             // Get the full name of the class/interface/enum/struct
             string typeName = await GetTypeNameAsync(dte, document, elementTypes);
             if (string.IsNullOrEmpty(typeName))
@@ -137,23 +157,6 @@ namespace CSharpToTypeScript
             else
             {
                 typeName = RemoveTypeParams(typeName);
-            }
-
-            // Get the project containing the selected item
-            var project = document.ProjectItem.ContainingProject;
-            if (project == null)
-            {
-                dte.StatusBar.Text = "No project was found.";
-                return;
-            }
-
-            string documentPath = document.FullName;
-
-            // Get the output assembly path
-            string outputAssmblyPath = project.GetOutputAssmblyPathForActiveConfiguration();
-            if (!await ValidateOutputAssemblyPathAsync(outputAssmblyPath, project.Name, documentPath))
-            {
-                return;
             }
 
             string scriptOutputFolder;
@@ -227,9 +230,18 @@ namespace CSharpToTypeScript
 
                         if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
                         {
-                            var messageBox = new MessageBox();
-                            await messageBox.ShowErrorAsync(output, error);
-                            return;
+                            if (output.Contains("You must install or update .NET to run this application."))
+                            {
+                                (output, error) = await RunNet7ProcessAsync(outputAssmblyPath, typeName, dialog.FileName,
+                                    generatorName, enableNamespace);
+                            }
+
+                            if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
+                            {
+                                var messageBox = new MessageBox();
+                                await messageBox.ShowErrorAsync(output, error);
+                                return;
+                            }
                         }
 
                         await VS.Documents.OpenAsync(dialog.FileName);
@@ -248,6 +260,51 @@ namespace CSharpToTypeScript
                     await messageBox.ShowErrorAsync(ex.Message, ex.InnerException != null ? ex.InnerException.Message : "");
                 }
             }
+        }
+
+        private static async Task<(string output, string error)> RunNet7ProcessAsync(string outputAssmblyPath, string typeName, string fileName,
+            string generatorName, bool enableNamespace)
+        {
+            using Process process7 = new()
+            {
+                StartInfo = new()
+                {
+                    FileName = Net7ExeFilePath,
+                    Arguments = '"' + outputAssmblyPath + "\" "
+                        + typeName + " \""
+                        + fileName + "\" "
+                        + generatorName + " "
+                        + "enableNamespace=" + enableNamespace,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process7.Start();
+
+            // Optionally, read the standard output and standard error streams if needed
+            var readStdoutTask = process7.StandardOutput.ReadToEndAsync();
+            var readStdErrTask = process7.StandardError.ReadToEndAsync();
+
+            // Wait for the process to exit
+            if (!process7.WaitForExit(ProcessingWaitTime))
+            {
+                var messageBox = new MessageBox();
+                if (await messageBox.ShowAsync("The background process for generating TypeScript file is taking longer than expected. Continue waiting?", "",
+                    OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_YESNO) == VSConstants.MessageBoxResult.IDNO)
+                {
+                    process7.Kill();
+                    return (string.Empty, "The background process for generating TypeScript file is cancelled.");
+                }
+                process7.WaitForExit();
+            }
+
+            var output = await readStdoutTask;
+            var error = await readStdErrTask;
+
+            return (output, error);
         }
 
         private static async Task<string> GetTypeNameAsync(DTE dte, Document document, IReadOnlyList<vsCMElement> elementTypes)
@@ -352,7 +409,7 @@ namespace CSharpToTypeScript
             {
                 var messageBox = new MessageBox();
                 await messageBox.ShowAsync("File \"" + Path.GetFileName(documentPath) + "\" was updated since the last build of \""
-                    + Path.GetFileName(outputAssmblyPath) + "\"", "",
+                    + Path.GetFileName(outputAssmblyPath) + "\". Please re-build first.", "",
                     OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_OK);
                 return false;
             }
