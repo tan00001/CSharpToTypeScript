@@ -93,11 +93,17 @@ namespace CSharpToTypeScript
 
             if (!EnableNamespaceInTypeScript)
             {
-                var index = memberTypeName.LastIndexOf('.');
-                if (index > 0)
+                var @namespace = memberTypeName;
+                var genericTypeParamIndex = @namespace.IndexOf('<');
+                if (genericTypeParamIndex > 0)
                 {
-                    var @namespace = memberTypeName.Substring(0, index);
-                    var typeNameWithoutNamespace = memberTypeName.Substring(index + 1);
+                    @namespace = @namespace.Substring(0, genericTypeParamIndex);
+                }
+                var classNameIndex = @namespace.LastIndexOf('.');
+                if (classNameIndex > 0)
+                {
+                    var typeNameWithoutNamespace = @namespace.Substring(classNameIndex + 1);
+                    @namespace = @namespace.Substring(0, classNameIndex);
 
                     if (@namespace == currentNamespaceName)
                     {
@@ -242,6 +248,11 @@ namespace CSharpToTypeScript
             {
                 foreach (var dependency in dependencies)
                 {
+                    if (TsType.ExcludedNamespacePrefixes.Any(p => dependency.Key.StartsWith(p) == true || p.StartsWith(dependency.Key)))
+                    {
+                        continue;
+                    }
+
                     var importIndicesForNamespace = new Dictionary<string, Int32>();
                     sb.AppendLine("import { " + string.Join(", ", dependency.Value.Select(v => GetImportName(v.Name, importIndices, importIndicesForNamespace))) + " } from './" + dependency.Key + "';");
                     importIndices[dependency.Key] = importIndicesForNamespace;
@@ -320,7 +331,16 @@ namespace CSharpToTypeScript
                         sb.AppendLine();
                     }
 
-                    interfaces = interfaces.OrderBy(i => i, TsInterfaceComparer)
+                    interfaces = interfaces.Where(i =>
+                        {
+                            var nameSpaceName = i.Type.Namespace ?? i.Type.FullName;
+                            if (nameSpaceName == null)
+                            {
+                                return true;
+                            }
+                            return !TsType.ExcludedNamespacePrefixes.Any(p => nameSpaceName.StartsWith(p) == true || p.StartsWith(nameSpaceName));
+                        })
+                        .OrderBy(i => i, TsInterfaceComparer)
                         .ThenBy(GetTypeName).ToList();
 
                     for (var i = 0; i < interfaces.Count; ++i)

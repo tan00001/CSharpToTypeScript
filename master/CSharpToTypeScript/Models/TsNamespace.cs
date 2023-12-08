@@ -62,6 +62,11 @@
 
         public bool HasExportableMembers(TsGeneratorOptions generatorOptions)
         {
+            if (TsType.ExcludedNamespacePrefixes.Any(p => p.StartsWith(this.Name) || this.Name.StartsWith(p)))
+            {
+                return false;
+            }
+
             return Members.Any(m => m.IsExportable(generatorOptions));
         }
 

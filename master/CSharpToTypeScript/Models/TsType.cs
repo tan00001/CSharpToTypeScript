@@ -49,7 +49,16 @@ namespace CSharpToTypeScript.Models
         internal static TsTypeFamily GetTypeFamily(Type type)
         {
             if (type.IsInterface)
+            {
+                var @namespace = type.Namespace ?? type.FullName;
+                if (@namespace != null && ExcludedNamespacePrefixes.Any(p => p.StartsWith(@namespace) || @namespace.StartsWith(p))
+                    && typeof(IEnumerable).IsAssignableFrom(type))
+                {
+                    return TsTypeFamily.Collection;
+                }
+
                 return TsTypeFamily.Interface;
+            }
 
             if (type.IsNullableValueType())
                 return TsType.GetTypeFamily(type.GetNullableValueType());

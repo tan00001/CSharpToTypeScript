@@ -55,13 +55,14 @@ namespace CSharpToTypeScript.Models
         public DataTypeAttribute? DataType { get; private set; }
         protected NotMappedAttribute? NotMapped { get; set; }
         protected JsonIgnoreAttribute? JsonIgnore { get; set; }
+        protected bool HasBindNeverAttribute { get; set; }
         public JsonPropertyNameAttribute? JsonPropertyName { get; set; }
 
         public bool HasIgnoreAttribute
         {
             get
             {
-                return JsonIgnore != null || NotMapped != null;
+                return JsonIgnore != null || NotMapped != null || HasBindNeverAttribute;
             }
         }
 
@@ -91,6 +92,7 @@ namespace CSharpToTypeScript.Models
             JsonPropertyName = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
             UiHint = memberInfo.GetCustomAttribute<UIHintAttribute>(false);
             NotMapped = memberInfo.GetCustomAttribute<NotMappedAttribute>(false);
+            HasBindNeverAttribute = memberInfo.GetCustomAttributes(false).Any(a => a.GetType().FullName == "Microsoft.AspNetCore.Mvc.ModelBinding.BindNeverAttribute");
             DataType = memberInfo.GetCustomAttribute<DataTypeAttribute>(false);
 
             AddValidationRules(tsModuleService, memberInfo);

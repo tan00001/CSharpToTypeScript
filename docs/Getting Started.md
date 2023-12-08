@@ -4,13 +4,13 @@
 
   Alternatively, CSharpToTypeScript can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).
 
-* Before installing CSharpToTypeScript, please make sure that you have **.NET Framework 4.8.1** and **.NET 7** installed.
+* Before installing CSharpToTypeScript, please make sure that you have **.NET Framework 4.8.1** and **.NET 7 or later ** installed.
 	* To check if you have **.NET Framework 4.8.1** installed, please go to the "View" menu on the Visual Studio menu bar, and select "Terminal". In the terminal window, enter
 	  `reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"`. 
 	  The returned result should contain `Release    REG_DWORD    0x82348` if you are on Windows 11, and should contain `Release    REG_DWORD    0x80ff4` if you are on Windows 10. If you do not have .NET Framework 4.8.1, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet-framework/net481](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net481). 
-	* To check if you have **.NET 7** installed, please also go to the "View" menu on the Visual Studio menu bar, and select "Terminal". In the terminal window, enter 
+	* To check if you have **.NET 7 or later** installed, please also go to the "View" menu on the Visual Studio menu bar, and select "Terminal". In the terminal window, enter 
 	  `dotnet --list-runtimes`
-	  The returned result should contain `Microsoft.NETCore.App 7.0.5` and `Microsoft.WindowsDesktop.App 7.0.5`. If you do not have .NET 7 installed, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-7.0.5-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-7.0.5-windows-x64-installer)
+	  The returned result should contain `Microsoft.NETCore.App 7.0.5` and `Microsoft.WindowsDesktop.App 7.0.5`. or later. If you do not have .NET 7 installed, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.0-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.0-windows-x64-installer)
 * To use the generated TypeScript with React, please make sure that the version of React that you are using is version 18.0 or newer.
 * Exit Visual Studio 2022 to install CSharpToTypeScript. If you downloaded CSharpToTypeScript from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript), open the downloaded CSharpToTypeScript.vsix file. You will be prompted to start installation:
   ![Install CSharpToTypeScript](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/InstallScreenshot.png)
