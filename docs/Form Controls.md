@@ -5,8 +5,6 @@
     ```
     public class CustomerAccount
     {
-        public static readonly string[] AccountTypes = new string[]{ "checking", "saving" };
-
         [UIHint("hidden")]    
         public int Id { get; set; }
 
@@ -17,6 +15,8 @@
     ```
     public class CustomerAccount
     {
+*        public static readonly string[] AccountTypes = new string[]{ "checking", "saving" };
+ 
         [UIHint("select", "HTML", new object[] { "nameOfOptions", nameof(AccountTypes) })]
         public string Type { get; set; }
 
