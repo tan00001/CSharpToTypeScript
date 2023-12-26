@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <RepositoryUrl>https://github.com/tan00001/CSharpToTypeScript</RepositoryUrl>
 	<VersionPrefix>2.0.1</VersionPrefix>
-    <AssemblyVersion>2.0.1.1</AssemblyVersion>
-    <FileVersion>2.0.1.1</FileVersion>
+    <AssemblyVersion>2.0.1.2</AssemblyVersion>
+    <FileVersion>2.0.1.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
