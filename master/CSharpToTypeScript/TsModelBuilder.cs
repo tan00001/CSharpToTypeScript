@@ -77,7 +77,7 @@ namespace CSharpToTypeScript
                     if (includeReferences)
                     {
                         this.AddReferences(classType, typeConvertors);
-                        foreach (TsProperty tsProperty in classType.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                        foreach (TsProperty tsProperty in classType.Properties.Where(p => !p.HasIgnoreAttribute && p.PropertyType.Type.IsEnum))
                             this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                     }
                     foreach (TsInterface tsInterface in classType.Interfaces)
@@ -110,7 +110,7 @@ namespace CSharpToTypeScript
                     if (includeReferences)
                     {
                         this.AddReferences(typeDefinitionType, typeConvertors);
-                        foreach (TsProperty tsProperty in typeDefinitionType.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                        foreach (TsProperty tsProperty in typeDefinitionType.Properties.Where(p => !p.HasIgnoreAttribute && p.PropertyType.Type.IsEnum))
                             this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                     }
 
@@ -141,7 +141,7 @@ namespace CSharpToTypeScript
                     if (includeReferences)
                     {
                         this.AddReferences(interfaceType, typeConvertors);
-                        foreach (TsProperty tsProperty in interfaceType.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                        foreach (TsProperty tsProperty in interfaceType.Properties.Where(p => !p.HasIgnoreAttribute && p.PropertyType.Type.IsEnum))
                             this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                     }
 
@@ -179,7 +179,7 @@ namespace CSharpToTypeScript
                         if (includeReferences)
                         {
                             this.AddReferences(classModel, typeConvertors);
-                            foreach (TsProperty tsProperty in classModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                            foreach (TsProperty tsProperty in classModel.Properties.Where(p => !p.HasIgnoreAttribute && p.PropertyType.Type.IsEnum))
                                 this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                         }
                     }
@@ -194,7 +194,7 @@ namespace CSharpToTypeScript
                         if (includeReferences)
                         {
                             this.AddReferences(typeDefinitionModel, typeConvertors);
-                            foreach (TsProperty tsProperty in typeDefinitionModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                            foreach (TsProperty tsProperty in typeDefinitionModel.Properties.Where(p => !p.HasIgnoreAttribute && p.PropertyType.Type.IsEnum))
                                 this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                         }
                     }
@@ -208,7 +208,7 @@ namespace CSharpToTypeScript
                         if (includeReferences)
                         {
                             this.AddReferences(interfaceModel, typeConvertors);
-                            foreach (TsProperty tsProperty in interfaceModel.Properties.Where(p => p.PropertyType.Type.IsEnum))
+                            foreach (TsProperty tsProperty in interfaceModel.Properties.Where(p => !p.HasIgnoreAttribute && p.PropertyType.Type.IsEnum))
                                 this.AddEnumIfNotAdded((TsEnum)tsProperty.PropertyType);
                         }
                     }

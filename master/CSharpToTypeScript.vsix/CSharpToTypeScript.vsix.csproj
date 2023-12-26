@@ -50,6 +50,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Commands\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Commands\ModalDlgTitleValidationRule.cs" />
     <Compile Include="Commands\TypeParamValidationRule.cs" />
     <Compile Include="Commands\ExportOptionsDlg.xaml.cs">
       <DependentUpon>ExportOptionsDlg.xaml</DependentUpon>

@@ -69,7 +69,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestGenerateTypeScriptFileForPersonWithCustomNamespaceAndForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithNamespace>();
 
             var results = ts.Generate();

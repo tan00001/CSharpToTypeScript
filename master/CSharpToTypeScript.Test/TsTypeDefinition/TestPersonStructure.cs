@@ -159,7 +159,7 @@ namespace CSharpToTypeScript.Test.TsTypeDefinition
         [TestMethod]
         public void TestStructureWithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonStructure>();
 
             var personTypeScript = ts.ToString();
@@ -174,7 +174,7 @@ namespace CSharpToTypeScript.Test.TsTypeDefinition
         [TestMethod]
         public void TestStructureFormWithField()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonStructureWithField>();
 
             var result = ts.Generate(TsGeneratorOptions.Fields | TsGeneratorOptions.Properties | TsGeneratorOptions.Enums)
@@ -192,7 +192,7 @@ namespace CSharpToTypeScript.Test.TsTypeDefinition
         [TestMethod]
         public void TestStructureFormWithConstant()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonStructureWithConstant>();
 
             var result = ts.Generate(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants)

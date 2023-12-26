@@ -16,7 +16,9 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         public Int32 ColCount { get; init; }
 
-        public TsGeneratorWithForm(int colCount, bool enableNamespace)
+        public string? ReactstrapModalTitle { get; init; }
+
+        public TsGeneratorWithForm(int colCount, string? reactstrapModalTitle, bool enableNamespace)
             : base(enableNamespace)
         {
             if (colCount > MaxColCount)
@@ -25,6 +27,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             ColCount = colCount;
+            ReactstrapModalTitle = reactstrapModalTitle;
         }
 
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
@@ -51,10 +54,22 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
             base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, dependencies, importIndices);
 
-            bool hasForms = HasMemeberInfoForOutput(@namespace, tsGeneratorOptions);
+            bool hasForms = HasMemeberInfoForOutput(@namespace, tsGeneratorOptions & ~(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants));
 
             if (hasForms)
             {
+                if (!string.IsNullOrEmpty(ReactstrapModalTitle))
+                {
+                    sb.AppendLineIndented("import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';");
+                    importIndices.Add("reactstrap", new Dictionary<string, Int32>()
+                    {
+                        { "Modal", 0 },
+                        { "ModalBody", 0 },
+                        { "ModalFooter", 0 },
+                        { "ModalHeader", 0 }
+                    });
+                }
+
                 bool hasCheckBoxes = (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Properties) && HasBooleanProperties(@namespace))
                     || (tsGeneratorOptions.HasFlag(TsGeneratorOptions.Fields) && HasBooleanFields(@namespace));
                 if (hasCheckBoxes)
@@ -145,7 +160,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
 
             List<TsProperty> allProperties = classModel.GetBaseProperties(generatorOptions.HasFlag(TsGeneratorOptions.Properties),
-                generatorOptions.HasFlag(TsGeneratorOptions.Fields));
+                generatorOptions.HasFlag(TsGeneratorOptions.Fields)).Where(p => !p.HasIgnoreAttribute).ToList();
 
             allProperties.AddRange(propertiesToExport);
 
@@ -248,22 +263,6 @@ namespace CSharpToTypeScript.AlternateGenerators
         }
 
         #region Private Methods
-        private static void AppendButtonRow(ScriptBuilder sb)
-        {
-            sb.AppendLineIndented("<div className=\"row\">");
-            using (sb.IncreaseIndentation())
-            {
-                sb.AppendLineIndented("<div className=\"form-group col-md-12\">");
-                using (sb.IncreaseIndentation())
-                {
-                    sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" disabled={isSubmitting}>Submit</button>");
-                    sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
-                }
-                sb.AppendLineIndented("</div>");
-            }
-            sb.AppendLineIndented("</div>");
-        }
-
         private void AppendClassDefinition(TsClass classModel, ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport,
             List<TsProperty> hiddenProperties, List<TsProperty> visiblePropertyList)
         {
@@ -282,6 +281,12 @@ namespace CSharpToTypeScript.AlternateGenerators
             var hasRequiredConstructorParams = propertiesToExport.Any(p => p.IsRequired && string.IsNullOrEmpty(p.GetDefaultValue()));
             using (sb.IncreaseIndentation())
             {
+                if (!string.IsNullOrEmpty(ReactstrapModalTitle))
+                {
+                    sb.AppendLineIndented("isOpen: boolean;");
+                    sb.AppendLineIndented("setIsOpen: (flag: boolean) => void;");
+
+                }
                 sb.AppendLineIndented(typeNameInCamelCase + (hasRequiredConstructorParams ? ": " : "?: ") + typeName + ",");
                 sb.AppendLineIndented("onSubmit: SubmitHandler<" + typeName + '>');
             }
@@ -310,39 +315,291 @@ namespace CSharpToTypeScript.AlternateGenerators
 
                 sb.AppendLine();
 
-                sb.AppendLineIndented("return <form onSubmit={handleSubmit(props.onSubmit)}>");
-                using (sb.IncreaseIndentation())
+                if (string.IsNullOrEmpty(ReactstrapModalTitle))
                 {
-                    foreach (var property in hiddenProperties)
+                    sb.AppendLineIndented("return <form onSubmit={handleSubmit(props.onSubmit)}>");
+                    using (sb.IncreaseIndentation())
                     {
-                        var propertyName = this.FormatPropertyName(property);
-                        AppendHiddenInput(sb, property, propertyName);
+                        AppendFormFields(memberModel, sb, hiddenProperties, visiblePropertyList);
+                        AppendButtonRow(sb);
                     }
-
-                    // Horizontally pack properties into each row.
-                    // Remainder of the property list go into the next row
-                    Int32 defaultColSpan = MaxColCount / ColCount;
-                    List<TsProperty> propertiesForRow = new();
-                    for (var i = 0; i < visiblePropertyList.Count; ++i)
-                    {
-                        var property = visiblePropertyList[i];
-                        propertiesForRow.Add(property);
-
-                        TsProperty? nextProperty = i + 1 < visiblePropertyList.Count ? visiblePropertyList[i + 1] : null;
-                        if (nextProperty == null
-                            || propertiesForRow.Count >= ColCount
-                            || ColSpanHasReachedMax(propertiesForRow, nextProperty, defaultColSpan))
-                        {
-                            AppendRow(sb, memberModel, propertiesForRow, defaultColSpan);
-                            propertiesForRow.Clear();
-                        }
-                    }
-                    AppendButtonRow(sb);
+                    sb.AppendLineIndented("</form>;");
                 }
-                sb.AppendLineIndented("</form>;");
+                else
+                {
+                    sb.AppendLineIndented("return <Modal isOpen={props.isOpen} toggle={() => props.setIsOpen(false)}>");
+                    using (sb.IncreaseIndentation())
+                    {
+                        sb.AppendLineIndented("<ModalHeader toggle={() => props.setIsOpen(false)}>" + ReactstrapModalTitle + "</ModalHeader>");
+                        sb.AppendLineIndented("<form onSubmit={handleSubmit(props.onSubmit)}>");
+                        using (sb.IncreaseIndentation())
+                        {
+                            sb.AppendLineIndented("<ModalBody>");
+                            using (sb.IncreaseIndentation())
+                            {
+                                AppendFormFields(memberModel, sb, hiddenProperties, visiblePropertyList);
+                            }
+                            sb.AppendLineIndented("</ModalBody>");
+                            sb.AppendLineIndented("<ModalFooter>");
+                            using (sb.IncreaseIndentation())
+                            {
+                                AppendButtonRow(sb);
+                            }
+                            sb.AppendLineIndented("</ModalFooter>");
+                        }
+                        sb.AppendLineIndented("</form>");
+                    }
+                    sb.AppendLineIndented("</Modal>;");
+                }
             }
 
             sb.AppendLineIndented("};");
+
+            static void AppendButtonRow(ScriptBuilder sb)
+            {
+                sb.AppendLineIndented("<div className=\"row\">");
+                using (sb.IncreaseIndentation())
+                {
+                    sb.AppendLineIndented("<div className=\"form-group col-md-12\">");
+                    using (sb.IncreaseIndentation())
+                    {
+                        sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" disabled={isSubmitting}>Submit</button>");
+                        sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
+                    }
+                    sb.AppendLineIndented("</div>");
+                }
+                sb.AppendLineIndented("</div>");
+            }
+
+            void AppendFormFields(TsModuleMemberWithHierarchy memberModel, ScriptBuilder sb, List<TsProperty> hiddenProperties, List<TsProperty> visiblePropertyList)
+            {
+                foreach (var property in hiddenProperties)
+                {
+                    var propertyName = this.FormatPropertyName(property);
+                    AppendHiddenInput(sb, property, propertyName);
+                }
+
+                // Horizontally pack properties into each row.
+                // Remainder of the property list go into the next row
+                Int32 defaultColSpan = MaxColCount / ColCount;
+                List<TsProperty> propertiesForRow = new();
+                for (var i = 0; i < visiblePropertyList.Count; ++i)
+                {
+                    var property = visiblePropertyList[i];
+                    propertiesForRow.Add(property);
+
+                    TsProperty? nextProperty = i + 1 < visiblePropertyList.Count ? visiblePropertyList[i + 1] : null;
+                    if (nextProperty == null
+                        || propertiesForRow.Count >= ColCount
+                        || ColSpanHasReachedMax(propertiesForRow, nextProperty, defaultColSpan))
+                    {
+                        AppendRow(sb, memberModel, propertiesForRow, defaultColSpan);
+                        propertiesForRow.Clear();
+                    }
+                }
+            }
+
+            static void AppendHiddenInput(ScriptBuilder sb, TsProperty property, string propertyName)
+            {
+                if (property.PropertyType is TsEnum)
+                {
+                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                }
+                else if (property.PropertyType is TsSystemType tsSystemType)
+                {
+                    if (tsSystemType.Kind == SystemTypeKind.Bool)
+                    {
+                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                    }
+                    else if (tsSystemType.Kind == SystemTypeKind.Number)
+                    {
+                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                    }
+                    else if (tsSystemType.Kind == SystemTypeKind.Date)
+                    {
+                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
+                    }
+                    else
+                    {
+                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                    }
+                }
+                else
+                {
+                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                }
+            }
+
+            void AppendRow(ScriptBuilder sb, TsModuleMemberWithHierarchy memberModel,
+                IReadOnlyList<TsProperty> properties, Int32 defaultColSpan)
+            {
+                sb.AppendLineIndented("<div className=\"row mb-3\">");
+                using (sb.IncreaseIndentation())
+                {
+                    Int32 totalColSpan = 0;
+                    foreach (var property in properties)
+                    {
+                        var colSpan = property.GetColSpanHint(defaultColSpan, MaxColCount)
+                            ?? (MaxColCount - totalColSpan);
+                        totalColSpan += colSpan;
+                        var propertyName = this.FormatPropertyName(property);
+                        sb.AppendLineIndented("<div className=\"form-group col-md-" + colSpan + "\">");
+                        using (sb.IncreaseIndentation())
+                        {
+                            AppendVisibleInput(sb, memberModel, property, propertyName);
+                            sb.AppendLineIndented("{getErrorMessage(errors." + propertyName + ")}");
+                        }
+                        sb.AppendLineIndented("</div>");
+                    }
+                }
+                sb.AppendLineIndented("</div>");
+            }
+
+            static void AppendVisibleInput(ScriptBuilder sb, TsModuleMemberWithHierarchy memberModel, TsProperty property, string propertyName)
+            {
+                bool isReadOnly = property.UiHint != null && property.UiHint.ControlParameters.TryGetValue(TsProperty.UiHintReadOnly,
+                    out var readOnlySetting) && readOnlySetting != null && readOnlySetting is Boolean readOnly && readOnly == true;
+                if (property.UiHint?.UIHint == TsProperty.UiHintSelect)
+                {
+                    property.UiHint.ControlParameters.TryGetValue(TsProperty.UiHintTypeContainingOptions, out var typeContainingOptions);
+                    if (typeContainingOptions == null)
+                    {
+                        typeContainingOptions = memberModel.Type;
+                    }
+                    var nameOfOptions = property.UiHint.ControlParameters[TsProperty.UiHintNameOfOptions];
+                    if (typeContainingOptions is not Type optionsType || nameOfOptions is not string options
+                        || string.IsNullOrEmpty(options))
+                    {
+                        throw new ArgumentException("Select control must have \"" + TsProperty.UiHintTypeContainingOptions
+                            + "\" and \"" + nameOfOptions + "\" specified.", nameof(property));
+                    }
+                    System.Reflection.FieldInfo? optionsCollection = GetStaticField(optionsType, options);
+                    if (optionsCollection is null
+                        || optionsCollection.GetValue(null) is not IEnumerable<string> optionList)
+                    {
+                        throw new ArgumentException("Select options \"" + TsProperty.UiHintTypeContainingOptions
+                            + "\" and \"" + nameOfOptions + "\" must specify a collection of strings.", nameof(property));
+                    }
+                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors."
+                        + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")}>");
+
+                    using (sb.IncreaseIndentation())
+                    {
+                        if (!property.IsRequired)
+                        {
+                            sb.AppendLineIndented("<option value=\"\">Select a " + property.GetDisplayName() + "</option>");
+                        }
+                        foreach (var option in optionList)
+                        {
+                            sb.AppendLineIndented("<option value=\"" + option + "\">" + option + "</option>");
+                        }
+                    }
+                    sb.AppendLineIndented("</select>");
+                }
+                else if (property.PropertyType is TsEnum tsEnum)
+                {
+                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })}>");
+                    using (sb.IncreaseIndentation())
+                    {
+                        if (!property.IsRequired)
+                        {
+                            sb.AppendLineIndented("<option value=\"\">Select a " + property.GetDisplayName() + "</option>");
+                        }
+                        foreach (var enumValue in tsEnum.Values)
+                        {
+                            sb.AppendLineIndented("<option value=\"" + enumValue.Value + "\">" + enumValue.GetDisplayName() + "</option>");
+                        }
+                    }
+                    sb.AppendLineIndented("</select>");
+                }
+                else if (property.PropertyType is TsSystemType tsSystemType)
+                {
+                    var inputType = GetInputType(property, tsSystemType.Kind);
+                    if (tsSystemType.Kind == SystemTypeKind.Bool)
+                    {
+                        // The prompt is different here in that there is no trailing ":"
+                        var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName();
+                        sb.AppendLineIndented("<input type=\"" + inputType
+                            + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
+                            + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                        sb.AppendLineIndented("<label className=\"form-check-label ms-1\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                    }
+                    else if (tsSystemType.Kind == SystemTypeKind.Number)
+                    {
+                        var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                        sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                        sb.AppendLineIndented("<input type=\"" + inputType
+                            + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                            + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
+                            + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                    }
+                    else if (tsSystemType.Kind == SystemTypeKind.Date)
+                    {
+                        var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                        sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                        sb.AppendLineIndented("<input type=\"" + inputType
+                            + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                            + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
+                            + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
+                    }
+                    else
+                    {
+                        var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                        sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                        sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : ("<input type=\"" + inputType + '"')
+                            + " className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
+                            + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
+                            + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                    }
+                }
+                else
+                {
+                    var inputType = GetInputType(property);
+                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
+                    sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + displayPrompt + "</label>");
+                    sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : ("<input type=\"" + inputType + '"')
+                        + " className={getClassName(touchedFields."
+                        + propertyName + ", errors." + propertyName
+                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
+                        + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                }
+
+                static System.Reflection.FieldInfo? GetStaticField(Type optionsType, string options, bool includePrivateField = true)
+                {
+                    var staticField = optionsType.GetField(options, System.Reflection.BindingFlags.Public
+                        | System.Reflection.BindingFlags.Static);
+                    if (staticField != null)
+                    {
+                        return staticField;
+                    }
+
+                    staticField = optionsType.GetField(options, System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Static);
+                    if (staticField != null)
+                    {
+                        if (!includePrivateField)
+                        {
+                            if (!staticField.IsFamily)
+                            {
+                                return null;
+                            }
+                        }
+
+                        return staticField;
+                    }
+
+                    if (optionsType.BaseType != null)
+                    {
+                        return GetStaticField(optionsType.BaseType, options, false);
+                    }
+
+                    return null;
+                }
+            }
         }
 
         private void AppendGenericClassDefinition(TsClass classModel, IReadOnlyList<TsType> genericArguments,
@@ -370,183 +627,12 @@ namespace CSharpToTypeScript.AlternateGenerators
                 typeName, resolverName);
         }
 
-        private static void AppendHiddenInput(ScriptBuilder sb, TsProperty property, string propertyName)
-        {
-            if (property.PropertyType is TsEnum)
-            {
-                sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
-            }
-            else if (property.PropertyType is TsSystemType tsSystemType)
-            {
-                if (tsSystemType.Kind == SystemTypeKind.Bool)
-                {
-                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                }
-                else if (tsSystemType.Kind == SystemTypeKind.Number)
-                {
-                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
-                }
-                else if (tsSystemType.Kind == SystemTypeKind.Date)
-                {
-                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
-                }
-                else
-                {
-                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                }
-            }
-            else
-            {
-                sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-            }
-        }
-
-        private void AppendRow(ScriptBuilder sb, TsModuleMemberWithHierarchy memberModel,
-            IReadOnlyList<TsProperty> properties, Int32 defaultColSpan)
-        {
-            sb.AppendLineIndented("<div className=\"row mb-3\">");
-            using (sb.IncreaseIndentation())
-            {
-                Int32 totalColSpan = 0;
-                foreach (var property in properties)
-                {
-                    var colSpan = property.GetColSpanHint(defaultColSpan, MaxColCount)
-                        ?? (MaxColCount - totalColSpan);
-                    totalColSpan += colSpan;
-                    var propertyName = this.FormatPropertyName(property);                    
-                    sb.AppendLineIndented("<div className=\"form-group col-md-" + colSpan + "\">");
-                    using (sb.IncreaseIndentation())
-                    {
-                        AppendVisibleInput(sb, memberModel, property, propertyName);
-                        sb.AppendLineIndented("{getErrorMessage(errors." + propertyName + ")}");
-                    }
-                    sb.AppendLineIndented("</div>");
-                }
-            }
-            sb.AppendLineIndented("</div>");
-        }
-
         private void AppendTypeDefinition(TsTypeDefinition typeDefinitionModel, ScriptBuilder sb, IReadOnlyList<TsProperty> propertiesToExport,
             List<TsProperty> hiddenProperties, List<TsProperty> visiblePropertyList)
         {
             string typeName = this.GetTypeName(typeDefinitionModel) ?? throw new ArgumentException("Type definition name cannot be blank.", nameof(typeDefinitionModel));
 
             AppendFormComponentDefinition(typeDefinitionModel, sb, propertiesToExport, hiddenProperties, visiblePropertyList, typeName, typeName);
-        }
-
-        private static void AppendVisibleInput(ScriptBuilder sb, TsModuleMemberWithHierarchy memberModel, TsProperty property, string propertyName)
-        {
-            bool isReadOnly = property.UiHint != null && property.UiHint.ControlParameters.TryGetValue(TsProperty.UiHintReadOnly,
-                out var readOnlySetting) && readOnlySetting != null && readOnlySetting is Boolean readOnly && readOnly == true;
-            if (property.UiHint?.UIHint == TsProperty.UiHintSelect)
-            {
-                var typeContainingOptions = property.UiHint.ControlParameters[TsProperty.UiHintTypeContainingOptions];
-                if (typeContainingOptions == null)
-                {
-                    typeContainingOptions = memberModel.Type;
-                }
-                var nameOfOptions = property.UiHint.ControlParameters[TsProperty.UiHintNameOfOptions];
-                if (typeContainingOptions is not Type optionsType || nameOfOptions is not string options
-                    || string.IsNullOrEmpty(options))
-                {
-                    throw new ArgumentException("Select control must have \"" + TsProperty.UiHintTypeContainingOptions
-                        + "\" and \"" + nameOfOptions + "\" specified.", nameof(property));
-                }
-
-                var optionsCollection = optionsType.GetField(options, System.Reflection.BindingFlags.Public 
-                    |System.Reflection.BindingFlags.Static) ?? optionsType.GetField(options, System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Static);
-                if (optionsCollection is null
-                    || optionsCollection.GetValue(null) is not IEnumerable<string> optionList) 
-                {
-                    throw new ArgumentException("Select options \"" + TsProperty.UiHintTypeContainingOptions
-                        + "\" and \"" + nameOfOptions + "\" must specify a collection of strings.", nameof(property));
-                }
-                var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
-                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")}>");
-                using (sb.IncreaseIndentation())
-                {
-                    if (!property.IsRequired)
-                    {
-                        sb.AppendLineIndented("<option value=\"\">Select a " + property.GetDisplayName() + "</option>");
-                    }
-                    foreach (var option in optionList)
-                    {
-                        sb.AppendLineIndented("<option value=\"" + option + "\">" + option + "</option>");
-                    }
-                }
-                sb.AppendLineIndented("</select>");
-            }
-            else if (property.PropertyType is TsEnum tsEnum)
-            {
-                var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
-                sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })}>");
-                using (sb.IncreaseIndentation())
-                {
-                    if (!property.IsRequired)
-                    {
-                        sb.AppendLineIndented("<option value=\"\">Select a " + property.GetDisplayName() + "</option>");
-                    }
-                    foreach (var enumValue in tsEnum.Values)
-                    {
-                        sb.AppendLineIndented("<option value=\"" + enumValue.Value + "\">" + enumValue.GetDisplayName() + "</option>");
-                    }
-                }
-                sb.AppendLineIndented("</select>");
-            }
-            else if (property.PropertyType is TsSystemType tsSystemType)
-            {
-                var inputType = GetInputType(property, tsSystemType.Kind);
-                if (tsSystemType.Kind == SystemTypeKind.Bool)
-                {
-                    // The prompt is different here in that there is no trailing ":"
-                    var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName();
-                    sb.AppendLineIndented("<input type=\"" + inputType
-                        + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
-                        + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                    sb.AppendLineIndented("<label className=\"form-check-label ms-1\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                }
-                else if (tsSystemType.Kind == SystemTypeKind.Number)
-                {
-                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
-                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<input type=\"" + inputType
-                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName 
-                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                        + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
-                }
-                else if (tsSystemType.Kind == SystemTypeKind.Date)
-                {
-                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
-                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<input type=\"" + inputType
-                        + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName 
-                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                        + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
-                }
-                else
-                {
-                    var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
-                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : ("<input type=\"" + inputType + '"')
-                        + " className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
-                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                        + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                }
-            }
-            else
-            {
-                var inputType = GetInputType(property);
-                var displayPrompt = property.GetDisplayPrompt() ?? (property.GetDisplayName() + ':');
-                sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + displayPrompt + "</label>");
-                sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : ("<input type=\"" + inputType + '"')
-                    + " className={getClassName(touchedFields." 
-                    + propertyName + ", errors." + propertyName
-                    + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                    + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-            }
         }
 
         private static bool ColSpanHasReachedMax(List<TsProperty> propertiesForRow, TsProperty nextProperty, Int32 defaultColSpan)
@@ -611,7 +697,7 @@ namespace CSharpToTypeScript.AlternateGenerators
         private static bool HasBooleanProperties(TsNamespace @namespace)
         {
             return (@namespace.Classes.Any(c => c.Properties.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool))
-                                    || @namespace.TypeDefinitions.Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)));
+                || @namespace.TypeDefinitions.Any(c => c.Fields.Any(p => p.PropertyType is TsSystemType systemType && systemType.Kind == SystemTypeKind.Bool)));
         }
         #endregion // Private Methods
     }

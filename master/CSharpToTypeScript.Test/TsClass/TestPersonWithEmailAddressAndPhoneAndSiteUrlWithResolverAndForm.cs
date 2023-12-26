@@ -56,7 +56,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestGenerateTypeScriptFileForSimpleClassesWithEmailAddressAndPhoneAndUrlForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithEmailAddressAndPhoneAndSiteUrl>();
 
             string personTypeScript = ts.ToString();

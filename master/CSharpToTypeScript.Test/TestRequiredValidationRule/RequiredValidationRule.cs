@@ -106,7 +106,7 @@ namespace CSharpToTypeScript.Test.TestRequiredValidationRule
         [TestMethod]
         public void TestRequiredNumber()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonRequiresAge>();
 
             string personTypeScript = ts.ToString();
@@ -121,7 +121,7 @@ namespace CSharpToTypeScript.Test.TestRequiredValidationRule
         [TestMethod]
         public void TestRequiredDate()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonRequiresBirthDate>();
 
             string personTypeScript = ts.ToString();
@@ -136,7 +136,7 @@ namespace CSharpToTypeScript.Test.TestRequiredValidationRule
         [TestMethod]
         public void TestRequiredGuid()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonRequiresId>();
 
             string personTypeScript = ts.ToString();
@@ -151,7 +151,7 @@ namespace CSharpToTypeScript.Test.TestRequiredValidationRule
         [TestMethod]
         public void TestRequiredAny()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonRequiresAny>();
 
             string personTypeScript = ts.ToString();

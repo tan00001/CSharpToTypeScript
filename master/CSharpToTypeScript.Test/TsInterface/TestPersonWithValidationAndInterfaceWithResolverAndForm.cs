@@ -82,7 +82,7 @@ namespace CSharpToTypeScript.Test.TsInterface
         [TestMethod]
         public void TestPersonWithValidationAndInterfaceWithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithValidationAndInterface>();
 
             string personTypeScript = ts.ToString();
@@ -112,7 +112,7 @@ namespace CSharpToTypeScript.Test.TsInterface
         [TestMethod]
         public void TestPersonWithGenderAndValidationInterfaceWithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithGenderAndValidationInterface>();
 
             string script = ts.ToString();

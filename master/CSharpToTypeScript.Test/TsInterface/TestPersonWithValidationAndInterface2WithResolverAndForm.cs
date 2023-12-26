@@ -50,7 +50,7 @@ namespace CSharpToTypeScript.Test.TsInterface
         [TestMethod]
         public void TestPersonWithValidationAndInterface2WithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(5, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(5, null, false))
                .For<PersonWithGenderAndValidationInterface2>();
 
             string script = ts.ToString();

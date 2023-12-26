@@ -38,7 +38,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestStructureFormWithConstant()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonWithConstant>();
 
             var result = ts.Generate(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants)

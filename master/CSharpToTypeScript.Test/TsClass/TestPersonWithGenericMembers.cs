@@ -77,7 +77,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestGenericDefinitionForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithGenericMember<DateTimeOffset>>();
 
             var personTypeScript = ts.ToString();

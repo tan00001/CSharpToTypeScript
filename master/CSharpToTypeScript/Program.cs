@@ -42,7 +42,7 @@ bool enableNamespace = args.Length > 4 && StringComparer.OrdinalIgnoreCase.Equal
 TsGenerator tsGenerator = args switch
 {
     _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[3], "withresolver") => new TsGeneratorWithResolver(enableNamespace),
-    _ when args.Length > 3 && args[3].StartsWith("withform(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithForm(GetColCount(args[3]), enableNamespace),
+    _ when args.Length > 3 && args[3].StartsWith("withform(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithForm(GetColCount(args[3]), GetReactstrapModalTitle(args[3]), enableNamespace),
     _ => new TsGenerator(enableNamespace)
 };
 
@@ -76,9 +76,17 @@ foreach (var script in scriptsByNamespaces)
 
 static int GetColCount(string formLayout)
 {
-    const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>).";
+    const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>,<Reactstrap Modal title(optional, less than 256 characters, if Reactstrap Modal is to be used)>).";
 
     var gridSize = formLayout.Substring("withform(".Length).TrimEnd(')');
+
+    int separatorIndex = gridSize.IndexOf(',');
+    if (separatorIndex > 0)
+    {
+        gridSize = gridSize.Substring(0, separatorIndex);
+    }
+
+    gridSize = gridSize.Trim();
 
     if (!Int32.TryParse(gridSize, out int colCount)
         || colCount <= 0
@@ -88,6 +96,33 @@ static int GetColCount(string formLayout)
     }
 
     return colCount;
+}
+
+static string? GetReactstrapModalTitle(string formLayout)
+{
+    const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>,<Reactstrap Modal title(optional, less than 256 characters, if Reactstrap Modal is to be used)>).";
+
+    var reactstrapModalTitle = formLayout.Substring("withform(".Length).TrimEnd(')');
+
+    int separatorIndex = reactstrapModalTitle.IndexOf(',');
+    if (separatorIndex < 0)
+    {
+        return null;
+    }
+
+    reactstrapModalTitle = reactstrapModalTitle.Substring(++separatorIndex).Trim();
+
+    if (string.IsNullOrEmpty(reactstrapModalTitle))
+    {
+        return reactstrapModalTitle;
+    }
+
+    if (reactstrapModalTitle.Length > 256)
+    {
+        throw new ArgumentException(errorMessage, nameof(formLayout));
+    }
+
+    return reactstrapModalTitle;
 }
 
 static bool FileContainsScript(string script, string filePath)

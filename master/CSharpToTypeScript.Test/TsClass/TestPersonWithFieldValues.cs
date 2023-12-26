@@ -63,7 +63,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestFieldValuesForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithGenderFieldValue>();
 
             var result = ts.Generate(TsGeneratorOptions.Fields | TsGeneratorOptions.Properties | TsGeneratorOptions.Enums)

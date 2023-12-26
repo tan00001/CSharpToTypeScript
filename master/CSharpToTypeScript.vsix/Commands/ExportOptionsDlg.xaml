@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              xmlns:platform="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
-             d:DesignHeight="140" d:DesignWidth="320"
+             d:DesignHeight="170" d:DesignWidth="320"
              toolkit:Themes.UseVsTheme="True"
              Title="Export Options"
              ShowInTaskbar="False" 
@@ -16,6 +16,7 @@
              DataContext="{Binding RelativeSource={RelativeSource Self}}" 
     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" Loaded="OnLoaded">
     <platform:DialogWindow.Resources>
+        <local:BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
                 <Setter.Value>
@@ -426,12 +427,13 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
+        
         <Label Grid.Column="0" Grid.Row="0" Content="Column count:" HorizontalContentAlignment="Right" />
         <TextBox Style="{DynamicResource TextBoxStyle}" Grid.Column="1" Grid.Row="0" Name="ColCountCtrl" Margin="0 0 0 10" Padding="3">
             <TextBox.Text>
@@ -442,7 +444,21 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <StackPanel x:Name="Buttons" Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 10 0">
+        <Label Grid.Column="0" Grid.Row="1" Content="Modal Title:" HorizontalContentAlignment="Right" 
+            Visibility="{Binding UseReactstrapModal, Converter={StaticResource VisibilityConverter}}"/>
+        <TextBox Style="{DynamicResource TextBoxStyle}" Grid.Column="1" Grid.Row="1" Name="ModalDlgTitleCtrl" Margin="0 0 0 10" Padding="3" MinWidth="220"
+            Visibility="{Binding UseReactstrapModal, Converter={StaticResource VisibilityConverter}}" IsVisibleChanged="ModalDlgTitleCtrl_IsVisibleChanged">
+            <TextBox.Text>
+                <Binding UpdateSourceTrigger="PropertyChanged" Path="ReactstrapModalTitle">
+                    <Binding.ValidationRules>
+                        <local:ModalDlgTitleValidationRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+        <CheckBox x:Name="UseModalCtrl" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="10 3 10 10" VerticalAlignment="Center"
+            IsChecked="{Binding UseReactstrapModal, UpdateSourceTrigger=PropertyChanged}" Content="Use Reactstrap Modal" HorizontalAlignment="Center" />
+        <StackPanel x:Name="Buttons" Grid.Column="1" Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 10 0">
             <Button Style="{DynamicResource ButtonStyle}" IsDefault="True" Content="OK" Padding="10" Click="OnOkClick" Width="60" Margin="0 0 10 0" />
             <Button Style="{DynamicResource ButtonStyle}" IsCancel="True" Content="Cancel" Width="60" Padding="10"/>
         </StackPanel>

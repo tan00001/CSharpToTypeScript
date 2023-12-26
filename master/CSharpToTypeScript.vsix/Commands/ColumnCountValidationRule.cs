@@ -44,7 +44,7 @@ namespace CSharpToTypeScript.Commands
                 return new ValidationResult(false, ErrorMessage);
             }
 
-            return new ValidationResult(true, null);
+            return ValidationResult.ValidResult;
         }
     }
 }

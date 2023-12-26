@@ -17,7 +17,8 @@ export namespace TestAssembly {
 				type: "custom",
 				message: "ValidateBalance is to be implemented"
 			};
-		};
+		}
+
 		static ValidateBalance2(values: CustomerAccount): FieldError | undefined {
 			if ((values.balance !== null && values.balance > 0) || values.id === 0)
 			{

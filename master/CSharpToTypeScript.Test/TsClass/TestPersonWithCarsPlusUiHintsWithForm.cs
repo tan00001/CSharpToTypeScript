@@ -72,7 +72,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestPersonWithCarsPlusAddressAndUiHintsWithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(12, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(12, null, false))
                 .For<PersonWithCarsPlusAddressAndUiHints>();
 
             string personTypeScript = ts.ToString();

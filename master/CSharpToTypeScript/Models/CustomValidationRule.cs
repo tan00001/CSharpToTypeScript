@@ -101,7 +101,7 @@ namespace CSharpToTypeScript.Models
 
                             if (startLine > 0 && endLine >= startLine)
                             {
-                                var sourceFileContents = File.ReadAllText(documentPath).Split("\r\n");
+                                var sourceFileContents = File.ReadAllText(documentPath).Split("\n").Select(l => l.TrimEnd('\r')).ToArray();
                                 if (startLine < sourceFileContents.Length && endLine < sourceFileContents.Length)
                                 {
                                     for (var i = startLine - 1; i <= endLine -1; ++i)
@@ -154,26 +154,32 @@ namespace CSharpToTypeScript.Models
                     sb.AppendLineIndented("};");
                 }
             }
-            sb.AppendLineIndented("};");
+            sb.AppendLineIndented("}");
+            sb.AppendLine();
         }
 
-        private static void AdjustIndents(ScriptBuilder sb, List<string> validatorDefinition)
+        private static void AdjustIndents(ScriptBuilder sb, List<string> validatorDefinitions)
         {
-            int indent = validatorDefinition.Where(d => !string.IsNullOrWhiteSpace(d))
-                .Min(d => GetLeadingWhitespaceCount(sb, d));
+            var nonEmptyValidatorDefinitions = validatorDefinitions.Where(d => !string.IsNullOrWhiteSpace(d));
+            if (!nonEmptyValidatorDefinitions.Any())
+            {
+                return;
+            }
+
+            int indent = nonEmptyValidatorDefinitions.Min(d => GetLeadingWhitespaceCount(sb, d));
 
             if (indent > 0)
             {
-                for (var i = 0; i < validatorDefinition.Count; ++i)
+                for (var i = 0; i < validatorDefinitions.Count; ++i)
                 {
-                    TrimLeadingSpaces(sb, validatorDefinition, indent, i);
+                    TrimLeadingSpaces(sb, validatorDefinitions, indent, i);
                 }
             }
         }
 
-        private static void TrimLeadingSpaces(ScriptBuilder sb, List<string> validatorDefinition, int indent, int i)
+        private static void TrimLeadingSpaces(ScriptBuilder sb, List<string> validatorDefinitions, int indent, int i)
         {
-            var validatorDefinitionLine = validatorDefinition[i];
+            var validatorDefinitionLine = validatorDefinitions[i];
             int count = 0;
             foreach (var c in validatorDefinitionLine)
             {
@@ -187,13 +193,13 @@ namespace CSharpToTypeScript.Models
                 }
                 else
                 {
-                    validatorDefinition[i] = validatorDefinitionLine.Substring(count);
+                    validatorDefinitions[i] = validatorDefinitionLine.Substring(count);
                     return;
                 }
 
                 if (count >= indent)
                 {
-                    validatorDefinition[i] = validatorDefinitionLine.Substring(count);
+                    validatorDefinitions[i] = validatorDefinitionLine.Substring(count);
                     return;
                 }
             }

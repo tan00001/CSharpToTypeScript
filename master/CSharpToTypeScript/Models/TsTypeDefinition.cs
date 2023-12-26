@@ -38,7 +38,7 @@ namespace CSharpToTypeScript.Models
                 return customValidations;
             }
 
-            return Properties.SelectMany(p => p.ValidationRules.Where(r => r is CustomValidationRule))
+            return Properties.Where(p => !p.HasIgnoreAttribute).SelectMany(p => p.ValidationRules.Where(r => r is CustomValidationRule))
                 .Cast<CustomValidationRule>()
                 .Union(customValidations, CustomValidationRule.Comparer)
                 .ToList();
@@ -63,6 +63,31 @@ namespace CSharpToTypeScript.Models
             return dependentTypes;
         }
 
+        public override IReadOnlyList<TsProperty> GetMemeberInfoForOutput(TsGeneratorOptions generatorOptions)
+        {
+            List<TsProperty> properties;
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Constants))
+            {
+                properties = Constants.Where(c => !c.HasIgnoreAttribute).ToList();
+            }
+            else
+            {
+                properties = new();
+            }
+
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties))
+            {
+                properties.AddRange(base.GetMemeberInfoForOutput(generatorOptions));
+            }
+
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+            {
+                properties.AddRange(Fields.Where(c => !c.HasIgnoreAttribute));
+            }
+
+            return properties;
+        }
+
         public override bool HasMemeberInfoForOutput(TsGeneratorOptions generatorOptions)
         {
             if (base.HasMemeberInfoForOutput(generatorOptions))
@@ -70,8 +95,10 @@ namespace CSharpToTypeScript.Models
                 return true;
             }
 
-            return generatorOptions.HasFlag(TsGeneratorOptions.Fields)
-                && Fields.Any(f => !f.HasIgnoreAttribute);
+            return (generatorOptions.HasFlag(TsGeneratorOptions.Fields)
+                && Fields.Any(f => !f.HasIgnoreAttribute))
+                || (generatorOptions.HasFlag(TsGeneratorOptions.Constants)
+                && Constants.Any(f => !f.HasIgnoreAttribute));
         }
 
         public override bool IsExportable(TsGeneratorOptions generatorOptions)
@@ -81,17 +108,17 @@ namespace CSharpToTypeScript.Models
                 return false;
             }
 
-            if (Properties.Count != 0 && generatorOptions.HasFlag(TsGeneratorOptions.Properties))
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties) && Properties.Any(p => !p.HasIgnoreAttribute))
             {
                 return true;
             }
 
-            if (Fields.Count != 0 && generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields) && Fields.Any(f => !f.HasIgnoreAttribute))
             {
                 return true;
             }
 
-            if (Constants.Count != 0 && generatorOptions.HasFlag(TsGeneratorOptions.Constants))
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Constants) && Constants.Any(c => !c.HasIgnoreAttribute))
             {
                 return true;
             }

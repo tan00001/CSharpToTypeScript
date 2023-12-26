@@ -100,7 +100,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestPersonAndAddressAndUiHintsWithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(12, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(12, null, false))
                 .For<PersonPlusCustomValidator>();
 
             string personTypeScript = ts.ToString();

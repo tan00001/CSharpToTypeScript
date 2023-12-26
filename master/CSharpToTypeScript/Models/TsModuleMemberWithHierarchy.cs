@@ -36,7 +36,7 @@ namespace CSharpToTypeScript.Models
         {
             var dependentTypes = base.GetDependentTypes(tsNamespace, generatorOptions);
 
-            foreach (var property in Properties)
+            foreach (var property in Properties.Where(p => !p.HasIgnoreAttribute))
             {
                 dependentTypes.UnionWith(tsNamespace.Members.Where(m => (m.Type == property.PropertyType.Type)
                     && !m.Type.IsGenericParameter));
@@ -69,7 +69,7 @@ namespace CSharpToTypeScript.Models
             foreach (var @interface in interfaces)
             {
                 dependentTypes.UnionWith(tsNamespace.Members.Where(m => m.Type == @interface.Type
-                    && @interface.Properties.Count > 0));
+                    && @interface.Properties.Any(p => !p.HasIgnoreAttribute)));
 
                 GetDependentTypes(dependentTypes, @interface.Interfaces, tsNamespace, generatorOptions);
             }
@@ -82,7 +82,7 @@ namespace CSharpToTypeScript.Models
                 return Array.Empty<CustomValidationRule>();
             }
 
-            return Properties.SelectMany(p => p.ValidationRules.Where(r => r is CustomValidationRule))
+            return Properties.Where(p => !p.HasIgnoreAttribute).SelectMany(p => p.ValidationRules.Where(r => r is CustomValidationRule))
                 .Cast<CustomValidationRule>()
                 .ToList();
         }
@@ -99,7 +99,7 @@ namespace CSharpToTypeScript.Models
 
         public override bool IsExportable(TsGeneratorOptions generatorOptions)
         {
-            if (Properties.Count == 0 || !generatorOptions.HasFlag(TsGeneratorOptions.Properties))
+            if (!generatorOptions.HasFlag(TsGeneratorOptions.Properties) || !Properties.Any(p => !p.HasIgnoreAttribute))
             {
                 return false;
             }
@@ -109,7 +109,7 @@ namespace CSharpToTypeScript.Models
 
         public virtual void UpdateCustomValidatorTypes(ITsModuleService tsModuleService)
         {
-            foreach (CustomValidationRule customValidationRule in Properties.SelectMany(p =>
+            foreach (CustomValidationRule customValidationRule in Properties.Where(p => !p.HasIgnoreAttribute).SelectMany(p =>
                 p.ValidationRules.Where(r => r is CustomValidationRule)))
             {
                 var validatorType = TsType.Create(tsModuleService, customValidationRule._CustomValidation.ValidatorType);

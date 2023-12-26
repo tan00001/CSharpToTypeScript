@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -76,12 +77,33 @@ namespace CSharpToTypeScript.Commands
             DependencyProperty.Register(nameof(ColCount), typeof(int), typeof(ExportOptionsDlg),
                 new FrameworkPropertyMetadata(1, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        public static readonly DependencyProperty UseReactstrapModalProperty =
+            DependencyProperty.Register(nameof(UseReactstrapModal), typeof(bool), typeof(ExportOptionsDlg),
+                new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public static readonly DependencyProperty ReactstrapModalTitleProperty =
+            DependencyProperty.Register(nameof(ReactstrapModalTitle), typeof(string), typeof(ExportOptionsDlg),
+                new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         public int ColCount
         {
             get { return (int)GetValue(ColCountProperty); }
             set { SetValue(ColCountProperty, value); }
         }
 
+        public bool UseReactstrapModal
+        {
+            get { return (bool)GetValue(UseReactstrapModalProperty); }
+            set { SetValue(UseReactstrapModalProperty, value); }
+        }
+
+        public string ReactstrapModalTitle
+        {
+            get { return (string)GetValue(ReactstrapModalTitleProperty); }
+            set { SetValue(ReactstrapModalTitleProperty, value); }
+        }
+
+        private double _BaseDlgHeight = 0;
 
         public ExportOptionsDlg(bool showColumnCount, IReadOnlyList<string> paramNames)
         {
@@ -108,7 +130,13 @@ namespace CSharpToTypeScript.Commands
             }
 
             if (Validation.GetErrors(ColCountCtrl).Count > 0
-                || TypeParamCtrls.Any(tc => Validation.GetErrors(tc).Count > 0))
+                || TypeParamCtrls.Any(tc => Validation.GetErrors(tc).Count > 0)
+                || Validation.GetErrors(ModalDlgTitleCtrl).Count > 0)
+            {
+                return;
+            }
+
+            if (!ValidateReactstrapModelTitle())
             {
                 return;
             }
@@ -119,6 +147,31 @@ namespace CSharpToTypeScript.Commands
 
             Close();
         }
+
+        private bool ValidateReactstrapModelTitle()
+        {
+            if (!UseReactstrapModal)
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(ReactstrapModalTitle) || ReactstrapModalTitle.Length > ModalDlgTitleValidationRule.MaxTitleLength)
+            {
+                BindingExpression binding = ModalDlgTitleCtrl.GetBindingExpression(TextBox.TextProperty);
+
+                ValidationError error = new ValidationError(new ExceptionValidationRule(), binding)
+                {
+                    ErrorContent = ModalDlgTitleValidationRule.ErrorMsgWhenRequired
+                };
+
+                Validation.MarkInvalid(binding, error);
+
+                return false;
+            }
+
+            return true;
+        }
+    
 
         private IReadOnlyList<ComboBox> AddTypeParamSelections(IReadOnlyList<string> paramNames)
         {
@@ -219,8 +272,9 @@ namespace CSharpToTypeScript.Commands
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             this.MinWidth = this.ActualWidth;
-            this.MinHeight = this.ActualHeight;
-            this.MaxHeight = this.ActualHeight;
+            _BaseDlgHeight = this.ActualHeight;
+            this.MinHeight = _BaseDlgHeight;
+            this.MaxHeight = _BaseDlgHeight;
 
             var hwnd = new WindowInteropHelper((Window)sender).Handle;
             var value = GetWindowLongA(hwnd, GWL_STYLE);
@@ -266,6 +320,26 @@ namespace CSharpToTypeScript.Commands
             }
 
             return IntPtr.Zero;
+        }
+
+        private void ModalDlgTitleCtrl_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (ModalDlgTitleCtrl.IsVisible)
+            {
+                var modalTitleHeight = ModalDlgTitleCtrl.ActualHeight;
+                if (modalTitleHeight == 0)
+                {
+                    modalTitleHeight = ColCountCtrl.ActualHeight;
+                }
+                modalTitleHeight += ModalDlgTitleCtrl.Margin.Top + ModalDlgTitleCtrl.Margin.Bottom;
+                this.MaxHeight = _BaseDlgHeight + modalTitleHeight;
+                this.MinHeight = _BaseDlgHeight + modalTitleHeight;
+            }
+            else
+            {
+                this.MaxHeight = _BaseDlgHeight;
+                this.MinHeight = _BaseDlgHeight;
+            }
         }
     }
 }

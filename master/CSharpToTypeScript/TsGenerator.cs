@@ -205,12 +205,12 @@ namespace CSharpToTypeScript
             if (generatorOptions == TsGeneratorOptions.Enums && enums.Count == 0
                 || enums.Count == 0 && classes.Count == 0 && typeDefinitions.Count == 0 && interfaces.Count == 0
                 || generatorOptions == TsGeneratorOptions.Properties 
-                    && !classes.Any(c => c.Fields.Any() || c.Properties.Any())
-                    && !typeDefinitions.Any(c => c.Fields.Any() || c.Properties.Any())
-                    && !interfaces.Any(i => i.Properties.Any())
+                    && !classes.Any(c => c.Fields.Any(f => !f.HasIgnoreAttribute) || c.Properties.Any(p => !p.HasIgnoreAttribute))
+                    && !typeDefinitions.Any(c => c.Fields.Any(f => !f.HasIgnoreAttribute) || c.Properties.Any(p => !p.HasIgnoreAttribute))
+                    && !interfaces.Any(i => i.Properties.Any(p => !p.HasIgnoreAttribute))
                 || generatorOptions == TsGeneratorOptions.Constants 
-                    && !typeDefinitions.Any(c => c.Constants.Any())
-                    && !classes.Any(c => c.Constants.Any()))
+                    && !typeDefinitions.Any(c => c.Constants.Any(c => !c.HasIgnoreAttribute))
+                    && !classes.Any(c => c.Constants.Any(c => !c.HasIgnoreAttribute)))
                 return TypeScriptFileType;
 
             string namespaceName = this.FormatNamespaceName(@namespace);
@@ -488,9 +488,9 @@ namespace CSharpToTypeScript
 
             List<TsProperty> propertiesToExport = new ();
             if (generatorOptions.HasFlag(TsGeneratorOptions.Properties))
-                propertiesToExport.AddRange(classModel.Properties);
+                propertiesToExport.AddRange(classModel.GetMemeberInfoForOutput(TsGeneratorOptions.Properties));
             if (generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                propertiesToExport.AddRange(classModel.Fields);
+                propertiesToExport.AddRange(classModel.GetMemeberInfoForOutput(TsGeneratorOptions.Fields));
 
             string namespaceName = FormatNamespaceName(classModel.Namespace!);
 
@@ -541,7 +541,7 @@ namespace CSharpToTypeScript
 
         protected virtual List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
-            List<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
+            IReadOnlyList<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
         {
             var properties = propertiesToExport.Where(p => !p.HasIgnoreAttribute).OrderBy(p => this.FormatPropertyName(p)).ToList();
 
@@ -567,15 +567,7 @@ namespace CSharpToTypeScript
             this._docAppender.AppendTypeDefinitionDoc(sb, typeDefinitionModel, typeName);
             sb.AppendLineIndented(str + "type " + typeName + " = {");
 
-            List<TsProperty> propertiesToExport = new();
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties))
-            {
-                propertiesToExport.AddRange(typeDefinitionModel.Properties);
-            }
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-            {
-                propertiesToExport.AddRange(typeDefinitionModel.Fields);
-            }
+            IReadOnlyList<TsProperty> propertiesToExport = typeDefinitionModel.GetMemeberInfoForOutput(generatorOptions);
 
             string namespaceName = FormatNamespaceName(typeDefinitionModel.Namespace!);
 

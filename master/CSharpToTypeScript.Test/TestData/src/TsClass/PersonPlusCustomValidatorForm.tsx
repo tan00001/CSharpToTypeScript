@@ -20,14 +20,16 @@ export class Person {
 			type: "custom",
 			message: "ValidateZip is to be implemented"
 		};
-	};
+	}
+
 	static ValidateZip2(values: Person): FieldError | undefined {
 		if (values.zip?.Length === 5 || (values.firstName === null && values.lastName === null))
 		{
 		    return undefined;
 		}
 		return { type: "custom", message: "ZIP code is required when name is specified." };
-	};
+	}
+
 	city: string | null;
 	firstName: string | null;
 	lastName: string | null;

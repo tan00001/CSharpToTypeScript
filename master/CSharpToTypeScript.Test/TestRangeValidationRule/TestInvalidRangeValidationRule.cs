@@ -196,7 +196,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadDateRange>();
 
                 string personTypeScript = ts.ToString();
@@ -208,7 +208,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadDepositAmountRange>();
 
                 string personTypeScript = ts.ToString();
@@ -220,7 +220,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadDepositAmountRangeMin>();
 
                 string personTypeScript = ts.ToString();
@@ -232,7 +232,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             { 
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadContractLengthRange>();
 
                 string personTypeScript = ts.ToString();
@@ -244,7 +244,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadContractLengthRangeMin>();
 
                 string personTypeScript = ts.ToString();
@@ -256,7 +256,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<FormatException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadContractLengthRangeMin2>();
 
                 string personTypeScript = ts.ToString();
@@ -268,7 +268,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithBadContractLengthRangeMin3>();
 
                 string personTypeScript = ts.ToString();
@@ -280,7 +280,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+                var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                     .For<PersonWithNullableDecimalRange>();
 
                 string personTypeScript = ts.ToString();

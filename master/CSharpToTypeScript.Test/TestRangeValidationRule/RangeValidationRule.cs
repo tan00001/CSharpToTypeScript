@@ -231,7 +231,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestNumberRange()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithAgeRange>();
 
             string personTypeScript = ts.ToString();
@@ -246,7 +246,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestNumberRangeWithMessage()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithAgeRangeAndMessage>();
 
             string personTypeScript = ts.ToString();
@@ -261,7 +261,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestDateRange()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithBirthDateRange>();
 
             string personTypeScript = ts.ToString();
@@ -278,7 +278,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestDateStringRange()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithBirthDateStringRange>();
 
             string personTypeScript = ts.ToString();
@@ -295,7 +295,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestCurrencyRange()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithDepositAmountRange>();
 
             string personTypeScript = ts.ToString();
@@ -310,7 +310,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestDurationRange()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithContractLengthRange>();
 
             string personTypeScript = ts.ToString();
@@ -325,7 +325,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestDurationRange2()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithContractLengthRange2>();
 
             string personTypeScript = ts.ToString();
@@ -340,7 +340,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestDurationRange3()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithContractLengthRange3>();
 
             string personTypeScript = ts.ToString();
@@ -355,7 +355,7 @@ namespace CSharpToTypeScript.Test.TestRangeValidationRule
         [TestMethod]
         public void TestAnyRange()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                 .For<PersonWithAnyRange>();
 
             string personTypeScript = ts.ToString();

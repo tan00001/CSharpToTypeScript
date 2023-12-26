@@ -18,7 +18,7 @@ namespace CSharpToTypeScript.AlternateGenerators
             TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
         {
-            if (HasMemeberInfoForOutput(@namespace, generatorOptions))
+            if (HasMemeberInfoForOutput(@namespace, generatorOptions & ~(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants)))
             {
                 sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace, generatorOptions))
                     + " } from 'react-hook-form';");
@@ -96,7 +96,7 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         protected override List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
-            List<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
+            IReadOnlyList<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
         {
             foreach (var customValidationRule in tsModuleMemberWithHierarchy.ImplementedCustomValidationRules)
             {

@@ -154,7 +154,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestPersonPlusAddressAndUiHintsWithForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(12, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(12, null, false))
                 .For<PersonPlusAddressAndUiHints>();
 
             string personTypeScript = ts.ToString();
@@ -169,7 +169,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestPersonPlusAddressAndUiHintsWithForm2()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(4, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(4, null, false))
                 .For<PersonPlusAddressAndUiHints2>();
 
             string personTypeScript = ts.ToString();
@@ -184,7 +184,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestPersonPlusAddressAndUiHintsWithForm3()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(4, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(4, null, false))
                 .For<PersonPlusAddressAndUiHints3>();
 
             string personTypeScript = ts.ToString();

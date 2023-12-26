@@ -43,7 +43,7 @@ namespace CSharpToTypeScript.Test.TsEnum
         [TestMethod]
         public void TestSelectOptions()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(1, null, false))
                .For<PersonWithSelectOptions>();
 
             var personTypeScript = ts.ToString();

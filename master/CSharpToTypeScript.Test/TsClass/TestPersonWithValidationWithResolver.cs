@@ -60,7 +60,7 @@ namespace CSharpToTypeScript.Test.TsClass
         [TestMethod]
         public void TestGenerateTypeScriptFileForSimpleClassesWithRequiredAndRangeAndStringLengthForm()
         {
-            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, false))
+            var ts = TypeScript.Definitions(new TsGeneratorWithForm(3, null, false))
                .For<PersonWithValidation>();
 
             string personTypeScript = ts.ToString();

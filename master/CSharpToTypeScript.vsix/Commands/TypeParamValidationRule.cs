@@ -16,7 +16,7 @@ namespace CSharpToTypeScript.Commands
         {
             if (value == null)
             {
-                return new ValidationResult(false, "Column count cannot be blank.");
+                return new ValidationResult(false, "Type name cannot be blank.");
             }
 
             if (value is not string strValue)
@@ -44,7 +44,7 @@ namespace CSharpToTypeScript.Commands
                 }
             }
 
-            return new ValidationResult(true, null);
+            return ValidationResult.ValidResult;
         }
     }
 }

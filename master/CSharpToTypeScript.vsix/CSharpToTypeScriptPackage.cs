@@ -1,4 +1,5 @@
 ﻿#nullable enable
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -151,7 +152,15 @@ namespace CSharpToTypeScript
                 typeName = ReplaceTypeParams(typeName, formLayoutDlg.TypeParams);
                 if (generatorName == FormGenerator)
                 {
-                    generatorName += '(' + formLayoutDlg.ColCount.ToString() + ')';
+                    generatorName += '(' + formLayoutDlg.ColCount.ToString();
+                    if (formLayoutDlg.UseReactstrapModal)
+                    {
+                        generatorName = '"' + generatorName + ',' + formLayoutDlg.ReactstrapModalTitle + ")\"";
+                    }
+                    else
+                    {
+                        generatorName += ')';
+                    }
                 }
             }
             else
@@ -190,6 +199,21 @@ namespace CSharpToTypeScript
                     // Start the new process
                     using Process process = new()
                     {
+#if __DEBUG__
+                        StartInfo = new()
+                        {
+                            FileName = ExeFilePath,
+                            Arguments = '"' + outputAssmblyPath + "\" "
+                                + typeName + " \""
+                                + dialog.FileName + "\" "
+                                + generatorName + " "
+                                + "enableNamespace=" + enableNamespace,
+                            RedirectStandardOutput = false,
+                            RedirectStandardError = false,
+                            UseShellExecute = true,
+                            CreateNoWindow = false
+                        }
+#else
                         StartInfo = new()
                         {
                             FileName = ExeFilePath,
@@ -203,10 +227,14 @@ namespace CSharpToTypeScript
                             UseShellExecute = false,
                             CreateNoWindow = true
                         }
+#endif
                     };
                     try
                     {
                         process.Start();
+#if __DEBUG__
+                        System.Threading.Thread.Sleep(360000);
+#endif
 
                         // Optionally, read the standard output and standard error streams if needed
                         var readStdoutTask = process.StandardOutput.ReadToEndAsync();
