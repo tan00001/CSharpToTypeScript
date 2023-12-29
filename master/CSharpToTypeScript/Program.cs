@@ -47,7 +47,7 @@ TsGenerator tsGenerator = args switch
 };
 
 var ts = TypeScript.Definitions(tsGenerator)
-    .For(typeToExport);
+    .For(typeToExport, true);
 
 var scriptsByNamespaces = ts.Generate();
 

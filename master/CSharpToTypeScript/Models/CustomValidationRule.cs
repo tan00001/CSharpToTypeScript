@@ -79,7 +79,26 @@ namespace CSharpToTypeScript.Models
 
                         MetadataReader metaDataReader = peReader.GetMetadataReader();
                         var methodDefinitionHandle = metaDataReader.MethodDefinitions.FirstOrDefault(m =>
-                            metaDataReader.GetString(metaDataReader.GetMethodDefinition(m).Name) == method.Name);
+                        {
+                            var methodDefinition = metaDataReader.GetMethodDefinition(m);
+
+                            if (metaDataReader.GetString(methodDefinition.Name) != method.Name)
+                            {
+                                return false;
+                            }
+
+                            var typeDefinition = metaDataReader.GetTypeDefinition(methodDefinition.GetDeclaringType());
+
+                            string typeName = metaDataReader.GetString(typeDefinition.Name);
+                            string namespaceName = metaDataReader.GetString(typeDefinition.Namespace);
+
+                            if (method.DeclaringType == null)
+                            {
+                                return string.IsNullOrEmpty(typeName) && string.IsNullOrEmpty(namespaceName);
+                            }
+
+                            return typeName == method.DeclaringType.Name && namespaceName == method.DeclaringType.Namespace;
+                        });
 
                         if (peReader.TryOpenAssociatedPortablePdb(assemblyPath, File.OpenRead,
                             out var pdbReaderProvider, out _) && pdbReaderProvider != null)

@@ -12,7 +12,8 @@ namespace CSharpToTypeScript.Models
 
         public bool IsExcludedFromExport()
         {
-            return TsType.ExcludedNamespacePrefixes.Any(p => this.Name.StartsWith(p) || p.StartsWith(this.Name));
+            return TsType.ExcludedNamespacePrefixes.Any(p => this.Name.StartsWith(p) || p.StartsWith(this.Name)
+                || this.NamespaceName.StartsWith(p) || p.StartsWith(this.NamespaceName));
         }
     }
 }

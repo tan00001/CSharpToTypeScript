@@ -70,6 +70,12 @@ namespace CSharpToTypeScript.AlternateGenerators
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
             var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
+
+            if (classModel.Name.EndsWith("Validator") && !classModel.RequiresAllExtensions)
+            {
+                return propertiesToExport;
+            }
+
             sb.AppendLine();
 
             var propertyList = propertiesToExport.ToImmutableSortedDictionary(FormatPropertyName, a => a);

@@ -32,10 +32,13 @@ namespace CSharpToTypeScript
 
         public TypeScriptFluentModuleMember For<T>() => this.For(typeof(T));
 
-        public TypeScriptFluentModuleMember For(Type type)
+        public TypeScriptFluentModuleMember For(Type type, bool requiresAllExtensions = false)
         {
             Dictionary<Type, TypeConvertor> convertors = this._scriptGenerator._typeConvertors._convertors;
             TsModuleMember member = this._modelBuilder.Add(type, true, convertors);
+
+            member.RequiresAllExtensions = requiresAllExtensions;
+
             switch (member)
             {
                 case TsInterface _:

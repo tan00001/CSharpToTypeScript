@@ -57,6 +57,8 @@ namespace CSharpToTypeScript.Models
 
         public bool IsIgnored { get; set; }
 
+        public bool RequiresAllExtensions { get; set; }
+
         public string NamespaceName
         {
             get;

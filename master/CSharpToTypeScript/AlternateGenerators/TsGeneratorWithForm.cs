@@ -159,6 +159,11 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
             var propertiesToExport = base.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
 
+            if (classModel.Name.EndsWith("Validator") && !classModel.RequiresAllExtensions)
+            {
+                return propertiesToExport;
+            }
+
             List<TsProperty> allProperties = classModel.GetBaseProperties(generatorOptions.HasFlag(TsGeneratorOptions.Properties),
                 generatorOptions.HasFlag(TsGeneratorOptions.Fields)).Where(p => !p.HasIgnoreAttribute).ToList();
 
