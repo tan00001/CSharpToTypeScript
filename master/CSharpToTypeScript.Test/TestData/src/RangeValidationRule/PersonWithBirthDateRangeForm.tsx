@@ -3,7 +3,7 @@ import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from '../BootstrapUtils';
 
 export class Person {
-	birthDate?: Date | null;
+	birthDate?: Date | string | null;
 	firstName: string | null;
 	lastName: string | null;
 
@@ -16,8 +16,8 @@ export class Person {
 export const PersonResolver: Resolver<Person> = async (values) => {
 	const errors: FieldErrors<Person> = {};
 
-	if (values.birthDate && !isNaN(values.birthDate.getTime())) {
-		const propValue: number = values.birthDate.getTime();
+	if (values.birthDate) {
+		const propValue: number = new Date(values.birthDate).getTime();
 		if (isNaN(propValue) || propValue > 1041408000000) {
 			errors.birthDate = {
 				type: 'max',

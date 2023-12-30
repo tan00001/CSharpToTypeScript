@@ -16,21 +16,21 @@ namespace CSharpToTypeScript.Models
         public TsClass(ITsModuleService tsModuleService, Type type)
           : base(tsModuleService, type)
         {
+            if (this.Type.BaseType != null && TsType.GetTypeFamily(this.Type.BaseType) == TsTypeFamily.Class)
+                this.BaseType = tsModuleService.GetOrAddTsClass(this.Type.BaseType);
+
             Fields = Type.GetFields().Where(fi =>
                 {
                     if (fi.DeclaringType != Type)
                         return false;
                     return !fi.IsLiteral || fi.IsInitOnly;
                 })
-                .Select(fi => new TsProperty(tsModuleService, fi))
+                .Select(fi => new TsProperty(tsModuleService, fi, this))
                 .ToList();
 
             Constants = Type.GetFields().Where(fi => fi.DeclaringType == Type && fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => new TsProperty(tsModuleService, fi))
+                .Select(fi => new TsProperty(tsModuleService, fi, this))
                 .ToList();
-
-            if (this.Type.BaseType != null && TsType.GetTypeFamily(this.Type.BaseType) == TsTypeFamily.Class)
-                this.BaseType = tsModuleService.GetOrAddTsClass(this.Type.BaseType);
         }
 
         public virtual List<TsProperty> GetBaseProperties(bool includeProperties, bool includeFields)

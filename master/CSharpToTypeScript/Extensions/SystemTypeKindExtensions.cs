@@ -8,7 +8,7 @@ namespace CSharpToTypeScript.Extensions
         {
             if (type == SystemTypeKind.Bool)
                 return "boolean";
-            return type == SystemTypeKind.Date ? "Date" : type.ToString().ToLower();
+            return type == SystemTypeKind.Date ? "Date | string" : type.ToString().ToLower();
         }
     }
 }

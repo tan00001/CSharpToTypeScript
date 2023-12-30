@@ -2,6 +2,7 @@
 using CSharpToTypeScript.Models;
 using System;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace CSharpToTypeScript.AlternateGenerators
 {
@@ -15,21 +16,20 @@ namespace CSharpToTypeScript.AlternateGenerators
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
-            TsGeneratorOptions generatorOptions,
-            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
+            TsGeneratorOptions generatorOptions)
         {
             if (HasMemeberInfoForOutput(@namespace, generatorOptions & ~(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants)))
             {
                 sb.AppendLine("import { " + string.Join(", ", GetReactHookFormComponentNames(@namespace, generatorOptions))
                     + " } from 'react-hook-form';");
 
-                if (dependencies.Count == 0 && !HasAdditionalImports(@namespace, generatorOptions))
+                if ((@namespace.Dependencies?.Count ?? 0) == 0 && !HasAdditionalImports(@namespace, generatorOptions))
                 {
                     sb.AppendLine();
                 }
             }
 
-            return base.AppendImports(@namespace, sb, generatorOptions, dependencies);
+            return base.AppendImports(@namespace, sb, generatorOptions);
         }
 
         protected bool HasMemeberInfoForOutput(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
@@ -42,7 +42,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             TsNamespace @namespace,
             ScriptBuilder sb,
             TsGeneratorOptions generatorOptions,
-            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies,
             Dictionary<string, IReadOnlyDictionary<string, Int32>> importIndices)
         {
             if (!generatorOptions.HasFlag(TsGeneratorOptions.Properties) && !generatorOptions.HasFlag(TsGeneratorOptions.Fields))
@@ -100,23 +99,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             return propertiesToExport;
         }
 
-        protected override List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
-            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
-            IReadOnlyList<TsProperty> propertiesToExport, string namespaceName, TsGeneratorOptions generatorOptions)
-        {
-            foreach (var customValidationRule in tsModuleMemberWithHierarchy.ImplementedCustomValidationRules)
-            {
-                customValidationRule.ValidatorTypeName = FormatTypeName(namespaceName, tsModuleMemberWithHierarchy, importNames);
-
-                foreach (var targetType in customValidationRule.TargetTypes)
-                {
-                    customValidationRule.AddValidationFunction(sb, FormatTypeName(namespaceName, targetType, importNames),
-                        targetType, generatorOptions);
-                }
-            }
-            return base.AppendProperties(sb, tsModuleMemberWithHierarchy, importNames, propertiesToExport, namespaceName, generatorOptions);
-        }
-
         protected override IReadOnlyList<TsProperty> AppendTypeDefinition(
             TsTypeDefinition typeDefinitionModel,
             ScriptBuilder sb,
@@ -145,7 +127,16 @@ namespace CSharpToTypeScript.AlternateGenerators
 
         protected static string BuildVariableNameWithGenericArguments(string typeName)
         {
-            return typeName.Replace("<", "").Replace(", ", "").TrimEnd('>');
+            var argumentIndex = typeName.IndexOf('<');
+            if (argumentIndex < 0)
+            {
+                return typeName;
+            }
+
+            var typeNameWithoutParams = typeName.Substring(0, argumentIndex);
+            var argumentList = typeName.Substring(argumentIndex + 1).TrimEnd('>').Split(new char[] { ',', '|', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return typeNameWithoutParams + string.Join("", argumentList.Select(a => Char.ToUpper(a[0]) + a.Substring(1)));
         }
 
         protected virtual IReadOnlyList<string> GetReactHookFormComponentNames(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
@@ -166,6 +157,38 @@ namespace CSharpToTypeScript.AlternateGenerators
             }
 
             return reactHookFormComponentNames;
+        }
+
+        protected override void OnPropertiesAppended(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames,
+            List<TsProperty> propertiesAppended, string namespaceName, TsGeneratorOptions generatorOptions)
+        {
+            var customValidationRules = propertiesAppended.SelectMany(p => p.ValidationRules.Where(v => v is CustomValidationRule)
+                .Cast<CustomValidationRule>())
+                .ToHashSet();
+
+            foreach (var customValidationRule in customValidationRules)
+            {
+                System.Diagnostics.Debug.Assert(customValidationRule.TargetTypes.Contains(tsModuleMemberWithHierarchy));
+
+                // Initialize the validator type name so that it can be used in our validation function. Validators in other namespaces or classes
+                // may not be built yet. But we need the name to build our validation function, where we may call these external validators.
+                // Furthermore, the imported name can be an alias that changes from one file to another.
+                customValidationRule.ValidatorTypeName = FormatTypeName(namespaceName, customValidationRule.ValidatorType, importNames);
+            }
+
+            var localValidators = tsModuleMemberWithHierarchy.ImplementedCustomValidationRules.Where(r => r.ValidatorType == tsModuleMemberWithHierarchy).ToList();
+
+            if (localValidators.Count > 0)
+            {
+                sb.AppendLine();
+
+                foreach (var customValidationRule in localValidators)
+                {
+                    customValidationRule.AddValidationFunction(sb, FormatTypeName(tsModuleMemberWithHierarchy.NamespaceName, tsModuleMemberWithHierarchy, importNames),
+                        tsModuleMemberWithHierarchy, generatorOptions);
+                }
+            }
         }
 
         protected string SubstituteTypeParameters(string? typeName, IReadOnlyList<TsType> genericArguments,
@@ -211,11 +234,12 @@ namespace CSharpToTypeScript.AlternateGenerators
                 sb.AppendLineIndented("const errors: FieldErrors<" + typeName + "> = {};");
                 sb.AppendLine();
 
+                HashSet<string> constNamesInUse = new();
                 foreach (var property in propertyList)
                 {
                     foreach (var validationRule in property.Value.ValidationRules)
                     {
-                        validationRule.BuildRule(sb, property.Key, property.Value, propertyList);
+                        validationRule.BuildRule(sb, property.Key, property.Value, propertyList, constNamesInUse);
                     }
                 }
 

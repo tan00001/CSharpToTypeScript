@@ -12,7 +12,7 @@ namespace CSharpToTypeScript.Models
           : base(tsModuleService, type)
         {
             this.Properties = this.Type.GetProperties().Where(pi => pi.DeclaringType == this.Type)
-                .Select(pi => new TsProperty(tsModuleService, pi)).ToList();
+                .Select(pi => new TsProperty(tsModuleService, pi, this)).ToList();
         }
 
         public virtual IReadOnlyList<TsProperty> GetMemeberInfoForOutput(TsGeneratorOptions generatorOptions)
@@ -40,6 +40,12 @@ namespace CSharpToTypeScript.Models
             {
                 dependentTypes.UnionWith(tsNamespace.Members.Where(m => (m.Type == property.PropertyType.Type)
                     && !m.Type.IsGenericParameter));
+
+                foreach (CustomValidationRule validationRule in property.ValidationRules.Where(r => r is CustomValidationRule))
+                {
+                    dependentTypes.UnionWith(tsNamespace.Members.Where(m => (m.Type == validationRule._CustomValidation.ValidatorType)
+                                           && !m.Type.IsGenericParameter));
+                }
             }
 
             foreach (var argument in GenericArguments)

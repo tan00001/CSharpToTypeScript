@@ -53,7 +53,7 @@ namespace CSharpToTypeScript.Models
         public DataContractAttribute? DataContract { get; private set; }
         protected JsonIgnoreAttribute? Ignore { get; private set; }
         protected NotMappedAttribute? NotMapped { get; private set; }
-        protected bool HasBindNeverAttribute { get; set; }
+        
 
         public bool IsIgnored { get; set; }
 
@@ -156,9 +156,7 @@ namespace CSharpToTypeScript.Models
 
             NotMapped = this.Type.GetCustomAttribute<NotMappedAttribute>(false);
 
-            HasBindNeverAttribute = this.Type.GetCustomAttributes(false).Any(a => a.GetType().FullName == "Microsoft.AspNetCore.Mvc.ModelBinding.BindNeverAttribute");
-
-            IsIgnored = Ignore != null || NotMapped != null || HasBindNeverAttribute;
+            IsIgnored = Ignore != null || NotMapped != null;
 
             ModuleName = GetModuleName(type);
 

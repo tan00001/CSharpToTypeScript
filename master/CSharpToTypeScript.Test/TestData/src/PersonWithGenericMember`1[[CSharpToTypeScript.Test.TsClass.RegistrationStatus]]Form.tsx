@@ -13,7 +13,7 @@ export class PersonWithGenericMember<T> {
 	}
 }
 
-export const PersonWithGenericMemberimpRegistrationStatusResolver: Resolver<PersonWithGenericMember<impRegistrationStatus>> = async (values) => {
+export const PersonWithGenericMemberImpRegistrationStatusResolver: Resolver<PersonWithGenericMember<impRegistrationStatus>> = async (values) => {
 	const errors: FieldErrors<PersonWithGenericMember<impRegistrationStatus>> = {};
 
 	if (!values.name) {
@@ -35,17 +35,17 @@ export const PersonWithGenericMemberimpRegistrationStatusResolver: Resolver<Pers
 	};
 };
 
-export type PersonWithGenericMemberimpRegistrationStatusFormData = {
-	personWithGenericMemberimpRegistrationStatus?: PersonWithGenericMember<impRegistrationStatus>,
+export type PersonWithGenericMemberImpRegistrationStatusFormData = {
+	personWithGenericMemberImpRegistrationStatus?: PersonWithGenericMember<impRegistrationStatus>,
 	onSubmit: SubmitHandler<PersonWithGenericMember<impRegistrationStatus>>
 };
 
-export const PersonWithGenericMemberimpRegistrationStatusForm = (props: PersonWithGenericMemberimpRegistrationStatusFormData) => {
+export const PersonWithGenericMemberImpRegistrationStatusForm = (props: PersonWithGenericMemberImpRegistrationStatusFormData) => {
 	const formId = useId();
 	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithGenericMember<impRegistrationStatus>>({
 		mode: "onTouched",
-		resolver: PersonWithGenericMemberimpRegistrationStatusResolver,
-		defaultValues: props.personWithGenericMemberimpRegistrationStatus ?? new PersonWithGenericMember<impRegistrationStatus>()
+		resolver: PersonWithGenericMemberImpRegistrationStatusResolver,
+		defaultValues: props.personWithGenericMemberImpRegistrationStatus ?? new PersonWithGenericMember<impRegistrationStatus>()
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>

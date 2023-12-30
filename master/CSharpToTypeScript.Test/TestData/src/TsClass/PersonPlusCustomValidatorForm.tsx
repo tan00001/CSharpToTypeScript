@@ -3,6 +3,22 @@ import { useForm, SubmitHandler, Resolver, FieldErrors, FieldError } from 'react
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export class Person {
+	city: string | null;
+	firstName: string | null;
+	lastName: string | null;
+	state: string | null;
+	streetAddress: string | null;
+	zip: string | null;
+
+	constructor(city?: string | null, firstName?: string | null, lastName?: string | null, state?: string | null, streetAddress?: string | null, zip?: string | null) {
+		this.city = city ?? null;
+		this.firstName = firstName ?? null;
+		this.lastName = lastName ?? null;
+		this.state = state ?? null;
+		this.streetAddress = streetAddress ?? null;
+		this.zip = zip ?? null;
+	}
+
 	static ValidateZip(values: Person): FieldError | undefined {
 		// {
 		//     if (value is string zip)
@@ -23,28 +39,13 @@ export class Person {
 	}
 
 	static ValidateZip2(values: Person): FieldError | undefined {
-		if (values.zip?.Length === 5 || (values.firstName === null && values.lastName === null))
+		if (values.zip?.length === 5 || (values.firstName === null && values.lastName === null))
 		{
 		    return undefined;
 		}
 		return { type: "custom", message: "ZIP code is required when name is specified." };
 	}
 
-	city: string | null;
-	firstName: string | null;
-	lastName: string | null;
-	state: string | null;
-	streetAddress: string | null;
-	zip: string | null;
-
-	constructor(city?: string | null, firstName?: string | null, lastName?: string | null, state?: string | null, streetAddress?: string | null, zip?: string | null) {
-		this.city = city ?? null;
-		this.firstName = firstName ?? null;
-		this.lastName = lastName ?? null;
-		this.state = state ?? null;
-		this.streetAddress = streetAddress ?? null;
-		this.zip = zip ?? null;
-	}
 }
 
 export const PersonResolver: Resolver<Person> = async (values) => {
@@ -122,8 +123,14 @@ export const PersonResolver: Resolver<Person> = async (values) => {
 			message: 'ZIP cannot exceed 50 characters.'
 		};
 	}
-	errors.zip ??= Person.ValidateZip(values);
-	errors.zip ??= Person.ValidateZip2(values);
+	const zipError = Person.ValidateZip(values);
+	if (zipError) {
+		errors.zip ??= zipError;
+	}
+	const zipError1 = Person.ValidateZip2(values);
+	if (zipError1) {
+		errors.zip ??= zipError1;
+	}
 
 	return {
 		values,

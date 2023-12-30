@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
             _ReqularExpression = regularExpression;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             sb.AppendLineIndented("if (values." + propertyName + " && !/" + _ReqularExpression.Pattern + "/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
@@ -21,7 +21,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_ReqularExpression.ErrorMessage) ? _ReqularExpression.ErrorMessage
-                        :(property.GetDisplayName() + " is invalid.")) + "'");
+                        :(property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }

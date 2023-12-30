@@ -41,22 +41,43 @@ namespace CSharpToTypeScript.Models
 
         public readonly CustomValidationAttribute _CustomValidation;
 
-        public TsModuleMemberWithHierarchy? ValidatorType { get; set; }
+        public TsType ValidatorType { get; set; }
 
         public string? ValidatorTypeName { get; set; }
 
         public HashSet<TsModuleMemberWithHierarchy> TargetTypes { get; private set; } = new();
 
-        public CustomValidationRule(CustomValidationAttribute customValidation)
+        public CustomValidationRule(CustomValidationAttribute customValidation, TsType validatorType)
         {
             _CustomValidation = customValidation;
+            ValidatorType = validatorType;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendLineIndented("errors." + propertyName + " ??= " 
+            var errorVariableName = propertyName + "Error";
+            if (constNamesInUse.Contains(errorVariableName))
+            {
+                var replacementErrorVariableIndex = 1;
+                var replacementErrorVariableName = errorVariableName + replacementErrorVariableIndex;
+                while(constNamesInUse.Contains(replacementErrorVariableName))
+                {
+                    replacementErrorVariableName = errorVariableName + (++replacementErrorVariableIndex);
+                }
+                errorVariableName = replacementErrorVariableName;
+            }
+
+            constNamesInUse.Add(errorVariableName);
+
+            sb.AppendLineIndented("const " + errorVariableName + " = "
                 + (string.IsNullOrEmpty(ValidatorTypeName) ? "" : (ValidatorTypeName + '.'))
                 + _CustomValidation.Method + "(values);");
+            sb.AppendLineIndented("if (" + errorVariableName + ") {");
+            using (sb.IncreaseIndentation())
+            {
+                sb.AppendLineIndented("errors." + propertyName + " ??= " + errorVariableName + ';');
+            }
+            sb.AppendLineIndented("}");
         }
 
         public void AddValidationFunction(ScriptBuilder sb, string typeName, TsModuleMemberWithHierarchy targetType,
@@ -284,17 +305,26 @@ namespace CSharpToTypeScript.Models
 
         private static void SetupForStringAttributesReplacements(Dictionary<string, string> propertNamesForExport, TsProperty property)
         {
-            propertNamesForExport.Add("values." + property.Name + ".Length", TsGenerator.ToCamelCase(property.Name) + ".length");
+            var camelCaseName = "values." + TsGenerator.ToCamelCase(property.Name);
+            propertNamesForExport.Add(camelCaseName + ".Length", camelCaseName + ".length");
+            propertNamesForExport.Add(camelCaseName + "?.Length", camelCaseName + "?.length");
         }
 
         private static void SetupForDateAttributesReplacements(Dictionary<string, string> propertNamesForExport, TsProperty property)
         {
-            propertNamesForExport.Add("values." + property.Name + ".Year", TsGenerator.ToCamelCase(property.Name) + ".getFullYear()");
-            propertNamesForExport.Add("values." + property.Name + ".Day", TsGenerator.ToCamelCase(property.Name) + ".getDate()");
-            propertNamesForExport.Add("values." + property.Name + ".Month", '(' + TsGenerator.ToCamelCase(property.Name) + ".getMonth() + 1)");
-            propertNamesForExport.Add("values." + property.Name + ".Hour", TsGenerator.ToCamelCase(property.Name) + ".getHours()");
-            propertNamesForExport.Add("values." + property.Name + ".Minutes", TsGenerator.ToCamelCase(property.Name) + ".getMinutes()");
-            propertNamesForExport.Add("values." + property.Name + ".Seconds", TsGenerator.ToCamelCase(property.Name) + ".getSeconds()");
+            var camelCaseName = "values." + TsGenerator.ToCamelCase(property.Name);
+            propertNamesForExport.Add(camelCaseName + ".Year", camelCaseName + ".getFullYear()");
+            propertNamesForExport.Add(camelCaseName + ".Day", camelCaseName + ".getDate()");
+            propertNamesForExport.Add(camelCaseName + ".Month", '(' + camelCaseName + ".getMonth() + 1)");
+            propertNamesForExport.Add(camelCaseName + ".Hour", camelCaseName + ".getHours()");
+            propertNamesForExport.Add(camelCaseName + ".Minutes", camelCaseName + ".getMinutes()");
+            propertNamesForExport.Add(camelCaseName + ".Seconds", camelCaseName + ".getSeconds()");
+            propertNamesForExport.Add(camelCaseName + "?.Year", camelCaseName + "?.getFullYear()");
+            propertNamesForExport.Add(camelCaseName + "?.Day", camelCaseName + "?.getDate()");
+            propertNamesForExport.Add(camelCaseName + "?.Month", '(' + camelCaseName + "?.getMonth() + 1)");
+            propertNamesForExport.Add(camelCaseName + "?.Hour", camelCaseName + "?.getHours()");
+            propertNamesForExport.Add(camelCaseName + "?.Minutes", camelCaseName + "?.getMinutes()");
+            propertNamesForExport.Add(camelCaseName + "?.Seconds", camelCaseName + "?.getSeconds()");
         }
 
         private static string ReplaceSuccessResult(string validatorDefinitionLine)

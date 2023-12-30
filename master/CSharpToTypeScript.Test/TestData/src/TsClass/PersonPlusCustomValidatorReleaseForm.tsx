@@ -120,8 +120,14 @@ export const PersonResolver: Resolver<Person> = async (values) => {
 			message: 'ZIP cannot exceed 50 characters.'
 		};
 	}
-	errors.zip ??= Person.ValidateZip(values);
-	errors.zip ??= Person.ValidateZip2(values);
+	const zipError = Person.ValidateZip(values);
+	if (zipError) {
+		errors.zip ??= zipError;
+	}
+	const zipError1 = Person.ValidateZip2(values);
+	if (zipError1) {
+		errors.zip ??= zipError1;
+	}
 
 	return {
 		values,

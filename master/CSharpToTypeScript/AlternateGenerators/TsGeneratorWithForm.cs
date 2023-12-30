@@ -33,26 +33,34 @@ namespace CSharpToTypeScript.AlternateGenerators
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
-            TsGeneratorOptions generatorOptions,
-            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies)
+            TsGeneratorOptions generatorOptions)
         {
             if ((generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                && (@namespace.Classes.Any(c => !IsIgnored(c)) || @namespace.TypeDefinitions.Any(d => !IsIgnored(d))))
+                && (@namespace.Classes.Any(c => !IsIgnored(c) && !IsExportingValidator(c)) || @namespace.TypeDefinitions.Any(d => !IsIgnored(d))))
             {
                 sb.AppendLine("import { useId } from 'react';");
             }
 
-            return base.AppendImports(@namespace, sb, generatorOptions, dependencies);
+            return base.AppendImports(@namespace, sb, generatorOptions);
+        }
+
+        /// <summary>
+        /// Unless explicitly specified, we do not export forms for validators.
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        private bool IsExportingValidator(TsClass c)
+        {
+            return c.Name.EndsWith("Validator") && !c.RequiresAllExtensions;
         }
 
         protected override void AppendAdditionalImports(
             TsNamespace @namespace,
             ScriptBuilder sb, 
             TsGeneratorOptions tsGeneratorOptions,
-            IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>> dependencies,
             Dictionary<string, IReadOnlyDictionary<string, Int32>> importIndices)
         {
-            base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, dependencies, importIndices);
+            base.AppendAdditionalImports(@namespace, sb, tsGeneratorOptions, importIndices);
 
             bool hasForms = HasMemeberInfoForOutput(@namespace, tsGeneratorOptions & ~(TsGeneratorOptions.Enums | TsGeneratorOptions.Constants));
 

@@ -54,19 +54,19 @@ namespace CSharpToTypeScript.Models
         public UIHintAttribute? UiHint { get; set; }
         public DataTypeAttribute? DataType { get; private set; }
         protected NotMappedAttribute? NotMapped { get; set; }
-        protected JsonIgnoreAttribute? JsonIgnore { get; set; }
-        protected bool HasBindNeverAttribute { get; set; }
+        protected JsonIgnoreAttribute? JsonIgnore { get; set; }        
         public JsonPropertyNameAttribute? JsonPropertyName { get; set; }
 
         public bool HasIgnoreAttribute
         {
             get
             {
-                return JsonIgnore != null || NotMapped != null || HasBindNeverAttribute;
+                return JsonIgnore != null || NotMapped != null;
             }
         }
 
-        private TsProperty(ITsModuleService tsModuleService, MemberInfo memberInfo, Type type, bool isNullableReferenceType)
+        private TsProperty(ITsModuleService tsModuleService, MemberInfo memberInfo, Type type, bool isNullableReferenceType,
+            TsModuleMemberWithHierarchy parent)
         {
             this.MemberInfo = memberInfo;
             this.Name = memberInfo.Name;
@@ -92,20 +92,19 @@ namespace CSharpToTypeScript.Models
             JsonPropertyName = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
             UiHint = memberInfo.GetCustomAttribute<UIHintAttribute>(false);
             NotMapped = memberInfo.GetCustomAttribute<NotMappedAttribute>(false);
-            HasBindNeverAttribute = memberInfo.GetCustomAttributes(false).Any(a => a.GetType().FullName == "Microsoft.AspNetCore.Mvc.ModelBinding.BindNeverAttribute");
             DataType = memberInfo.GetCustomAttribute<DataTypeAttribute>(false);
 
-            AddValidationRules(tsModuleService, memberInfo);
+            AddValidationRules(tsModuleService, memberInfo, parent);
         }
 
-        public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo)
-            : this(tsModuleService, propertyInfo, propertyInfo.PropertyType, propertyInfo.IsNullableReferenceType())
+        public TsProperty(ITsModuleService tsModuleService, PropertyInfo propertyInfo, TsModuleMemberWithHierarchy parent)
+            : this(tsModuleService, propertyInfo, propertyInfo.PropertyType, propertyInfo.IsNullableReferenceType(), parent)
         {
             this.ConstantValue = null;
         }
 
-        public TsProperty(ITsModuleService tsModuleService, FieldInfo fieldInfo)
-            : this(tsModuleService, fieldInfo, fieldInfo.FieldType, fieldInfo.IsNullableReferenceType())
+        public TsProperty(ITsModuleService tsModuleService, FieldInfo fieldInfo, TsModuleMemberWithHierarchy parent)
+            : this(tsModuleService, fieldInfo, fieldInfo.FieldType, fieldInfo.IsNullableReferenceType(), parent)
         {
             if (fieldInfo.IsLiteral && !fieldInfo.IsInitOnly)
                 this.ConstantValue = fieldInfo.GetValue(null);
@@ -113,7 +112,7 @@ namespace CSharpToTypeScript.Models
                 this.ConstantValue = null;
         }
 
-        private void AddValidationRules(ITsModuleService tsModuleService, MemberInfo memberInfo)
+        private void AddValidationRules(ITsModuleService tsModuleService, MemberInfo memberInfo, TsModuleMemberWithHierarchy parent)
         {
             var compare = memberInfo.GetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
@@ -172,7 +171,8 @@ namespace CSharpToTypeScript.Models
 
             foreach(var customValidation in memberInfo.GetCustomAttributes<CustomValidationAttribute>(false))
             {
-                var customValidationRule = new CustomValidationRule(customValidation);
+                var validatorType = customValidation.ValidatorType != parent.Type ? TsType.Create(tsModuleService, customValidation.ValidatorType) : parent;
+                var customValidationRule = new CustomValidationRule(customValidation, validatorType);
                 ValidationRules.Add(customValidationRule);
             }
         }

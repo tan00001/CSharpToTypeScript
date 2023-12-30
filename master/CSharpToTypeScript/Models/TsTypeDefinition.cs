@@ -21,11 +21,11 @@ namespace CSharpToTypeScript.Models
                         return false;
                     return !fi.IsLiteral || fi.IsInitOnly;
                 })
-                .Select(fi => new TsProperty(tsModuleService, fi))
+                .Select(fi => new TsProperty(tsModuleService, fi, this))
                 .ToList();
 
             this.Constants = this.Type.GetFields().Where(fi => fi.DeclaringType == this.Type && fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => new TsProperty(tsModuleService, fi))
+                .Select(fi => new TsProperty(tsModuleService, fi, this))
                 .ToList();
         }
 

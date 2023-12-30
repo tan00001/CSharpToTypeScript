@@ -22,6 +22,8 @@
 
         public IEnumerable<TsModuleMember> Members => this._members;
 
+        public IReadOnlyDictionary<string, IReadOnlyCollection<TsModuleMember>>? Dependencies { get; set; }
+
         internal void Add(TsModuleMember toAdd)
         {
             this._members.Add(toAdd);

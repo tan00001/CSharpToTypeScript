@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
             _Compare = compare;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             FindOrderPropertyName(allProperties, out var otherPropertyName, out var otherPropertyDisplayName);
 

@@ -15,7 +15,7 @@ namespace CSharpToTypeScript.Models
             _DataMember = dataMember;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             if (property.PropertyType is TsSystemType tsSystemType)
             {
@@ -33,7 +33,7 @@ namespace CSharpToTypeScript.Models
                         break;
 
                     case SystemTypeKind.Date:
-                        sb.AppendLineIndented("if (!values." + propertyName + " || isNaN(values." + propertyName + ".getTime())) {");
+                        sb.AppendLineIndented("if (!values." + propertyName + " || isNaN(new Date(values." + propertyName + ").getTime())) {");
                         break;
 
                     case SystemTypeKind.Bool:
@@ -75,7 +75,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'required',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Required?.ErrorMessage) ? _Required?.ErrorMessage 
-                        : (property.GetDisplayName() + " is required.")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " is required.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }

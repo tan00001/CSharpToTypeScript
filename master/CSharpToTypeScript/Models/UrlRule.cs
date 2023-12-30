@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
             _Url = url;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             sb.AppendLineIndented("if (values." + propertyName + @" && !/^(http:\/\/|https:\/\/|ftp:\/\/)/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
@@ -21,7 +21,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Url.ErrorMessage) ? string.Format(_Url.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName() + " is invalid.")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }

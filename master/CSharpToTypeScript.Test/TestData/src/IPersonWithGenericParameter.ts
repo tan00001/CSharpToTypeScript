@@ -1,5 +1,5 @@
 export interface IPerson {
-	dateOfBirth?: Date;
+	dateOfBirth?: Date | string;
 	id?: number;
 	name?: string;
 }

@@ -1,5 +1,5 @@
 ﻿export class Person {
-	dateOfBirth?: Date;
+	dateOfBirth?: Date | string;
 	id?: number;
 	name?: string;
 }

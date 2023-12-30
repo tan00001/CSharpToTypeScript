@@ -3,11 +3,11 @@ import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from '../BootstrapUtils';
 
 export class Person {
-	birthDate: Date | null;
+	birthDate: Date | string | null;
 	firstName: string | null;
 	lastName: string | null;
 
-	constructor(birthDate?: Date | null, firstName?: string | null, lastName?: string | null) {
+	constructor(birthDate?: Date | string | null, firstName?: string | null, lastName?: string | null) {
 		this.birthDate = birthDate ?? null;
 		this.firstName = firstName ?? null;
 		this.lastName = lastName ?? null;
@@ -17,7 +17,7 @@ export class Person {
 export const PersonResolver: Resolver<Person> = async (values) => {
 	const errors: FieldErrors<Person> = {};
 
-	if (!values.birthDate || isNaN(values.birthDate.getTime())) {
+	if (!values.birthDate || isNaN(new Date(values.birthDate).getTime())) {
 		errors.birthDate = {
 			type: 'required',
 			message: 'BirthDate is required.'

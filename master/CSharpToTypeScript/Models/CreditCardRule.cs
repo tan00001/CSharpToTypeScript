@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
             _CreditCard = creditCard;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             sb.AppendLineIndented("if (values." + propertyName + " && ([...values." + propertyName + "].filter(c => c >= '0' && c <= '9')");
             using (sb.IncreaseIndentation())
@@ -38,7 +38,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_CreditCard.ErrorMessage) ? string.Format(_CreditCard.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName() + " is invalid.")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }

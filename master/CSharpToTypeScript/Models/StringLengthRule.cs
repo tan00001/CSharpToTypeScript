@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
             _StringLength = stringLength;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             sb.AppendLineIndented("if ((values." + propertyName + "?.length ?? 0) > " + _StringLength.MaximumLength + ") {");
             using (sb.IncreaseIndentation())
@@ -21,7 +21,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'maxLength',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_StringLength.ErrorMessage) ? _StringLength.ErrorMessage
-                        : (property.GetDisplayName() + " cannot exceed " + _StringLength.MaximumLength + " characters.")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot exceed " + _StringLength.MaximumLength + " characters.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -37,7 +37,7 @@ namespace CSharpToTypeScript.Models
                     {
                         sb.AppendLineIndented("type: 'minLength',");
                         sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_StringLength.ErrorMessage) ? _StringLength.ErrorMessage
-                            : (property.GetDisplayName() + " cannot be less than " + _StringLength.MinimumLength + " characters long.")) + "'");
+                            : (property.GetDisplayName().Replace("'", "\'") + " cannot be less than " + _StringLength.MinimumLength + " characters long.")) + "'");
                     }
                     sb.AppendLineIndented("};");
                 }

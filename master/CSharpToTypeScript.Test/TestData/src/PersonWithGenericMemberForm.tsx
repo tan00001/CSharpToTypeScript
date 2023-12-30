@@ -12,8 +12,8 @@ export class PersonWithGenericMember<T> {
 	}
 }
 
-export const PersonWithGenericMemberDateResolver: Resolver<PersonWithGenericMember<Date>> = async (values) => {
-	const errors: FieldErrors<PersonWithGenericMember<Date>> = {};
+export const PersonWithGenericMemberDateStringResolver: Resolver<PersonWithGenericMember<Date | string>> = async (values) => {
+	const errors: FieldErrors<PersonWithGenericMember<Date | string>> = {};
 
 	if (!values.name) {
 		errors.name = {
@@ -34,17 +34,17 @@ export const PersonWithGenericMemberDateResolver: Resolver<PersonWithGenericMemb
 	};
 };
 
-export type PersonWithGenericMemberDateFormData = {
-	personWithGenericMemberDate?: PersonWithGenericMember<Date>,
-	onSubmit: SubmitHandler<PersonWithGenericMember<Date>>
+export type PersonWithGenericMemberDateStringFormData = {
+	personWithGenericMemberDateString?: PersonWithGenericMember<Date | string>,
+	onSubmit: SubmitHandler<PersonWithGenericMember<Date | string>>
 };
 
-export const PersonWithGenericMemberDateForm = (props: PersonWithGenericMemberDateFormData) => {
+export const PersonWithGenericMemberDateStringForm = (props: PersonWithGenericMemberDateStringFormData) => {
 	const formId = useId();
-	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithGenericMember<Date>>({
+	const { register, handleSubmit, formState: { errors, touchedFields, isSubmitting } } = useForm<PersonWithGenericMember<Date | string>>({
 		mode: "onTouched",
-		resolver: PersonWithGenericMemberDateResolver,
-		defaultValues: props.personWithGenericMemberDate ?? new PersonWithGenericMember<Date>()
+		resolver: PersonWithGenericMemberDateStringResolver,
+		defaultValues: props.personWithGenericMemberDateString ?? new PersonWithGenericMember<Date | string>()
 	});
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>

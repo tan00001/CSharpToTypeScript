@@ -10,8 +10,8 @@ export class PersonWithGenericMember<T> {
 	}
 }
 
-export const PersonWithGenericMemberDateResolver: Resolver<PersonWithGenericMember<Date>> = async (values) => {
-	const errors: FieldErrors<PersonWithGenericMember<Date>> = {};
+export const PersonWithGenericMemberDateStringResolver: Resolver<PersonWithGenericMember<Date | string>> = async (values) => {
+	const errors: FieldErrors<PersonWithGenericMember<Date | string>> = {};
 
 	if (!values.name) {
 		errors.name = {

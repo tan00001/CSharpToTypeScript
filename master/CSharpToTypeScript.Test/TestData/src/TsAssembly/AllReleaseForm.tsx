@@ -43,8 +43,14 @@ export namespace TestAssembly {
 				message: 'Balance is required.'
 			};
 		}
-		errors.balance ??= CustomerAccount.ValidateBalance(values);
-		errors.balance ??= CustomerAccount.ValidateBalance2(values);
+		const balanceError = CustomerAccount.ValidateBalance(values);
+		if (balanceError) {
+			errors.balance ??= balanceError;
+		}
+		const balanceError1 = CustomerAccount.ValidateBalance2(values);
+		if (balanceError1) {
+			errors.balance ??= balanceError1;
+		}	
 
 		return {
 			values,

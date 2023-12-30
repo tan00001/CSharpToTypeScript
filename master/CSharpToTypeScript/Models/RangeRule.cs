@@ -19,7 +19,7 @@ namespace CSharpToTypeScript.Models
             _DataType = dataType;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             // When Minimum or Maximum is null or empty string, server side validation might throw exception. Generating client side
             // validation script in such case is pointless.
@@ -56,10 +56,10 @@ namespace CSharpToTypeScript.Models
                 }
                 else if (tsSystemType.Kind == SystemTypeKind.Date)
                 {
-                    sb.AppendLineIndented("if (values." + propertyName + " && !isNaN(values." + propertyName + ".getTime())) {");
+                    sb.AppendLineIndented("if (values." + propertyName + ") {");
                     using (sb.IncreaseIndentation())
                     {
-                        sb.AppendLineIndented("const propValue: number = values." + propertyName + ".getTime();");
+                        sb.AppendLineIndented("const propValue: number = new Date(values." + propertyName + ").getTime();");
                         if (!string.IsNullOrWhiteSpace(_Range.Maximum.ToString()))
                         {
                             AppendMaxDateRule(sb, propertyName, property);
@@ -140,7 +140,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'min',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be less than " + _Range.Minimum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -157,7 +157,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'max',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot exceed " + _Range.Maximum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot exceed " + _Range.Maximum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -175,7 +175,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'min',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be ealier than " + _Range.Minimum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be ealier than " + _Range.Minimum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -193,7 +193,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'max',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be later than " + _Range.Maximum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be later than " + _Range.Maximum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -210,7 +210,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'min',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be less than " + _Range.Minimum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -227,7 +227,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'max',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot exceed " + _Range.Maximum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'")+ " cannot exceed " + _Range.Maximum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -254,7 +254,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'min',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be less than " + _Range.Minimum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -281,7 +281,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'max',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot exceed " + _Range.Maximum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot exceed " + _Range.Maximum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -303,7 +303,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'min',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be less than " + _Range.Minimum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be less than " + _Range.Minimum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -324,7 +324,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'max',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot exceed " + _Range.Maximum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot exceed " + _Range.Maximum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -342,7 +342,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'min',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be earlier than " + _Range.Minimum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be earlier than " + _Range.Minimum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -360,7 +360,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'max',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Range.ErrorMessage) ? _Range.ErrorMessage
-                        : (property.GetDisplayName() + " cannot be later than " + _Range.Maximum + ".")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " cannot be later than " + _Range.Maximum + ".")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }

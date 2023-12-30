@@ -11,7 +11,7 @@ namespace CSharpToTypeScript.Models
             _EmailAddress = emailAddress;
         }
 
-        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties)
+        public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
             sb.AppendLineIndented("if (values." + propertyName + @" && !/\S+@\S+\.\S+/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
@@ -21,7 +21,7 @@ namespace CSharpToTypeScript.Models
                 {
                     sb.AppendLineIndented("type: 'pattern',");
                     sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_EmailAddress.ErrorMessage) ? string.Format(_EmailAddress.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName() + " is invalid.")) + "'");
+                        : (property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
