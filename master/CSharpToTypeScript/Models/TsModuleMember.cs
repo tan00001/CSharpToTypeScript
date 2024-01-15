@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
+using CSharpToTypeScript.Extensions;
+
 namespace CSharpToTypeScript.Models
 {
     public abstract class TsModuleMember : TsType
@@ -100,7 +102,7 @@ namespace CSharpToTypeScript.Models
 
         public static string GetNamespaceName(Type type)
         {
-            var dataContract = type.GetCustomAttribute<DataContractAttribute>(false);
+            var dataContract = type.SafeGetCustomAttribute<DataContractAttribute>(false);
 
             string str = string.Empty;
 
@@ -121,8 +123,8 @@ namespace CSharpToTypeScript.Models
             this.Name = this.Type.Name;
 
             Interfaces = Type.GetInterfaces().Where(@interface =>
-                    @interface.GetCustomAttribute<JsonIgnoreAttribute>(false) == null
-                    && @interface.GetCustomAttribute<NotMappedAttribute>(false) == null)
+                    @interface.SafeGetCustomAttribute<JsonIgnoreAttribute>(false) == null
+                    && @interface.SafeGetCustomAttribute<NotMappedAttribute>(false) == null)
                 .Select(t => tsModuleService.GetOrAddTsInterface(t)).ToList();
 
             ImplementedGenericTypes = new Dictionary<Type, IReadOnlyList<TsType>>();
@@ -142,9 +144,9 @@ namespace CSharpToTypeScript.Models
                 this.GenericArguments = Array.Empty<TsType>();
             }
 
-            Display = this.Type.GetCustomAttribute<DisplayAttribute>(false);
+            Display = this.Type.SafeGetCustomAttribute<DisplayAttribute>(false);
 
-            DataContract = this.Type.GetCustomAttribute<DataContractAttribute>(false);
+            DataContract = this.Type.SafeGetCustomAttribute<DataContractAttribute>(false);
 
             if (DataContract != null)
             {
@@ -152,9 +154,9 @@ namespace CSharpToTypeScript.Models
                     this.Name = DataContract.Name;
             }
 
-            Ignore = this.Type.GetCustomAttribute<JsonIgnoreAttribute>(false);
+            Ignore = this.Type.SafeGetCustomAttribute<JsonIgnoreAttribute>(false);
 
-            NotMapped = this.Type.GetCustomAttribute<NotMappedAttribute>(false);
+            NotMapped = this.Type.SafeGetCustomAttribute<NotMappedAttribute>(false);
 
             IsIgnored = Ignore != null || NotMapped != null;
 

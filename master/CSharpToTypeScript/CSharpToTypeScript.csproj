@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RepositoryUrl>https://github.com/tan00001/CSharpToTypeScript</RepositoryUrl>
 	<VersionPrefix>2.0.1</VersionPrefix>
-    <AssemblyVersion>2.0.1.4</AssemblyVersion>
-    <FileVersion>2.0.1.4</FileVersion>
+    <AssemblyVersion>2.0.1.5</AssemblyVersion>
+    <FileVersion>2.0.1.5</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

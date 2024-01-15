@@ -155,6 +155,12 @@ namespace CSharpToTypeScript
             }
         }
 
+        public void Add(Assembly assembly)
+        {
+            foreach (Type clrType in assembly.GetTypes().Where<Type>(t => IsExportedByDefault(t)))
+                this.Add(clrType);
+        }
+
         private void ProcessGenericDefinitions(Type clrType, bool includeReferences, Dictionary<Type, TypeConvertor>? typeConvertors)
         {
             Type genericTypeDefinition = clrType.GetGenericTypeDefinition();
@@ -226,15 +232,9 @@ namespace CSharpToTypeScript
             this.Enums[tsEnum.Type] = tsEnum;
         }
 
-        public void Add(Assembly assembly)
-        {
-            foreach (Type clrType in assembly.GetTypes().Where<Type>(t => IsExportedByDefault(t)))
-                this.Add(clrType);
-        }
-
         private static bool IsExportedByDefault(Type t)
         {
-            if (t.GetCustomAttribute<DataContractAttribute>(false) == null)
+            if (t.SafeGetCustomAttribute<DataContractAttribute>(false) == null)
             {
                 return false;
             }

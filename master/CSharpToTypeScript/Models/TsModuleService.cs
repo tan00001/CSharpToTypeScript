@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.Serialization;
 
+using CSharpToTypeScript.Extensions;
+
 namespace CSharpToTypeScript.Models
 {
     internal class TsModuleService : ITsModuleService
@@ -163,7 +165,7 @@ namespace CSharpToTypeScript.Models
         #region Private Methods
         private static string GetTsTypeName(Type type)
         {
-            var dataContract = type.GetCustomAttribute<DataContractAttribute>(false);
+            var dataContract = type.SafeGetCustomAttribute<DataContractAttribute>(false);
             if (dataContract != null && !string.IsNullOrEmpty(dataContract.Name))
             {
                 return dataContract.Name;

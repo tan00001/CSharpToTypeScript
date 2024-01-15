@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
+using CSharpToTypeScript.Extensions;
+
 namespace CSharpToTypeScript.Models
 {
     public class TsEnumValue
@@ -18,7 +20,7 @@ namespace CSharpToTypeScript.Models
             this.Field = field;
             this.Name = field.Name;
 
-            Display = field.GetCustomAttribute<DisplayAttribute>(false);
+            Display = field.SafeGetCustomAttribute<DisplayAttribute>(false);
 
             object? obj = field.GetValue(null);
             if (obj == null)

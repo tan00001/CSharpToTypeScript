@@ -86,13 +86,13 @@ namespace CSharpToTypeScript.Models
                 : Array.Empty<TsType>();
             this.PropertyType = TsType.Create(tsModuleService, type);
 
-            DataMember = memberInfo.GetCustomAttribute<DataMemberAttribute>(false);
-            Display = memberInfo.GetCustomAttribute<DisplayAttribute>(false);
-            JsonIgnore = memberInfo.GetCustomAttribute<JsonIgnoreAttribute>(false);
-            JsonPropertyName = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(false);
-            UiHint = memberInfo.GetCustomAttribute<UIHintAttribute>(false);
-            NotMapped = memberInfo.GetCustomAttribute<NotMappedAttribute>(false);
-            DataType = memberInfo.GetCustomAttribute<DataTypeAttribute>(false);
+            DataMember = memberInfo.SafeGetCustomAttribute<DataMemberAttribute>(false);
+            Display = memberInfo.SafeGetCustomAttribute<DisplayAttribute>(false);
+            JsonIgnore = memberInfo.SafeGetCustomAttribute<JsonIgnoreAttribute>(false);
+            JsonPropertyName = memberInfo.SafeGetCustomAttribute<JsonPropertyNameAttribute>(false);
+            UiHint = memberInfo.SafeGetCustomAttribute<UIHintAttribute>(false);
+            NotMapped = memberInfo.SafeGetCustomAttribute<NotMappedAttribute>(false);
+            DataType = memberInfo.SafeGetCustomAttribute<DataTypeAttribute>(false);
 
             AddValidationRules(tsModuleService, memberInfo, parent);
         }
@@ -114,62 +114,62 @@ namespace CSharpToTypeScript.Models
 
         private void AddValidationRules(ITsModuleService tsModuleService, MemberInfo memberInfo, TsModuleMemberWithHierarchy parent)
         {
-            var compare = memberInfo.GetCustomAttribute<CompareAttribute>(false);
+            var compare = memberInfo.SafeGetCustomAttribute<CompareAttribute>(false);
             if (compare != null)
             {
                 ValidationRules.Add(new CompareRule(compare));
             }
 
-            var creditCard = memberInfo.GetCustomAttribute<CreditCardAttribute>(false);
+            var creditCard = memberInfo.SafeGetCustomAttribute<CreditCardAttribute>(false);
             if (creditCard != null)
             {
                 ValidationRules.Add(new CreditCardRule(creditCard));
             }
 
-            var emailAddress = memberInfo.GetCustomAttribute<EmailAddressAttribute>(false);
+            var emailAddress = memberInfo.SafeGetCustomAttribute<EmailAddressAttribute>(false);
             if (emailAddress != null)
             {
                 ValidationRules.Add(new EmailAddressRule(emailAddress));
             }
 
-            var phone = memberInfo.GetCustomAttribute<PhoneAttribute>(false);
+            var phone = memberInfo.SafeGetCustomAttribute<PhoneAttribute>(false);
             if (phone != null)
             {
                 ValidationRules.Add(new PhoneNumberRule(phone));
             }
 
-            var range = memberInfo.GetCustomAttribute<RangeAttribute>(false);
+            var range = memberInfo.SafeGetCustomAttribute<RangeAttribute>(false);
             if (range != null)
             {
                 ValidationRules.Add(new RangeRule(range, DataType));
             }
 
-            var regularExpression = memberInfo.GetCustomAttribute<RegularExpressionAttribute>(false);
+            var regularExpression = memberInfo.SafeGetCustomAttribute<RegularExpressionAttribute>(false);
             if (regularExpression != null)
             {
                 ValidationRules.Add(new RegularExpressionRule(regularExpression));
             }
 
-            var required = memberInfo.GetCustomAttribute<RequiredAttribute>(false);
+            var required = memberInfo.SafeGetCustomAttribute<RequiredAttribute>(false);
             if (required != null || DataMember?.IsRequired == true)
             {
                 IsRequired = true;
                 ValidationRules.Add(new RequiredRule(required, DataMember));
             }
 
-            var stringLength = memberInfo.GetCustomAttribute<StringLengthAttribute>(false);
+            var stringLength = memberInfo.SafeGetCustomAttribute<StringLengthAttribute>(false);
             if (stringLength != null)
             {
                 ValidationRules.Add(new StringLengthRule(stringLength));
             }
 
-            var url = memberInfo.GetCustomAttribute<UrlAttribute>(false);
+            var url = memberInfo.SafeGetCustomAttribute<UrlAttribute>(false);
             if (url != null)
             {
                 ValidationRules.Add(new UrlRule(url));
             }
 
-            foreach(var customValidation in memberInfo.GetCustomAttributes<CustomValidationAttribute>(false))
+            foreach(var customValidation in memberInfo.SafeGetCustomAttributes<CustomValidationAttribute>(false))
             {
                 var validatorType = customValidation.ValidatorType != parent.Type ? TsType.Create(tsModuleService, customValidation.ValidatorType) : parent;
                 var customValidationRule = new CustomValidationRule(customValidation, validatorType);

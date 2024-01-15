@@ -18,12 +18,17 @@ namespace CSharpToTypeScript.Extensions
         public static bool IsNullableReferenceType(this PropertyInfo propertyInfo) => IsNullableReferenceType(propertyInfo.PropertyType, propertyInfo.DeclaringType,
             SafeGetCustomAttributeData(() => propertyInfo.CustomAttributes));
 
-        private static IEnumerable<CustomAttributeData> SafeGetCustomAttributeData(Func<IEnumerable<CustomAttributeData>> getCustomAttrData)
+        public static bool IsNullableReferenceType(this FieldInfo fieldInfo) => IsNullableReferenceType(fieldInfo.FieldType, fieldInfo.DeclaringType,
+            SafeGetCustomAttributeData(() => fieldInfo.CustomAttributes));
+
+        public static bool IsNullableReferenceType(this ParameterInfo parameterInfo) => IsNullableReferenceType(parameterInfo.ParameterType, null,
+            SafeGetCustomAttributeData(() => parameterInfo.CustomAttributes));
+
+        public static T? SafeGetCustomAttribute<T>(this MemberInfo memberInfo, bool inherit) where T : Attribute
         {
-            IEnumerable<CustomAttributeData> customAttributeDatas;
             try
             {
-                customAttributeDatas = getCustomAttrData();
+                return memberInfo.GetCustomAttribute<T>(inherit);
             }
             catch (FileNotFoundException ex)
             {
@@ -33,26 +38,95 @@ namespace CSharpToTypeScript.Extensions
                     {
                         var sharedFilePath = Path.Combine(DotNetDllSharedPath, GetDllVersionedPath(ex.FileName));
                         Assembly aspnetcoreAssembly = Assembly.LoadFrom(sharedFilePath);
-                        customAttributeDatas = getCustomAttrData();
+                        return memberInfo.GetCustomAttribute<T>(inherit);
                     }
                     catch
                     {
                         Console.WriteLine(ex.Message);
-                        customAttributeDatas = Array.Empty<CustomAttributeData>();
+                        return null;
                     }
                 }
                 else
                 {
-                    customAttributeDatas = Array.Empty<CustomAttributeData>();
+                    return null;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                customAttributeDatas = Array.Empty<CustomAttributeData>();
+                return null;
+            }
+        }
+
+        public static IEnumerable<T> SafeGetCustomAttributes<T>(this MemberInfo memberInfo, bool inherit) where T : Attribute
+        {
+            try
+            {
+                return memberInfo.GetCustomAttributes<T>(inherit);
+            }
+            catch (FileNotFoundException ex)
+            {
+                if (ex.FileName?.EndsWith(DotNetDllNameSuffix) == true)
+                {
+                    try
+                    {
+                        var sharedFilePath = Path.Combine(DotNetDllSharedPath, GetDllVersionedPath(ex.FileName));
+                        Assembly aspnetcoreAssembly = Assembly.LoadFrom(sharedFilePath);
+                        return memberInfo.GetCustomAttributes<T>(inherit);
+                    }
+                    catch
+                    {
+                        Console.WriteLine(ex.Message);
+                        return Array.Empty<T>();
+                    }
+                }
+                else
+                {
+                    return Array.Empty<T>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Array.Empty<T>();
+            }
+        }
+
+        private static IEnumerable<CustomAttributeData> SafeGetCustomAttributeData(Func<IEnumerable<CustomAttributeData>> getCustomAttrData)
+        {
+            IEnumerable<CustomAttributeData> customAttributeData;
+            try
+            {
+                customAttributeData = getCustomAttrData();
+            }
+            catch (FileNotFoundException ex)
+            {
+                if (ex.FileName?.EndsWith(DotNetDllNameSuffix) == true)
+                {
+                    try
+                    {
+                        var sharedFilePath = Path.Combine(DotNetDllSharedPath, GetDllVersionedPath(ex.FileName));
+                        Assembly aspnetcoreAssembly = Assembly.LoadFrom(sharedFilePath);
+                        customAttributeData = getCustomAttrData();
+                    }
+                    catch
+                    {
+                        Console.WriteLine(ex.Message);
+                        customAttributeData = Array.Empty<CustomAttributeData>();
+                    }
+                }
+                else
+                {
+                    customAttributeData = Array.Empty<CustomAttributeData>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                customAttributeData = Array.Empty<CustomAttributeData>();
             }
 
-            return customAttributeDatas;
+            return customAttributeData;
         }
 
         private static string GetDllVersionedPath(string fileName)
@@ -64,14 +138,31 @@ namespace CSharpToTypeScript.Extensions
             var minorBuildIndex = version.LastIndexOf('.');
             version = version.Substring(0, minorBuildIndex);
 
-            return Path.Combine(version, dllFileName + ".dll");
+            if (Path.Exists(Path.Combine(DotNetDllSharedPath, version)))
+            {
+                return Path.Combine(version, dllFileName + ".dll");
+            }
+
+
+            var dllVersion = new DllVersionInfo(version);
+            List<DllVersionInfo> versions = new(); 
+            foreach (var versionDirectory in Directory.GetDirectories(DotNetDllSharedPath))
+            { 
+                var directoryVersion = Path.GetFileName(versionDirectory);
+                var directoryVersionInfo = new DllVersionInfo(directoryVersion);
+                if (directoryVersionInfo > dllVersion)
+                {
+                    versions.Add(directoryVersionInfo);
+                }
+            }
+
+            if (versions.Count == 0)
+            {
+                return Path.Combine(version, dllFileName + ".dll");
+            }
+
+            return Path.Combine(versions.Min(DllVersionInfo.Comparer)!.ToString()!, dllFileName + ".dll");
         }
-
-        public static bool IsNullableReferenceType(this FieldInfo fieldInfo) => IsNullableReferenceType(fieldInfo.FieldType, fieldInfo.DeclaringType,
-            SafeGetCustomAttributeData(() => fieldInfo.CustomAttributes));
-
-        public static bool IsNullableReferenceType(this ParameterInfo parameterInfo) => IsNullableReferenceType(parameterInfo.ParameterType, null,
-            SafeGetCustomAttributeData(() => parameterInfo.CustomAttributes));
 
         private static bool IsNullableReferenceType(Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
         {
