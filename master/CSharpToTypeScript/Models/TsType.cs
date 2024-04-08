@@ -5,7 +5,7 @@ using CSharpToTypeScript.Extensions;
 
 namespace CSharpToTypeScript.Models
 {
-    [DebuggerDisplay("TsType - Type: {ClrType}")]
+    [DebuggerDisplay("TsType - Type: {Type.Name}")]
     public class TsType
     {
         public static readonly IReadOnlyList<string> ExcludedNamespacePrefixes = new List<string>()
@@ -107,7 +107,7 @@ namespace CSharpToTypeScript.Models
                 case TsTypeFamily.System:
                     return new TsSystemType(type);
                 case TsTypeFamily.Collection:
-                    return new TsCollection(tsModuleService, type);
+                    return tsModuleService.GetOrAddTsCollection(type);
                 case TsTypeFamily.Class:
                     return tsModuleService.GetOrAddTsClass(type);
                 case TsTypeFamily.TypeDefinition:

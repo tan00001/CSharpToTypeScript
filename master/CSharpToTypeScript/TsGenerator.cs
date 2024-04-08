@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Formats.Asn1;
 
 using CSharpToTypeScript.Extensions;
 using CSharpToTypeScript.Models;
@@ -41,20 +42,39 @@ namespace CSharpToTypeScript
             this._typeFormatters.RegisterTypeFormatter<TsClass>((type, formatter) =>
             {
                 TsClass tsClass = (TsClass)type;
-                return !tsClass.GenericArguments.Any() ? tsClass.Name : tsClass.Name + "<"
+
+                var name = tsClass.Name;
+                if (!tsClass.GenericArguments.Any())
+                {
+                    return name;
+                }
+                return RemoveGenericArgumentsFromName(tsClass.Name) + "<"
                     + string.Join(", ", tsClass.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsTypeDefinition>((type, formatter) =>
             {
                 TsTypeDefinition tsTypeDefinition = (TsTypeDefinition)type;
-                return !tsTypeDefinition.GenericArguments.Any() ? tsTypeDefinition.Name : tsTypeDefinition.Name + "<"
+
+                var name = tsTypeDefinition.Name;
+                if (!tsTypeDefinition.GenericArguments.Any())
+                {
+                    return name;
+                }
+                return RemoveGenericArgumentsFromName(tsTypeDefinition.Name) + "<"
                     + string.Join(", ", tsTypeDefinition.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsInterface>((type, formatter) =>
             {
-                TsInterface tsClass = (TsInterface)type;
-                return !tsClass.GenericArguments.Any() ? tsClass.Name : tsClass.Name + "<"
-                    + string.Join(", ", tsClass.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
+                TsInterface tsInterface = (TsInterface)type;
+
+                var name = tsInterface.Name;
+                if (!tsInterface.GenericArguments.Any())
+                {
+                    return name;
+                }
+
+                return RemoveGenericArgumentsFromName(tsInterface.Name) + "<"
+                    + string.Join(", ", tsInterface.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsSystemType>((type, formatter) => ((TsSystemType)type).Kind.ToTypeScriptString());
             this._typeFormatters.RegisterTypeFormatter<TsCollection>((type, formatter) => this.GetTypeName(((TsCollection)type).ItemsType) ?? throw new Exception("Invalid collection: item type has no name."));
@@ -74,7 +94,7 @@ namespace CSharpToTypeScript
 
         public static string DefaultModuleNameFormatter(TsModule module) => module.Name;
 
-        public static string DefaultNamespaceNameFormatter(TsNamespace @namespace) => @namespace.Name;
+        public static string DefaultNamespaceNameFormatter(TsNamespace @namespace) => @namespace.Name.Equals("System") || @namespace.Name.StartsWith("System.") ? string.Empty : @namespace.Name;
 
         public static string DefaultMemberFormatter(TsProperty identifier) => ToCamelCase(identifier.Name);
 
@@ -865,6 +885,17 @@ namespace CSharpToTypeScript
             }
 
             return new string(charList.ToArray());
+        }
+
+        private static string RemoveGenericArgumentsFromName(string name)
+        {
+            var genericTypeParamIndex = name.IndexOf('<');
+            if (genericTypeParamIndex > 0)
+            {
+                return name.Substring(0, genericTypeParamIndex);
+            }
+
+            return name;
         }
     }
 }

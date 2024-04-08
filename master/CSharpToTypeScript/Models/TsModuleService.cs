@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.DataContracts;
 
 using CSharpToTypeScript.Extensions;
 
@@ -89,6 +90,29 @@ namespace CSharpToTypeScript.Models
             throw new Exception("Name conflict. \"" + tsModuleMember!.Name + "\" is defined more than once.");
         }
 
+        public TsCollection GetOrAddTsCollection(Type clrType)
+        {
+            var moduleName = TsModuleMember.GetModuleName(clrType);
+            TsModule module = GetModule(moduleName);
+
+            if (!module.TryGetMember(TsModuleMember.GetNamespaceName(clrType),
+                GetTsTypeName(clrType), out TsModuleMember? tsModuleMember))
+            {
+                _TypesBeingProcessed.Push(clrType);
+                var tsCollection = new TsCollection(this, clrType);
+                module.Add(tsCollection);
+                _TypesBeingProcessed.Pop();
+                return tsCollection;
+            }
+
+            if (tsModuleMember is TsCollection typeCollection)
+            {
+                return typeCollection;
+            }
+
+            throw new Exception("Name conflict. \"" + tsModuleMember!.Name + "\" is defined more than once.");
+        }
+
         public TsTypeDefinition GetOrAddTsTypeDefinition(Type clrType)
         {
             var moduleName = TsModuleMember.GetModuleName(clrType);
@@ -156,14 +180,7 @@ namespace CSharpToTypeScript.Models
             throw new Exception("Name conflict. \"" + tsModuleMember!.Name + "\" is defined more than once.");
         }
 
-        public bool IsProcessing(Type type)
-        {
-            return _TypesBeingProcessed.Contains(type);
-        }
-        #endregion // IModuleService
-
-        #region Private Methods
-        private static string GetTsTypeName(Type type)
+        public static string GetTsTypeName(Type type)
         {
             var dataContract = type.SafeGetCustomAttribute<DataContractAttribute>(false);
             if (dataContract != null && !string.IsNullOrEmpty(dataContract.Name))
@@ -171,8 +188,18 @@ namespace CSharpToTypeScript.Models
                 return dataContract.Name;
             }
 
-            return type.Name;
+            if (!type.IsGenericType)
+            {
+                return type.Name;
+            }
+
+            return type.Name.Remove(type.Name.IndexOf('`')) + '<' + string.Join(',', type.GetGenericArguments().Select(a => GetTsTypeName(a))) + '>';
         }
-        #endregion
+
+        public bool IsProcessing(Type type)
+        {
+            return _TypesBeingProcessed.Contains(type);
+        }
+        #endregion // IModuleService
     }
 }

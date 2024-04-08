@@ -82,7 +82,7 @@ namespace CSharpToTypeScript.Models
                 IsNullable = isNullableReferenceType;
             }
 
-            this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => new TsType(o)).ToArray() 
+            this.GenericArguments = type.IsGenericType ? type.GetGenericArguments().Select(o => TsType.Create(tsModuleService, o)).ToArray() 
                 : Array.Empty<TsType>();
             this.PropertyType = TsType.Create(tsModuleService, type);
 

@@ -2,6 +2,13 @@ import { Resolver, FieldErrors, FieldError } from 'react-hook-form';
 
 export namespace TestAssembly {
 	export class CustomerAccount {
+		balance: number | null;
+		id?: number;
+
+		constructor(balance?: number | null) {
+			this.balance = balance ?? null;
+		}
+
 		static ValidateBalance(values: CustomerAccount): FieldError | undefined {
 			// if (value is decimal balance)
 			// {
@@ -20,18 +27,12 @@ export namespace TestAssembly {
 		}
 
 		static ValidateBalance2(values: CustomerAccount): FieldError | undefined {
-			if ((values.balance !== null && values.balance > 0) || values.id === 0)
-			{
-			    return undefined;
+			if ((values.balance !== null && values.balance > 0) || values.id === 0) {
+				return undefined;
 			}
 			return { type: "custom", message: "Balance must be greater than 0 when Id is not 0." };
-		};
-		balance: number | null;
-		id?: number;
-
-		constructor(balance?: number | null) {
-			this.balance = balance ?? null;
 		}
+
 	}
 
 	export const CustomerAccountResolver: Resolver<CustomerAccount> = async (values) => {
@@ -50,7 +51,7 @@ export namespace TestAssembly {
 		const balanceError1 = CustomerAccount.ValidateBalance2(values);
 		if (balanceError1) {
 			errors.balance ??= balanceError1;
-		}	
+		}
 
 		return {
 			values,

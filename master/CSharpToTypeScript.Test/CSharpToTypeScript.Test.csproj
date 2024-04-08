@@ -48,6 +48,9 @@
     <None Update="TestData\src\RequiredValidationRule\PersonRequiresBirthDateForm.tsx">
       <SubType>Code</SubType>
     </None>
+    <None Update="TestData\src\TsClass\PersonWithDataRecords.ts">
+      <SubType>Code</SubType>
+    </None>
   </ItemGroup>
   <Target Name="GenerateHtmlCoverageReport" AfterTargets="VSTest" Condition="'$(CollectCoverage)' == 'true'">
     <ItemGroup>

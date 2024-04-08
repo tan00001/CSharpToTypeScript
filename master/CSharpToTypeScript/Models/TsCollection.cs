@@ -4,14 +4,14 @@ using System.Diagnostics;
 namespace CSharpToTypeScript.Models
 {
     [DebuggerDisplay("TsCollection - ItemsType={ItemsType}")]
-    public class TsCollection : TsType
+    public class TsCollection : TsModuleMember
     {
         public TsType ItemsType { get; set; }
 
         public int Dimension { get; set; }
 
         public TsCollection(ITsModuleService tsModuleService, Type type)
-          : base(type)
+          : base(tsModuleService, type)
         {
             Type? enumerableType = TsType.GetEnumeratedType(this.Type);
             if (enumerableType == this.Type)

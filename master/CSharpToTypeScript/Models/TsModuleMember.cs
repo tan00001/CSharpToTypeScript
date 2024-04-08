@@ -120,8 +120,6 @@ namespace CSharpToTypeScript.Models
         protected TsModuleMember(ITsModuleService tsModuleService, Type type)
           : base(type)
         {
-            this.Name = this.Type.Name;
-
             Interfaces = Type.GetInterfaces().Where(@interface =>
                     @interface.SafeGetCustomAttribute<JsonIgnoreAttribute>(false) == null
                     && @interface.SafeGetCustomAttribute<NotMappedAttribute>(false) == null)
@@ -129,15 +127,15 @@ namespace CSharpToTypeScript.Models
 
             ImplementedGenericTypes = new Dictionary<Type, IReadOnlyList<TsType>>();
 
+            DataContract = this.Type.SafeGetCustomAttribute<DataContractAttribute>(false);
+
+            this.Name = TsModuleService.GetTsTypeName(this.Type);
+
             if (type.IsGenericType)
             {
                 this.GenericArguments = type.GetGenericArguments()
                     .Select(t => TsType.Create(tsModuleService, t))
                     .ToList();
-                if (DataContract == null || string.IsNullOrEmpty(DataContract.Name))
-                {
-                    this.Name = type.Name.Remove(type.Name.IndexOf('`'));
-                }
             }
             else
             {
@@ -145,14 +143,6 @@ namespace CSharpToTypeScript.Models
             }
 
             Display = this.Type.SafeGetCustomAttribute<DisplayAttribute>(false);
-
-            DataContract = this.Type.SafeGetCustomAttribute<DataContractAttribute>(false);
-
-            if (DataContract != null)
-            {
-                if (!string.IsNullOrEmpty(DataContract.Name))
-                    this.Name = DataContract.Name;
-            }
 
             Ignore = this.Type.SafeGetCustomAttribute<JsonIgnoreAttribute>(false);
 

@@ -87,7 +87,7 @@ namespace CSharpToTypeScript
                     tsType = new TsSystemType(toResolve.Type);
                     break;
                 case TsTypeFamily.Collection:
-                    tsType = this.CreateCollectionType(tsModuleService, toResolve);
+                    tsType = tsModuleService.GetOrAddTsCollection(toResolve.Type);
                     break;
                 case TsTypeFamily.Enum:
                     tsType = tsModuleService.GetOrAddTsEnum(toResolve.Type);
@@ -98,13 +98,6 @@ namespace CSharpToTypeScript
             }
             this._knownTypes[toResolve.Type] = tsType;
             return tsType;
-        }
-
-        private TsCollection CreateCollectionType(ITsModuleService tsModuleService, TsType type)
-        {
-            TsCollection collectionType = new (tsModuleService, type.Type);
-            collectionType.ItemsType = this.ResolveType(tsModuleService, collectionType.ItemsType, false);
-            return collectionType;
         }
     }
 }

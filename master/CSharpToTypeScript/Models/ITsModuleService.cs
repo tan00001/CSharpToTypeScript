@@ -17,6 +17,8 @@ namespace CSharpToTypeScript.Models
 
         TsClass GetOrAddTsClass(Type clrType);
 
+        TsCollection GetOrAddTsCollection(Type clrType);
+
         TsTypeDefinition GetOrAddTsTypeDefinition(Type clrType);
 
         TsInterface GetOrAddTsInterface(Type clrType);
