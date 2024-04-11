@@ -37,6 +37,7 @@ namespace CSharpToTypeScript
             Dictionary<Type, TypeConvertor> convertors = this._scriptGenerator._typeConvertors._convertors;
             TsModuleMember member = this._modelBuilder.Add(type, true, convertors);
 
+            member.IsIgnored = false;
             member.RequiresAllExtensions = requiresAllExtensions;
 
             switch (member)

@@ -59,8 +59,14 @@ export const PersonWithGenericMemberImpRegistrationStatusForm = (props: PersonWi
 		</div>
 		<div className="row mb-3">
 			<div className="form-group col-md-12">
-				<label htmlFor="testMember">TestMember:</label>
-				<input type="text" className={getClassName(touchedFields.testMember, errors.testMember)} id={formId + "-testMember"} {...register("testMember")} />
+				<label htmlFor={formId + "-testMember"}>TestMember:</label>
+				<select className={getClassName(touchedFields.testMember, errors.testMember)} id={formId + "-testMember"} {...register("testMember", { valueAsNumber: true })}>
+					<option value="">Select a TestMember</option>
+					<option value="0">Unknown</option>
+					<option value="1">Registered</option>
+					<option value="2">Unregistered</option>
+					<option value="3">Approval Pending</option>
+				</select>
 				{getErrorMessage(errors.testMember)}
 			</div>
 		</div>

@@ -56,8 +56,8 @@ export const PersonWithGenericMemberDateStringForm = (props: PersonWithGenericMe
 				{getErrorMessage(errors.name)}
 			</div>
 			<div className="form-group col-md-4">
-				<label htmlFor="testMember">TestMember:</label>
-				<input type="text" className={getClassName(touchedFields.testMember, errors.testMember)} id={formId + "-testMember"} {...register("testMember")} />
+				<label htmlFor={formId + "-testMember"}>TestMember:</label>
+				<input type="date" className={getClassName(touchedFields.testMember, errors.testMember)} id={formId + "-testMember"} {...register("testMember", { valueAsDate: true })} />
 				{getErrorMessage(errors.testMember)}
 			</div>
 		</div>

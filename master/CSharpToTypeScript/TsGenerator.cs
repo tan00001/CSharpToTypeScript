@@ -367,12 +367,17 @@ namespace CSharpToTypeScript
                     for (var i = 0; i < interfaces.Count; ++i)
                     {
                         TsInterface interfaceModel = interfaces[i];
-                        this.AppendInterfaceDefinition(interfaceModel, sb, generatorOptions, importNames);
-                        if (i < interfaces.Count - 1)
+
+                        // Only export interface definition when the interface is not generic or all generic arguments are generic parameters
+                        if (interfaceModel.GenericArguments.Count == 0 || interfaceModel.GenericArguments.All(a => a.Type.IsGenericParameter))
                         {
-                            sb.AppendLine();
+                            this.AppendInterfaceDefinition(interfaceModel, sb, generatorOptions, importNames);
+                            if (i < interfaces.Count - 1)
+                            {
+                                sb.AppendLine();
+                            }
+                            ++generatedSectionCount;
                         }
-                        ++generatedSectionCount;
                     }
                 }
 
@@ -388,8 +393,8 @@ namespace CSharpToTypeScript
                     for (var i = 0; i < typeDefinitions.Count; ++i)
                     {
                         TsTypeDefinition typeDefinitionModel = typeDefinitions[i];
-                        this.AppendTypeDefinition(typeDefinitionModel, sb, generatorOptions, importNames);
-                        if (i < typeDefinitions.Count - 1)
+                        (var properties, var hasOutput) = this.AppendTypeDefinition(typeDefinitionModel, sb, generatorOptions, importNames);
+                        if (hasOutput && i < typeDefinitions.Count - 1)
                         {
                             sb.AppendLine();
                         }
@@ -409,8 +414,8 @@ namespace CSharpToTypeScript
                     for (var i = 0; i < classes.Count; ++i)
                     {
                         TsClass classModel = classes[i];
-                        this.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
-                        if (i < classes.Count - 1)
+                        (var propertyList, var hasOutput) = this.AppendClassDefinition(classModel, sb, generatorOptions, importNames);
+                        if (hasOutput && i < classes.Count - 1)
                         {
                             sb.AppendLine();
                         }
@@ -483,12 +488,25 @@ namespace CSharpToTypeScript
             return generatedSectionCount;
         }
 
-        protected virtual IReadOnlyList<TsProperty> AppendClassDefinition(
+        protected virtual (IReadOnlyList<TsProperty> Properties, bool HasOutput) AppendClassDefinition(
             TsClass classModel,
             ScriptBuilder sb,
             TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
+            List<TsProperty> propertiesToExport = new();
+
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties))
+                propertiesToExport.AddRange(classModel.GetMemeberInfoForOutput(TsGeneratorOptions.Properties));
+            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields))
+                propertiesToExport.AddRange(classModel.GetMemeberInfoForOutput(TsGeneratorOptions.Fields));
+
+            // Only export class definition when the class is not generic or all generic arguments are generic parameters
+            if (classModel.GenericArguments.Count > 0 && !classModel.GenericArguments.All(a => a.Type.IsGenericParameter))
+            {
+                return (propertiesToExport, false);
+            }
+
             string? typeName = this.GetTypeName(classModel);
             string str = this.GetTypeVisibility(classModel, typeName) ? "export " : "";
             this._docAppender.AppendClassDoc(sb, classModel, typeName);
@@ -506,12 +524,6 @@ namespace CSharpToTypeScript
             }
 
             sb.AppendLine(" {");
-
-            List<TsProperty> propertiesToExport = new ();
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties))
-                propertiesToExport.AddRange(classModel.GetMemeberInfoForOutput(TsGeneratorOptions.Properties));
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-                propertiesToExport.AddRange(classModel.GetMemeberInfoForOutput(TsGeneratorOptions.Fields));
 
             string namespaceName = FormatNamespaceName(classModel.Namespace!);
 
@@ -559,7 +571,7 @@ namespace CSharpToTypeScript
             sb.AppendLineIndented("}");
             this._generatedClasses.Add(classModel);
 
-            return propertiesToExport;
+            return (propertiesToExport, true);
         }
 
         protected virtual List<TsProperty> AppendProperties(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
@@ -579,18 +591,24 @@ namespace CSharpToTypeScript
             return properties;
         }
 
-        protected virtual IReadOnlyList<TsProperty> AppendTypeDefinition(
+        protected virtual (IReadOnlyList<TsProperty> Properties, bool HasOutput) AppendTypeDefinition(
             TsTypeDefinition typeDefinitionModel,
             ScriptBuilder sb,
             TsGeneratorOptions generatorOptions,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)
         {
+            IReadOnlyList<TsProperty> propertiesToExport = typeDefinitionModel.GetMemeberInfoForOutput(generatorOptions);
+
+            // Only export type definition when the type is not generic or all generic arguments are generic parameters
+            if (typeDefinitionModel.GenericArguments.Count > 0 && !typeDefinitionModel.GenericArguments.All(a => a.Type.IsGenericParameter))
+            {
+                return (propertiesToExport, false);
+            }
+
             string? typeName = this.GetTypeName(typeDefinitionModel);
             string str = this.GetTypeVisibility(typeDefinitionModel, typeName) ? "export " : "";
             this._docAppender.AppendTypeDefinitionDoc(sb, typeDefinitionModel, typeName);
             sb.AppendLineIndented(str + "type " + typeName + " = {");
-
-            IReadOnlyList<TsProperty> propertiesToExport = typeDefinitionModel.GetMemeberInfoForOutput(generatorOptions);
 
             string namespaceName = FormatNamespaceName(typeDefinitionModel.Namespace!);
 
@@ -601,7 +619,7 @@ namespace CSharpToTypeScript
             sb.AppendLineIndented("};");
             this._generatedTypeDefinitions.Add(typeDefinitionModel);
 
-            return propertiesToExport;
+            return (propertiesToExport, true);
         }
 
         protected string FormatTypeName(string namespaceName, TsType type, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> importNames)

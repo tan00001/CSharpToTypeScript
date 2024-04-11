@@ -31,6 +31,22 @@
                 }
             }
 
+            if (y is TsModuleMember yModuleMember)
+            {
+                if (yModuleMember.ImplementedGenericTypes.Keys.Any(k => k == x.Type))
+                {
+                    return 1;
+                }
+            }
+
+            if (x is TsModuleMember xModuleMember)
+            {
+                if (xModuleMember.ImplementedGenericTypes.Keys.Any(k => k == y.Type))
+                {
+                    return -1;
+                }
+            }
+
             return 0;
         }
     }
