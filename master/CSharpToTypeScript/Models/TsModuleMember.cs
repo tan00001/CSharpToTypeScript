@@ -123,6 +123,16 @@ namespace CSharpToTypeScript.Models
             Interfaces = Type.GetInterfaces().Where(@interface =>
                     @interface.SafeGetCustomAttribute<JsonIgnoreAttribute>(false) == null
                     && @interface.SafeGetCustomAttribute<NotMappedAttribute>(false) == null)
+                .Where(i =>
+                {
+                    var nameSpaceName = i.Namespace ?? i.FullName;
+                    if (nameSpaceName == null)
+                    {
+                        return true;
+                    }
+                    // Enumerables and Dictionaries get special treatments 
+                    return !nameSpaceName.StartsWith("System.Collections");
+                })
                 .Select(t => tsModuleService.GetOrAddTsInterface(t)).ToList();
 
             ImplementedGenericTypes = new Dictionary<Type, IReadOnlyList<TsType>>();

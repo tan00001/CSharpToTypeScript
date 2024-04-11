@@ -232,7 +232,7 @@ namespace CSharpToTypeScript.Models
             return this.PropertyType switch
             {
                 _ when this.PropertyType is TsEnum => "0",
-                _ when this.PropertyType is TsCollection => "[]",
+                _ when this.PropertyType is TsCollection tsCollection => tsCollection.KeyType != null ? "{}" : "[]",
                 _ when this.PropertyType is TsSystemType tsSystemType =>
                 tsSystemType.Kind switch {
                     _ when tsSystemType.Kind == SystemTypeKind.String => "\"\"",

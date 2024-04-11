@@ -11,7 +11,7 @@ namespace CSharpToTypeScript
         public const string Name = "CSharpToTypeScript";
         public const string Description = @"Generate Typescript code from a C# class definition.";
         public const string Language = "en-US";
-        public const string Version = "2.0.1.5";
+        public const string Version = "2.0.2.0";
         public const string Author = "Programount Inc.";
         public const string Tags = "TypeScript, C#, schema, validation";
     }

@@ -3,19 +3,19 @@ using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test.TsCollection
 {
-    public struct PersonWithArrayMember
+    public struct PersonWithDictionaryMember
     {
         [Required]
         public string Name { get; set; }
 
         [Range(0, int.MaxValue)]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
-        public string[] Notes { get; set; }
+        public Dictionary<string, string> Notes { get; set; }
     }
 
     [TestClass]
-    public class TestPersonWithArrayMember : IDisposable
+    public class TestPersonWithDictionaryMember : IDisposable
     {
         private bool disposedValue;
 
@@ -32,16 +32,16 @@ namespace CSharpToTypeScript.Test.TsCollection
         }
 
         [TestMethod]
-        public void TestStructureWithArrayMember()
+        public void TestStructureWithDictionaryMember()
         {
             var ts = TypeScript.Definitions(new TsGenerator(false))
-               .For<PersonWithArrayMember>();
+               .For<PersonWithDictionaryMember>();
 
             var personTypeScript = ts.ToString();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithArrayMember));
+            var expectedData = Utilities.GetTestDataFileContents(nameof(PersonWithDictionaryMember));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

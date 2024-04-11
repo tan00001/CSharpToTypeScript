@@ -67,7 +67,9 @@ namespace CSharpToTypeScript.Models
                 return TsTypeFamily.System;
 
             if (typeof(IEnumerable).IsAssignableFrom(type))
+            {
                 return TsTypeFamily.Collection;
+            }
 
             if (type.IsEnum)
                 return TsTypeFamily.Enum;
@@ -133,6 +135,26 @@ namespace CSharpToTypeScript.Models
             }
 
             return null;
+        }
+
+        internal static (Type? KeyType, Type? ValueType) GetKeyAndValueTypes(Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+            {
+                var genericArguments = type.GetGenericArguments();
+                return (genericArguments[0], genericArguments[1]);
+            }
+
+            foreach (Type @interface in type.GetInterfaces())
+            {
+                if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                {
+                    var genericArguments = @interface.GetGenericArguments();
+                    return (genericArguments[0], genericArguments[1]);
+                }
+            }
+
+            return (null, null);
         }
     }
 }

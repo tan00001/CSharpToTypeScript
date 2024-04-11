@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Formats.Asn1;
 
 using CSharpToTypeScript.Extensions;
@@ -49,7 +50,7 @@ namespace CSharpToTypeScript
                     return name;
                 }
                 return RemoveGenericArgumentsFromName(tsClass.Name) + "<"
-                    + string.Join(", ", tsClass.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
+                    + string.Join(", ", tsClass.GenericArguments.Select(a => GetFullyQualifiedTypeNameAndArraySuffixIfNecessary(a))) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsTypeDefinition>((type, formatter) =>
             {
@@ -61,7 +62,7 @@ namespace CSharpToTypeScript
                     return name;
                 }
                 return RemoveGenericArgumentsFromName(tsTypeDefinition.Name) + "<"
-                    + string.Join(", ", tsTypeDefinition.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
+                    + string.Join(", ", tsTypeDefinition.GenericArguments.Select(a => GetFullyQualifiedTypeNameAndArraySuffixIfNecessary(a))) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsInterface>((type, formatter) =>
             {
@@ -77,7 +78,7 @@ namespace CSharpToTypeScript
                     + string.Join(", ", tsInterface.GenericArguments.Select(a => (a is not TsCollection) ? this.GetFullyQualifiedTypeName(a) : this.GetFullyQualifiedTypeName(a) + "[]")) + ">";
             });
             this._typeFormatters.RegisterTypeFormatter<TsSystemType>((type, formatter) => ((TsSystemType)type).Kind.ToTypeScriptString());
-            this._typeFormatters.RegisterTypeFormatter<TsCollection>((type, formatter) => this.GetTypeName(((TsCollection)type).ItemsType) ?? throw new Exception("Invalid collection: item type has no name."));
+            this._typeFormatters.RegisterTypeFormatter<TsCollection>((type, formatter) => CollectionTypeFormatter((TsCollection)type));
             this._typeFormatters.RegisterTypeFormatter<TsEnum>((type, formatter) => ((TsModuleMember)type).Name);
             this._typeConvertors = new TypeConvertorCollection();
             this._docAppender = new NullDocAppender();
@@ -88,6 +89,32 @@ namespace CSharpToTypeScript
             this._namespaceNameFormatter = new TsNamespaceNameFormatter(DefaultNamespaceNameFormatter);
             this.IndentationString = "\t";
             this.GenerateConstEnums = true;
+        }
+
+        private string CollectionTypeFormatter(TsCollection type)
+        {
+            if (type.KeyType != null)
+            {
+                return "{ [key: " + (this.GetTypeName(type.KeyType) ?? throw new Exception("Invalid collection: key type has no name."))
+                    + "]: " + (this.GetTypeName(type.ItemsType) ?? throw new Exception("Invalid collection: item type has no name.")) + " }";
+            }
+
+            return this.GetTypeName(type.ItemsType) ?? throw new Exception("Invalid collection: item type has no name.");
+        }
+
+        private string? GetFullyQualifiedTypeNameAndArraySuffixIfNecessary(TsType a)
+        {
+            var fullyQualifiedTypeName = GetFullyQualifiedTypeName(a);
+
+            if (a is TsCollection collection)
+            {
+                for (var i = 0; i < collection.Dimension; ++i)
+                {
+                    fullyQualifiedTypeName += "[]";
+                }
+            }
+
+            return fullyQualifiedTypeName;
         }
 
         public bool DefaultTypeVisibilityFormatter(TsType tsType, string? typeName) => !EnableNamespaceInTypeScript && tsType is TsModuleMember;
@@ -817,7 +844,7 @@ namespace CSharpToTypeScript
             else if (type is TsCollection tsCollection)
             {
                 namespaceName = this.GetCollectionModuleName(tsCollection);
-            } 
+            }
 
             return type.Type.IsGenericParameter || string.IsNullOrEmpty(namespaceName) ? this.GetTypeName(type) : namespaceName + "." + this.GetTypeName(type);
         }
