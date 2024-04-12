@@ -349,17 +349,32 @@ namespace CSharpToTypeScript
                 // Get the current cursor position
                 var cursorPosition = textSelection.ActivePoint;
 
+                List<Exception> exceptions = new ();
                 // Get the CodeElement at the cursor position
                 foreach (var elementType in elementTypes)
                 {
-                    CodeElement? codeElement = document.ProjectItem.FileCodeModel.CodeElementFromPoint(cursorPosition, elementType);
-                    if (codeElement != null && !string.IsNullOrEmpty(codeElement.FullName))
+                    try
                     {
-                        return codeElement.FullName;
+                        CodeElement? codeElement = document.ProjectItem.FileCodeModel.CodeElementFromPoint(cursorPosition, elementType);
+                        if (codeElement != null && !string.IsNullOrEmpty(codeElement.FullName))
+                        {
+                            return codeElement.FullName;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
                     }
                 }
 
-                dte.StatusBar.Text = "Please select one of the following: " + string.Join(", ", elementTypes.Select(t => _ElementNames[t])) + ".";
+                if (exceptions.Count > 0)
+                {
+                    dte.StatusBar.Text = "Error: " + string.Join(", ", exceptions.Select(e => e.Message)) + ".";
+                }
+                else
+                {
+                    dte.StatusBar.Text = "Please select one of the following: " + string.Join(", ", elementTypes.Select(t => _ElementNames[t])) + ".";
+                }
                 return string.Empty;
             }
             catch (Exception ex)
