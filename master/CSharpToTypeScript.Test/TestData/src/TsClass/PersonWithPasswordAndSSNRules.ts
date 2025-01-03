@@ -16,7 +16,7 @@ export class PersonWithPasswordAndSSN {
 
 export const PersonWithPasswordAndSSNValidationRules: ValidationArgs<PersonWithPasswordAndSSN> = {
 	confirmPassword: {
-		helpers.withMessage('Password does not match.', (value, siblings) => value === siblings.Password)
+		compareToPassword: helpers.withMessage('Password does not match.', (value, siblings) => value === siblings.Password)
 	},
 	id: {
 	},
@@ -28,6 +28,6 @@ export const PersonWithPasswordAndSSNValidationRules: ValidationArgs<PersonWithP
 		required
 	},
 	ssn: {
-		helpers.regex(/\d{3}-\d{2}-\d{4}$/)
+		regExPattern: helpers.regex(/\d{3}-\d{2}-\d{4}$/)
 	}
 };

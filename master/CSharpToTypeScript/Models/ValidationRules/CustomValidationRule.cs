@@ -82,7 +82,7 @@ namespace CSharpToTypeScript.Models
 
         public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendIndented($"helpers.withMessage('" + _CustomValidation.ErrorMessage + "', (value, siblings) => " + (string.IsNullOrEmpty(ValidatorTypeName) ? "" : (ValidatorTypeName + '.'))
+            sb.AppendIndented($"{_CustomValidation.Method}: helpers.withMessage('" + _CustomValidation.ErrorMessage + "', (value, siblings) => " + (string.IsNullOrEmpty(ValidatorTypeName) ? "" : (ValidatorTypeName + '.'))
                 + _CustomValidation.Method + "(value, siblings))");
         }
 

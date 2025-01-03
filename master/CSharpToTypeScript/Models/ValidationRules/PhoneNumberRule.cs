@@ -2,26 +2,26 @@
 
 namespace CSharpToTypeScript.Models
 {
-    public class RegularExpressionRule : ITsValidationRule
+    public class PhoneNumberRule : ITsValidationRule
     {
-        readonly RegularExpressionAttribute _ReqularExpression;
+        readonly PhoneAttribute _Phone;
 
-        public RegularExpressionRule(RegularExpressionAttribute regularExpression) 
+        public PhoneNumberRule(PhoneAttribute phone) 
         {
-            _ReqularExpression = regularExpression;
+            _Phone = phone;
         }
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendLineIndented("if (values." + propertyName + " && !/" + _ReqularExpression.Pattern + "/.test(values." + propertyName + ")) {");
+            sb.AppendLineIndented("if (values." + propertyName + @" && !/^(\+1|1)?[ -]?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[ -]?[2-9][0-9]{2}[ -]?[0-9]{4}$/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
                 sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
-                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_ReqularExpression.ErrorMessage) ? _ReqularExpression.ErrorMessage
-                        :(property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Phone.ErrorMessage) ? string.Format(_Phone.ErrorMessage, property.GetDisplayName())
+                        : (property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -30,7 +30,7 @@ namespace CSharpToTypeScript.Models
 
         public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendIndented("helpers.regex(/" + _ReqularExpression.Pattern + "/)");
+            sb.AppendIndented(@"phoneNumber: helpers.regex(/^(\+1|1)?[ -]?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[ -]?[2-9][0-9]{2}[ -]?[0-9]{4}$/)");
         }
     }
 }

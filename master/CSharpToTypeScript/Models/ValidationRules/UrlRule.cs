@@ -2,25 +2,25 @@
 
 namespace CSharpToTypeScript.Models
 {
-    public class PhoneNumberRule : ITsValidationRule
+    public class UrlRule : ITsValidationRule
     {
-        readonly PhoneAttribute _Phone;
+        readonly UrlAttribute _Url;
 
-        public PhoneNumberRule(PhoneAttribute phone) 
+        public UrlRule(UrlAttribute url) 
         {
-            _Phone = phone;
+            _Url = url;
         }
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendLineIndented("if (values." + propertyName + @" && !/^(\+1|1)?[ -]?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[ -]?[2-9][0-9]{2}[ -]?[0-9]{4}$/.test(values." + propertyName + ")) {");
+            sb.AppendLineIndented("if (values." + propertyName + @" && !/^(http:\/\/|https:\/\/|ftp:\/\/)/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
                 sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
-                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Phone.ErrorMessage) ? string.Format(_Phone.ErrorMessage, property.GetDisplayName())
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Url.ErrorMessage) ? string.Format(_Url.ErrorMessage, property.GetDisplayName())
                         : (property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
@@ -30,7 +30,7 @@ namespace CSharpToTypeScript.Models
 
         public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendIndented(@"helpers.regex(/^(\+1|1)?[ -]?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[ -]?[2-9][0-9]{2}[ -]?[0-9]{4}$/)");
+            sb.AppendIndented(@"urlPattern: helpers.regex(/^(http:\/\/|https:\/\/|ftp:\/\/)");
         }
     }
 }

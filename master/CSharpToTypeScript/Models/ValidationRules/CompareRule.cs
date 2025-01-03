@@ -34,7 +34,7 @@ namespace CSharpToTypeScript.Models
         {
             FindOrderPropertyName(allProperties, out var otherPropertyName, out var otherPropertyDisplayName);
 
-            sb.AppendIndented("helpers.withMessage('" + (!string.IsNullOrEmpty(_Compare.ErrorMessage) ? _Compare.ErrorMessage
+            sb.AppendIndented("compareTo" + _Compare.OtherProperty + ": helpers.withMessage('" + (!string.IsNullOrEmpty(_Compare.ErrorMessage) ? _Compare.ErrorMessage
                 : (otherPropertyDisplayName + " does not match.")) + "', (value, siblings) => value === siblings." + otherPropertyDisplayName + ')'); 
                 // (value, siblings, root) => { ... } if you need access to the root form\r\n)");
         }

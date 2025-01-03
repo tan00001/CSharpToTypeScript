@@ -47,7 +47,7 @@ namespace CSharpToTypeScript.Models
 
         public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendIndented("helpers.regex(/^(?:" +
+            sb.AppendIndented("numberPattern: helpers.regex(/^(?:" +
                 "4\\d{12}(?:\\d{3})?" +            // Visa (13 or 16 digits)
                 "|5[1-5]\\d{14}" +                 // MasterCard (16 digits)
                 "|6(?:011|5\\d{2})\\d{12}" +       // Discover (16 digits)

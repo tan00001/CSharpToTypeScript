@@ -68,7 +68,7 @@ export const PersonValidationRules: ValidationArgs<Person> = {
 	zip: {
 		required, 
 		maxLength: maxLength(50), 
-		helpers.withMessage('', (value, siblings) => Person.ValidateZip(value, siblings)), 
-		helpers.withMessage('', (value, siblings) => Person.ValidateZip2(value, siblings))
+		ValidateZip: helpers.withMessage('', (value, siblings) => Person.ValidateZip(value, siblings)), 
+		ValidateZip2: helpers.withMessage('', (value, siblings) => Person.ValidateZip2(value, siblings))
 	}
 };

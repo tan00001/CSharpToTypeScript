@@ -2,26 +2,26 @@
 
 namespace CSharpToTypeScript.Models
 {
-    public class UrlRule : ITsValidationRule
+    public class RegularExpressionRule : ITsValidationRule
     {
-        readonly UrlAttribute _Url;
+        readonly RegularExpressionAttribute _ReqularExpression;
 
-        public UrlRule(UrlAttribute url) 
+        public RegularExpressionRule(RegularExpressionAttribute regularExpression) 
         {
-            _Url = url;
+            _ReqularExpression = regularExpression;
         }
 
         public void BuildRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendLineIndented("if (values." + propertyName + @" && !/^(http:\/\/|https:\/\/|ftp:\/\/)/.test(values." + propertyName + ")) {");
+            sb.AppendLineIndented("if (values." + propertyName + " && !/" + _ReqularExpression.Pattern + "/.test(values." + propertyName + ")) {");
             using (sb.IncreaseIndentation())
             {
                 sb.AppendLineIndented("errors." + propertyName + " = {");
                 using (sb.IncreaseIndentation())
                 {
                     sb.AppendLineIndented("type: 'pattern',");
-                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_Url.ErrorMessage) ? string.Format(_Url.ErrorMessage, property.GetDisplayName())
-                        : (property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
+                    sb.AppendLineIndented("message: '" + (!string.IsNullOrEmpty(_ReqularExpression.ErrorMessage) ? _ReqularExpression.ErrorMessage
+                        :(property.GetDisplayName().Replace("'", "\'") + " is invalid.")) + "'");
                 }
                 sb.AppendLineIndented("};");
             }
@@ -30,7 +30,7 @@ namespace CSharpToTypeScript.Models
 
         public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
         {
-            sb.AppendIndented(@"helpers.regex(/^(http:\/\/|https:\/\/|ftp:\/\/)");
+            sb.AppendIndented("regExPattern: helpers.regex(/" + _ReqularExpression.Pattern + "/)");
         }
     }
 }
