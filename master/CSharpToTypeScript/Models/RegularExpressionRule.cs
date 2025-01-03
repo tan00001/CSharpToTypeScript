@@ -27,5 +27,10 @@ namespace CSharpToTypeScript.Models
             }
             sb.AppendLineIndented("}");
         }
+
+        public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
+        {
+            sb.AppendIndented("helpers.regex(/" + _ReqularExpression.Pattern + "/)");
+        }
     }
 }

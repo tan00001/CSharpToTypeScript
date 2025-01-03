@@ -12,6 +12,8 @@ namespace CSharpToTypeScript
 
         public int IndentationLevels { get; private set; }
 
+        public int Length => _internalBuilder.Length;
+
         public ScriptBuilder()
           : this("\t")
         {

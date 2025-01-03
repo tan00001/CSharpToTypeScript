@@ -200,7 +200,7 @@ namespace CSharpToTypeScript
 
         public IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsModelBuilder tsModelBuilder) => this.Generate(tsModelBuilder, TsGeneratorOptions.Properties | TsGeneratorOptions.Enums);
 
-        public IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsModelBuilder tsModelBuilder, TsGeneratorOptions generatorOptions)
+        public virtual IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsModelBuilder tsModelBuilder, TsGeneratorOptions generatorOptions)
         {
             tsModelBuilder.Build();
 
@@ -283,6 +283,13 @@ namespace CSharpToTypeScript
             return fileType;
         }
 
+        /// <summary>
+        /// Append import statements
+        /// </summary>
+        /// <param name="namespace"></param>
+        /// <param name="sb"></param>
+        /// <param name="generatorOptions"></param>
+        /// <returns>Import indices for each dependent namespace</returns>
         protected virtual IReadOnlyDictionary<string, IReadOnlyDictionary<string, Int32>> AppendImports(
             TsNamespace @namespace,
             ScriptBuilder sb,

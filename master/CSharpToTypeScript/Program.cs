@@ -42,7 +42,9 @@ bool enableNamespace = args.Length > 4 && StringComparer.OrdinalIgnoreCase.Equal
 TsGenerator tsGenerator = args switch
 {
     _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[3], "withresolver") => new TsGeneratorWithResolver(enableNamespace),
+    _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[3], "withvuelidate") => new TsGeneratorWithVuelidate(enableNamespace),
     _ when args.Length > 3 && args[3].StartsWith("withform(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithForm(GetColCount(args[3]), GetReactstrapModalTitle(args[3]), enableNamespace),
+    _ when args.Length > 3 && args[3].StartsWith("withvue(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithVue(GetColCount(args[3]), GetReactstrapModalTitle(args[3]), enableNamespace),
     _ => new TsGenerator(enableNamespace)
 };
 

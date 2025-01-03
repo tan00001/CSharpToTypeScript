@@ -30,6 +30,15 @@ namespace CSharpToTypeScript.Models
             sb.AppendLineIndented("}");
         }
 
+        public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
+        {
+            FindOrderPropertyName(allProperties, out var otherPropertyName, out var otherPropertyDisplayName);
+
+            sb.AppendIndented("helpers.withMessage('" + (!string.IsNullOrEmpty(_Compare.ErrorMessage) ? _Compare.ErrorMessage
+                : (otherPropertyDisplayName + " does not match.")) + "', (value, siblings) => value === siblings." + otherPropertyDisplayName + ')'); 
+                // (value, siblings, root) => { ... } if you need access to the root form\r\n)");
+        }
+
         private void FindOrderPropertyName(IReadOnlyDictionary<string, TsProperty> allProperties, out string otherPropertyName, out string otherPropertyDisplayName)
         {
             foreach (var property in allProperties)

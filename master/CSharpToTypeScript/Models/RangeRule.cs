@@ -130,6 +130,25 @@ namespace CSharpToTypeScript.Models
             sb.AppendLineIndented("}");
         }
 
+        public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
+        {
+            bool hasMax = !string.IsNullOrWhiteSpace(_Range.Maximum.ToString());
+            bool hasMin = !string.IsNullOrWhiteSpace(_Range.Minimum.ToString());
+            if (hasMin && hasMax)
+            {
+                sb.AppendLineIndented(@"minValue: minValue(" + _Range.Minimum.ToString() + "),");
+                sb.AppendIndented(@"maxValue: maxValue(" + _Range.Maximum.ToString() + ")");
+            }
+            else if (hasMax)
+            {
+                sb.AppendIndented(@"maxValue: maxValue(" + _Range.Maximum.ToString() + ")");
+            }
+            else if (hasMin)
+            {
+                sb.AppendIndented(@"minValue: minValue(" + _Range.Minimum.ToString() + ")");
+            }
+        }
+
         private void AppendMinNumberRule(ScriptBuilder sb, string propertyName, TsProperty property)
         {
             sb.AppendLineIndented("if (values." + propertyName + " < " + _Range.Minimum + ") {");

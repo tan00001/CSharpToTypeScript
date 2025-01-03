@@ -82,6 +82,11 @@ namespace CSharpToTypeScript.Models
             sb.AppendLineIndented("}");
         }
 
+        public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
+        {
+            sb.AppendIndented(@"required");
+        }
+
         private bool DisallowAllDefaultValues()
         {
             return _DataMember?.EmitDefaultValue != null && _DataMember?.EmitDefaultValue == false;

@@ -44,5 +44,15 @@ namespace CSharpToTypeScript.Models
                 sb.AppendLineIndented("}");
             }
         }
+
+        public void BuildVuelidateRule(ScriptBuilder sb, string propertyName, TsProperty property, IReadOnlyDictionary<string, TsProperty> allProperties, ISet<string> constNamesInUse)
+        {
+            if (_StringLength.MinimumLength > 0)
+            {
+                sb.AppendLineIndented(@"minLength: minLength(" + _StringLength.MinimumLength + "),");
+            }
+
+            sb.AppendIndented(@"maxLength: maxLength(" + _StringLength.MaximumLength + ")");
+        }
     }
 }

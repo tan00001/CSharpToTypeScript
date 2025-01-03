@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+
 using CSharpToTypeScript.AlternateGenerators;
 
 namespace CSharpToTypeScript.Test
@@ -26,5 +27,7 @@ namespace CSharpToTypeScript.Test
         public static string GetTestFormFileContents(string subFolfer, string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(),
             @"TestData\src", subFolfer, testDataFileName + (testDataFileName == TsGeneratorWithForm.BootstrapUtilsNamespace ? ".tsx" : "Form.tsx")));
 
+        public static string GetTestVuelidateRuleContents(string subFolfer, string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(),
+            @"TestData\src", subFolfer, testDataFileName + "Rules.ts"));
     }
 }
