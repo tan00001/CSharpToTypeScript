@@ -12,10 +12,13 @@ namespace CSharpToTypeScript
         public string Script { get; set; }
         public bool ExcludeFromResultToString { get; set; }
 
+        public Dictionary<string, string> OtherFileTypes { get; private set; }
+
         public TsGeneratorOutput(string fileType, string script)
         {
             FileType = fileType;
             Script = script;
+            OtherFileTypes = new Dictionary<string, string>();
         }
     }
 }

@@ -29,5 +29,8 @@ namespace CSharpToTypeScript.Test
 
         public static string GetTestVuelidateRuleContents(string subFolfer, string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(),
             @"TestData\src", subFolfer, testDataFileName + "Rules.ts"));
+
+        public static string GetTestVueFileContents(string subFolfer, string testDataFileName) => File.ReadAllText(Path.Combine(GetProjectFolder(),
+            @"TestData\src", subFolfer, testDataFileName + ".vue"));
     }
 }

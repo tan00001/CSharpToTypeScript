@@ -43,12 +43,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             return base.AppendImports(@namespace, sb, generatorOptions);
         }
 
-        protected bool HasMemeberInfoForOutput(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
-        {
-            return @namespace.Classes.Any(c => !IsIgnored(c) && c.HasMemeberInfoForOutput(generatorOptions)) 
-                || @namespace.TypeDefinitions.Any(d => !IsIgnored(d) && d.HasMemeberInfoForOutput(generatorOptions));
-        }
-
         protected override void AppendAdditionalImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
@@ -139,20 +133,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             return (propertiesToExport, true);
         }
 
-        protected static string BuildVariableNameWithGenericArguments(string typeName)
-        {
-            var argumentIndex = typeName.IndexOf('<');
-            if (argumentIndex < 0)
-            {
-                return typeName;
-            }
-
-            var typeNameWithoutParams = typeName.Substring(0, argumentIndex);
-            var argumentList = typeName.Substring(argumentIndex + 1).TrimEnd('>').Split(new char[] { ',', '|', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            return typeNameWithoutParams + string.Join("", argumentList.Select(a => Char.ToUpper(a[0]) + a.Substring(1)));
-        }
-
         protected virtual IReadOnlyList<string> GetReactHookFormComponentNames(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
         {
             List<string> reactHookFormComponentNames = new() { "Resolver", "FieldErrors" };
@@ -203,20 +183,6 @@ namespace CSharpToTypeScript.AlternateGenerators
                         tsModuleMemberWithHierarchy, generatorOptions);
                 }
             }
-        }
-
-        protected string SubstituteTypeParameters(string? typeName, IReadOnlyList<TsType> genericArguments,
-            string namespaceName, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
-        {
-            if (string.IsNullOrEmpty(typeName))
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            var argumentIndex = typeName.IndexOf('<');
-
-            return string.Concat(typeName.AsSpan(0, argumentIndex), "<", string.Join(", ", genericArguments
-                .Select(a => this.FormatTypeName(namespaceName, a, importNames))), ">");
         }
 
         #region Private Methods

@@ -12,33 +12,6 @@ namespace CSharpToTypeScript.AlternateGenerators
         {
         }
 
-        public override IReadOnlyDictionary<string, TsGeneratorOutput> Generate(TsModelBuilder tsModelBuilder, TsGeneratorOptions generatorOptions)
-        {
-            tsModelBuilder.Build();
-
-            var results = new Dictionary<string, TsGeneratorOutput>();
-
-            if (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
-            {
-                if (generatorOptions.HasFlag(TsGeneratorOptions.Constants))
-                    throw new InvalidOperationException("Cannot generate constants together with properties or fields");
-            }
-
-            foreach (TsNamespace @namespace in tsModelBuilder.TsModuleService.GetNamespaces()
-                .Where(n => n.HasExportableMembers(generatorOptions))
-                .OrderBy(n => FormatNamespaceName(n)))
-            {
-                ScriptBuilder sb = new(IndentationString);
-                @namespace.Dependencies = tsModelBuilder.TsModuleService.GetDependentNamespaces(@namespace, generatorOptions);
-                var fileType = AppendNamespace(@namespace, sb, generatorOptions);
-                results.Add(FormatNamespaceName(@namespace), new TsGeneratorOutput(fileType, sb.ToString()));
-            }
-
-            AppendAdditionalDependencies(results);
-
-            return results;
-        }
-
         protected override IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> AppendImports(
             TsNamespace @namespace,
             ScriptBuilder sb,
@@ -99,28 +72,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             return (propertiesToExport, true);
         }
 
-        protected string GetPropertyOrdinal(TsProperty a)
-        {
-            try
-            {
-                if (a.Display?.Order != null)
-                {
-                    return a.Display.Order.ToString("000");
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                // When Order is not set, .NET 8 won't allow access at all
-            }
-
-            if (a.DataMember?.Order > 0)
-            {
-                return a.DataMember.Order.ToString("000");
-            }
-
-            return FormatPropertyName(a);
-        }
-
         protected override (IReadOnlyList<TsProperty> Properties, bool HasOutput) AppendTypeDefinition(
             TsTypeDefinition typeDefinitionModel,
             ScriptBuilder sb,
@@ -150,30 +101,10 @@ namespace CSharpToTypeScript.AlternateGenerators
             return (propertiesToExport, true);
         }
 
-        protected static string BuildVariableNameWithGenericArguments(string typeName)
-        {
-            var argumentIndex = typeName.IndexOf('<');
-            if (argumentIndex < 0)
-            {
-                return typeName;
-            }
-
-            var typeNameWithoutParams = typeName.Substring(0, argumentIndex);
-            var argumentList = typeName.Substring(argumentIndex + 1).TrimEnd('>').Split(new char[] { ',', '|', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            return typeNameWithoutParams + string.Join("", argumentList.Select(a => char.ToUpper(a[0]) + a.Substring(1)));
-        }
-
         protected override bool HasAdditionalImports(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
         {
             return (generatorOptions.HasFlag(TsGeneratorOptions.Properties) || generatorOptions.HasFlag(TsGeneratorOptions.Fields))
                 && @namespace.Classes.Any(c => !IsIgnored(c));
-        }
-
-        protected bool HasMemeberInfoForOutput(TsNamespace @namespace, TsGeneratorOptions generatorOptions)
-        {
-            return @namespace.Classes.Any(c => !IsIgnored(c) && c.HasMemeberInfoForOutput(generatorOptions))
-                || @namespace.TypeDefinitions.Any(d => !IsIgnored(d) && d.HasMemeberInfoForOutput(generatorOptions));
         }
 
         protected override void OnPropertiesAppended(ScriptBuilder sb, TsModuleMemberWithHierarchy tsModuleMemberWithHierarchy,
@@ -212,20 +143,6 @@ namespace CSharpToTypeScript.AlternateGenerators
                         generatorOptions);
                 }
             }
-        }
-
-        protected string SubstituteTypeParameters(string? typeName, IReadOnlyList<TsType> genericArguments,
-            string namespaceName, IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> importNames)
-        {
-            if (string.IsNullOrEmpty(typeName))
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            var argumentIndex = typeName.IndexOf('<');
-
-            return string.Concat(typeName.AsSpan(0, argumentIndex), "<", string.Join(", ", genericArguments
-                .Select(a => FormatTypeName(namespaceName, a, importNames))), ">");
         }
 
         #region Private Methods

@@ -202,28 +202,6 @@ namespace CSharpToTypeScript.AlternateGenerators
             return (propertiesToExport, true);
         }
 
-        protected string GetPropertyOrdinal(TsProperty a)
-        {
-            try
-            {
-                if (a.Display?.Order != null)
-                {
-                    return a.Display.Order.ToString("000");
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                // When Order is not set, .NET 8 won't allow access at all
-            }
-
-            if (a.DataMember?.Order > 0)
-            {
-                return a.DataMember.Order.ToString("000");
-            }
-
-            return this.FormatPropertyName(a);
-        }
-
         protected override (IReadOnlyList<TsProperty> Properties, bool HasOutput) AppendTypeDefinition(
             TsTypeDefinition typeDefintionModel,
             ScriptBuilder sb,

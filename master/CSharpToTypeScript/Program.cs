@@ -65,6 +65,14 @@ foreach (var script in scriptsByNamespaces)
     if (ts.Member.NamespaceName == script.Key)
     {
         File.WriteAllText(args[2], script.Value.Script);
+        foreach (var otherFileType in script.Value.OtherFileTypes)
+        {
+            var filePath = Path.Combine(directoryName, otherFileType.Key);
+            if (!File.Exists(filePath))
+            {
+                File.WriteAllText(filePath, otherFileType.Value);
+            }
+        }
     }
     else
     {
@@ -72,6 +80,14 @@ foreach (var script in scriptsByNamespaces)
         if (!File.Exists(filePath) || !FileContainsScript(script.Value.Script, filePath))
         {
             File.WriteAllText(filePath, script.Value.Script);
+            foreach (var otherFileType in script.Value.OtherFileTypes)
+            {
+                filePath = Path.Combine(directoryName, otherFileType.Key);
+                if (!File.Exists(filePath))
+                {
+                    File.WriteAllText(filePath, otherFileType.Value);
+                }
+            }
         }
     }
 }

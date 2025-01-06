@@ -116,14 +116,32 @@ namespace CSharpToTypeScript
 
             if (results.Count() == 1 || this._scriptGenerator.EnableNamespaceInTypeScript)
             {
-                return string.Join("\r\n", results.Select(r => r.Value.Script));
+                return string.Join("\r\n", results.Select(r =>
+                {
+                    string script = r.Value.Script;
+                    if (r.Value.OtherFileTypes.Count > 0)
+                    {
+                        script += "\r\n" + string.Join("\r\n", r.Value.OtherFileTypes.Values);
+                    }
+                    return script;
+                }));
             }
 
-            return string.Join("\r\n", results.Select(r => "export namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value.Script) + "\r\n}\r\n"));
+            return string.Join("\r\n", results.Select(r => "export namespace " + r.Key + " {\r\n" + GetAllLines(r.Value) + "\r\n}\r\n"));
         }
 
-        private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n")
-            .Select(l => string.IsNullOrWhiteSpace(l) ? l : (this._scriptGenerator.IndentationString + l)))
-            .TrimEnd();
+        private string GetAllLines(TsGeneratorOutput generatorOutput)
+        {
+            string script = generatorOutput.Script;
+            if (generatorOutput.OtherFileTypes.Count > 0)
+            {
+                script += "\r\n" + string.Join("\r\n", generatorOutput.OtherFileTypes.Values);
+            }
+
+            // Indent each line
+            return string.Join("\r\n", script.Split("\r\n")
+                .Select(l => string.IsNullOrWhiteSpace(l) ? l : (this._scriptGenerator.IndentationString + l)))
+                .TrimEnd();
+        }
     }
 }
