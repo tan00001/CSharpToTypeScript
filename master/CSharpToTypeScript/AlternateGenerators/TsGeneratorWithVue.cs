@@ -157,8 +157,8 @@ namespace CSharpToTypeScript.AlternateGenerators
             sb.AppendLineIndented($"const {typeName}Form = ref<HTMLFormElement | null>(null);");
             sb.AppendLineIndented($"const v$ = useVuelidate<{typeName}>({typeName}Rules, formData.value);");
             sb.AppendLine();
-            sb.AppendLineIndented("const getClassName = (isValidated: boolean | undefined, hasError: boolean | undefined): string => hasError ? 'form-control is-invalid' : (isValidated ? 'form-control is-valid' : 'form-control');");
-            sb.AppendLineIndented("const getCheckBoxClassName = (isValidated: boolean | undefined, hasError: boolean | undefined): string => hasError ? 'form-check-input is-invalid' : (isValidated ? 'form-check-input is-valid' : 'form-check-input');");
+            sb.AppendLineIndented("const getClassName = (dirty: boolean | undefined, hasError: boolean | undefined): string => hasError ? 'form-control is-invalid' : (dirty ? 'form-control is-valid' : 'form-control');");
+            sb.AppendLineIndented("const getCheckBoxClassName = (dirty: boolean | undefined, hasError: boolean | undefined): string => hasError ? 'form-check-input is-invalid' : (dirty ? 'form-check-input is-valid' : 'form-check-input');");
             sb.AppendLine();
             sb.AppendLineIndented("const onSubmit = async () => {");
             using (sb.IncreaseIndentation())
@@ -315,8 +315,8 @@ namespace CSharpToTypeScript.AlternateGenerators
                     sb.AppendLineIndented("<div className=\"form-group col-md-12\">");
                     using (sb.IncreaseIndentation())
                     {
-                        sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" disabled={isSubmitting}>Submit</button>");
-                        sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" disabled={isSubmitting}>Reset</button>");
+                        sb.AppendLineIndented("<button className=\"btn btn-primary\" type=\"submit\" :disabled=\"submitting\">Submit</button>");
+                        sb.AppendLineIndented("<button className=\"btn btn-secondary mx-1\" type=\"reset\" :disabled=\"submitting\">Reset</button>");
                     }
                     sb.AppendLineIndented("</div>");
                 }
@@ -355,30 +355,30 @@ namespace CSharpToTypeScript.AlternateGenerators
             {
                 if (property.PropertyType is TsEnum)
                 {
-                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                    sb.AppendLineIndented("<input type=\"hidden\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                 }
                 else if (property.PropertyType is TsSystemType tsSystemType)
                 {
                     if (tsSystemType.Kind == SystemTypeKind.Bool)
                     {
-                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                        sb.AppendLineIndented("<input type=\"hidden\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                     else if (tsSystemType.Kind == SystemTypeKind.Number)
                     {
-                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                        sb.AppendLineIndented("<input type=\"hidden\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                     else if (tsSystemType.Kind == SystemTypeKind.Date)
                     {
-                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
+                        sb.AppendLineIndented("<input type=\"hidden\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                     else
                     {
-                        sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                        sb.AppendLineIndented("<input type=\"hidden\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                 }
                 else
                 {
-                    sb.AppendLineIndented("<input type=\"hidden\" id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                    sb.AppendLineIndented("<input type=\"hidden\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                 }
             }
 
@@ -395,11 +395,11 @@ namespace CSharpToTypeScript.AlternateGenerators
                             ?? MaxColCount - totalColSpan;
                         totalColSpan += colSpan;
                         var propertyName = FormatPropertyName(property);
-                        sb.AppendLineIndented("<div className=\"form-group col-md-" + colSpan + "\">");
+                        sb.AppendLineIndented("<div class=\"form-group col-md-" + colSpan + "\">");
                         using (sb.IncreaseIndentation())
                         {
                             AppendVisibleInput(sb, memberModel, property, propertyName);
-                            sb.AppendLineIndented($"<div v-if='v$.lastName.$dirty && v$.lastName.required.$invalid' class='form-error'>");
+                            sb.AppendLineIndented($"<div v-if='v$.{propertyName}.$dirty && v$.{propertyName}.$error' class='form-error'>");
                             using (sb.IncreaseIndentation())
                             {
                                 sb.AppendLineIndented($"<span v-for='rule in Object.keys($v.{propertyName})' :key='rule'>" + "{{$v." + propertyName + "[rule].$message}}</span>");
@@ -438,9 +438,9 @@ namespace CSharpToTypeScript.AlternateGenerators
                             + "\" and \"" + nameOfOptions + "\" must specify a collection of strings.", nameof(property));
                     }
                     var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName() + ':';
-                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors."
-                        + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\")}>");
+                    sb.AppendLineIndented("<label :for=\"formId + '-'" + propertyName + "\">" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<select :class=\"getClassName(v$." + propertyName + ".$dirty, v$." + propertyName
+                        + ".$error)\" :id=\"formId + '-' " + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\">");
 
                     using (sb.IncreaseIndentation())
                     {
@@ -458,8 +458,9 @@ namespace CSharpToTypeScript.AlternateGenerators
                 else if (property.PropertyType is TsEnum tsEnum)
                 {
                     var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName() + ':';
-                    sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
-                    sb.AppendLineIndented("<select className={getClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-" + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })}>");
+                    sb.AppendLineIndented("<label :for=\"formId + '-'" + propertyName + "\">" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<select :class=\"getClassName(v$.." + propertyName + ".$dirty, v$." + propertyName 
+                        + ".$error)\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\">");
                     using (sb.IncreaseIndentation())
                     {
                         if (!property.IsRequired)
@@ -481,48 +482,48 @@ namespace CSharpToTypeScript.AlternateGenerators
                         // The prompt is different here in that there is no trailing ":"
                         var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName();
                         sb.AppendLineIndented("<input type=\"" + inputType
-                            + "\" className={getCheckBoxClassName(touchedFields." + propertyName + ", errors." + propertyName + ")} id={formId + \"-"
-                            + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
-                        sb.AppendLineIndented("<label className=\"form-check-label ms-1\" htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                            + "\" :class=\"getCheckBoxClassName(v$." + propertyName + ".$dirty, v$." + propertyName 
+                            + ".$error)\" :id=\"formId + '-'" + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
+                        sb.AppendLineIndented("<label class=\"form-check-label ms-1\" :for=\"formId + '-'" + propertyName + "\"}>" + displayPrompt + "</label>");
                     }
                     else if (tsSystemType.Kind == SystemTypeKind.Number)
                     {
                         var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName() + ':';
-                        sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                        sb.AppendLineIndented("<label :for=\"formId + '-'" + propertyName + "\">" + displayPrompt + "</label>");
                         sb.AppendLineIndented("<input type=\"" + inputType
-                            + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
-                            + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                            + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsNumber: true })} />");
+                            + "\" :class=\"getClassName(v$." + propertyName + ".$dirty, v$." + propertyName
+                            + (isReadOnly ? ".$error)\" readonly :id=\"formId + '-''" : ".$error)\" :id=\"formId + '-'")
+                            + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                     else if (tsSystemType.Kind == SystemTypeKind.Date)
                     {
                         var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName() + ':';
-                        sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                        sb.AppendLineIndented("<label :for=\"formId + '-'" + propertyName + "\"}>" + displayPrompt + "</label>");
                         sb.AppendLineIndented("<input type=\"" + inputType
-                            + "\" className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
-                            + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                            + propertyName + "\"} {...register(\"" + propertyName + "\", { valueAsDate: true })} />");
+                            + "\" :class=\"getClassName(v$." + propertyName + ".$dirty, v$." + propertyName
+                            + (isReadOnly ? ".$error)\" readonly :id=\"formId + '-''" : ".$error)\" :id=\"formId + '-''")
+                            + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                     else
                     {
                         var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName() + ':';
-                        sb.AppendLineIndented("<label htmlFor={formId + \"-" + propertyName + "\"}>" + displayPrompt + "</label>");
+                        sb.AppendLineIndented("<label :for=\"formId + '-'" + propertyName + "\">" + displayPrompt + "</label>");
                         sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : "<input type=\"" + inputType + '"'
-                            + " className={getClassName(touchedFields." + propertyName + ", errors." + propertyName
-                            + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                            + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                            + " :class=\"getClassName(v$." + propertyName + ".$dirty, v$." + propertyName
+                            + (isReadOnly ? ".$error)\" readonly :id=\"formId + '-'" : ".$error)\" :id=\"formId + '-'")
+                            + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                     }
                 }
                 else
                 {
                     var inputType = GetInputType(property);
                     var displayPrompt = property.GetDisplayPrompt() ?? property.GetDisplayName() + ':';
-                    sb.AppendLineIndented("<label htmlFor=\"" + propertyName + "\">" + displayPrompt + "</label>");
+                    sb.AppendLineIndented("<label :for=\"" + propertyName + "\">" + displayPrompt + "</label>");
                     sb.AppendLineIndented(inputType == "textarea" ? "<textarea" : "<input type=\"" + inputType + '"'
-                        + " className={getClassName(touchedFields."
-                        + propertyName + ", errors." + propertyName
-                        + (isReadOnly ? ")} readOnly={true} id={formId + \"-" : ")} id={formId + \"-")
-                        + propertyName + "\"} {...register(\"" + propertyName + "\")} />");
+                        + " :class=\"getClassName(v$."
+                        + propertyName + ".$dirty, v$." + propertyName
+                        + (isReadOnly ? ".$error)\" readonly :id=\"formId + '-'" : ".$error)\" :id=\"formId + '-'")
+                        + propertyName + "\" @blur=\"v$." + propertyName + ".$touch\"/>");
                 }
 
                 static System.Reflection.FieldInfo? GetStaticField(Type optionsType, string options, bool includePrivateField = true)
