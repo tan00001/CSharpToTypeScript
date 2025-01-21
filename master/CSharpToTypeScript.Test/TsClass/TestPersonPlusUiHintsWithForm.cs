@@ -191,7 +191,7 @@ namespace CSharpToTypeScript.Test.TsClass
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonPlusAddressAndUiHints));
+            var expectedData = Utilities.GetTestFormFileContents(nameof(PersonPlusAddressAndUiHints3));
 
             Assert.AreEqual(expectedData, personTypeScript);
         }

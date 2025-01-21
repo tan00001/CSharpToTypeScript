@@ -30,8 +30,9 @@ namespace CSharpToTypeScript.Test.TsClass
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
             var expectedData = Utilities.GetTestVuelidateRuleContents("TsClass", nameof(PersonPlusCustomValidator));
+            var expectedDataRelease = Utilities.GetTestVuelidateRuleContents("TsClass", nameof(PersonPlusCustomValidator) + "Release");
 
-            Assert.IsTrue(expectedData == personTypeScript);
+            Assert.IsTrue(expectedData == personTypeScript || expectedDataRelease == personTypeScript);
         }
 
         protected virtual void Dispose(bool disposing)

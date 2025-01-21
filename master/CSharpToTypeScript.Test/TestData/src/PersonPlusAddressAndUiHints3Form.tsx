@@ -1,5 +1,5 @@
-import { useId } from 'react';
-import { useForm, SubmitHandler, Resolver, FieldErrors, FieldError } from 'react-hook-form';
+﻿import { useId } from 'react';
+import { useForm, SubmitHandler, Resolver, FieldErrors } from 'react-hook-form';
 import { getClassName, getErrorMessage } from './BootstrapUtils';
 
 export class Person {
@@ -18,32 +18,6 @@ export class Person {
 		this.streetAddress = streetAddress ?? null;
 		this.zip = zip ?? null;
 	}
-
-	static ValidateZip(values: Person): FieldError | undefined {
-		// if (value is string zip)
-		// {
-		//     if (zip.Length != 5)
-		//     {
-		//         return ValidationResult.Success;
-		//     }
-		//     return new ValidationResult("Balance cannot be less than 0.");
-		// }
-		// return new ValidationResult("ZIP data type is incorrect.");
-		// TODO: Please implement this function.
-		return {
-			type: "custom",
-			message: "ValidateZip is to be implemented"
-		};
-	}
-
-	static ValidateZip2(values: Person): FieldError | undefined {
-		if (values.zip?.length === 5 || (values.firstName === null && values.lastName === null))
-		{
-		    return undefined;
-		}
-		return { type: "custom", message: "ZIP code is required when name is specified." };
-	}
-
 }
 
 export const PersonResolver: Resolver<Person> = async (values) => {
@@ -121,14 +95,6 @@ export const PersonResolver: Resolver<Person> = async (values) => {
 			message: 'ZIP cannot exceed 50 characters.'
 		};
 	}
-	const zipError = Person.ValidateZip(values);
-	if (zipError) {
-		errors.zip ??= zipError;
-	}
-	const zipError1 = Person.ValidateZip2(values);
-	if (zipError1) {
-		errors.zip ??= zipError1;
-	}
 
 	return {
 		values,
@@ -151,38 +117,34 @@ export const PersonForm = (props: PersonFormData) => {
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-firstName"}>First Name:</label>
 				<input type="text" className={getClassName(touchedFields.firstName, errors.firstName)} id={formId + "-firstName"} {...register("firstName")} />
 				{getErrorMessage(errors.firstName)}
 			</div>
-		</div>
-		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-lastName"}>Last Name:</label>
 				<input type="text" className={getClassName(touchedFields.lastName, errors.lastName)} id={formId + "-lastName"} {...register("lastName")} />
 				{getErrorMessage(errors.lastName)}
 			</div>
-		</div>
-		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-streetAddress"}>Street Address:</label>
 				<input type="text" className={getClassName(touchedFields.streetAddress, errors.streetAddress)} id={formId + "-streetAddress"} {...register("streetAddress")} />
 				{getErrorMessage(errors.streetAddress)}
 			</div>
 		</div>
 		<div className="row mb-3">
-			<div className="form-group col-md-6">
+			<div className="form-group col-md-2">
 				<label htmlFor={formId + "-city"}>City:</label>
 				<input type="text" className={getClassName(touchedFields.city, errors.city)} id={formId + "-city"} {...register("city")} />
 				{getErrorMessage(errors.city)}
 			</div>
-			<div className="form-group col-md-3">
+			<div className="form-group col-md-1">
 				<label htmlFor={formId + "-state"}>State:</label>
 				<input type="text" className={getClassName(touchedFields.state, errors.state)} id={formId + "-state"} {...register("state")} />
 				{getErrorMessage(errors.state)}
 			</div>
-			<div className="form-group col-md-3">
+			<div className="form-group col-md-9">
 				<label htmlFor={formId + "-zip"}>ZIP:</label>
 				<input type="text" className={getClassName(touchedFields.zip, errors.zip)} id={formId + "-zip"} {...register("zip")} />
 				{getErrorMessage(errors.zip)}

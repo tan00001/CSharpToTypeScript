@@ -1,4 +1,4 @@
-﻿import { useVuelidate, type ValidationArgs } from '@vuelidate/core';
+import { useVuelidate, type ValidationArgs } from '@vuelidate/core';
 import { required, email, minValue, maxValue, minLength, maxLength, helpers } from '@vuelidate/validators';
 
 export class Person {

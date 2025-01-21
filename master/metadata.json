@@ -1,0 +1,17 @@
+{
+  "Endpoint": "https://eus.codesigning.azure.net",
+  "CodeSigningAccountName": "Programount",
+  "CertificateProfileName": "Programount",
+  "CorrelationId": "CSharptToTypeScript 2.0.3.1",
+  "ExcludeCredentials": [
+    "ManagedIdentityCredential",
+    "EnvironmentCredential",
+    "WorkloadIdentityCredential",
+    "SharedTokenCacheCredential",
+    "VisualStudioCredential",
+    "VisualStudioCodeCredential",
+    "AzurePowerShellCredential",
+    "AzureDeveloperCliCredential",
+    "InteractiveBrowserCredential"
+  ]
+}

@@ -31,6 +31,9 @@
     <ProjectReference Include="..\TestAssembly\TestAssembly.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="TestData\src\PersonPlusAddressAndUiHints3Form.tsx">
+      <SubType>Code</SubType>
+    </None>
     <None Update="TestData\src\PersonWithFieldValues.ts">
       <SubType>Code</SubType>
     </None>
