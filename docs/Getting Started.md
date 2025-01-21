@@ -4,13 +4,13 @@
 
   Alternatively, CSharpToTypeScript can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).
 
-* Before installing CSharpToTypeScript, please make sure that you have **.NET Framework 4.8.1** and **.NET 7 or later ** installed.
+* Before installing CSharpToTypeScript, please make sure that you have **.NET Framework 4.8.1** and **.NET 7 or later** installed.
 	* To check if you have **.NET Framework 4.8.1** installed, please go to the "View" menu on the Visual Studio menu bar, and select "Terminal". In the terminal window, enter
 	  `reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"`. 
 	  The returned result should contain `Release    REG_DWORD    0x82348` if you are on Windows 11, and should contain `Release    REG_DWORD    0x80ff4` if you are on Windows 10. If you do not have .NET Framework 4.8.1, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet-framework/net481](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net481). 
 	* To check if you have **.NET 7 or later** installed, please also go to the "View" menu on the Visual Studio menu bar, and select "Terminal". In the terminal window, enter 
 	  `dotnet --list-runtimes`
-	  The returned result should contain `Microsoft.NETCore.App 7.0.5` and `Microsoft.WindowsDesktop.App 7.0.5`. or later. If you do not have .NET 7 installed, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.0-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.0-windows-x64-installer)
+	  The returned result should contain `Microsoft.NETCore.App 7.0.5` and `Microsoft.WindowsDesktop.App 7.0.5`. or later. If you do not have .NET 9 installed, you can download it from Microsoft at [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-9.0.1-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-9.0.1-windows-x64-installer)
 * To use the generated TypeScript with React, please make sure that the version of React that you are using is version 18.0 or newer.
 * Exit Visual Studio 2022 to install CSharpToTypeScript. If you downloaded CSharpToTypeScript from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript), open the downloaded CSharpToTypeScript.vsix file. You will be prompted to start installation:
   ![Install CSharpToTypeScript](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/InstallScreenshot.png)
@@ -33,44 +33,44 @@
 		[Required]
 		[StringLength(50)]
 		[Display(Name = "First Name", Order = 1)]
-		[UIHint("", "HTML", new object[] { "colSpan", "4" })]
+		[UIHint("", "HTML", new object[] { "bsColSpan", "4" })]
 		public string? FirstName { get; set; }
 
 		[Required]
 		[StringLength(50)]
 		[Display(Name = "Last Name", Order = 2)]
-		[UIHint("", "HTML", new object[] { "colSpan", "4" })]
+		[UIHint("", "HTML", new object[] { "bsColSpan", "4" })]
 		public string? LastName { get; set; }
 
 		[Required]
 		[StringLength(255)]
 		[Display(Name = "Street Address", Order = 3)]
-		[UIHint("", "HTML", new object[] { "colSpan", "4" })]
+		[UIHint("", "HTML", new object[] { "bsColSpan", "4" })]
 		public string? StreetAddress { get; set; }
 
 		[Required]
 		[StringLength(50)]
 		[Display(Order = 4)]
-		[UIHint("", "HTML", new object[] { "colSpan", "2" })]
+		[UIHint("", "HTML", new object[] { "bsColSpan", "2" })]
 		public string? City { get; set; }
 
 		[Required]
 		[StringLength(50)]
 		[Display(Order = 5)]
-		[UIHint("", "HTML", new object[] { "colSpan", "1" })]
+		[UIHint("", "HTML", new object[] { "bsColSpan", "1" })]
 		public string? State { get; set; }
 
 		[Required]
 		[StringLength(50)]
 		[Display(Name = "ZIP", Order = 6)]
-		[UIHint("", "HTML", new object[] { "colSpan", "1" })]
+		[UIHint("", "HTML", new object[] { "bsColSpan", "1" })]
 		public string? Zip { get; set; }
 	}
 	```
-
+	Here `bsColSpan` is translated into Bootstrap column span directly. If you would like to specify the column span with column count defined in the CSharpToTypeScript UI, you can specify `colSpan` instead.
     Right click inside this class definition with your mouse. You must click inside the class definition because CSharpToTypeScript uses this location to identify the class to export.
 
-* There are three menu items for CSharpToTypeScript on the popup menu: "Generate TypeScript...", "Generate React Hook Form Resolver...", and "Generate React+Bootstrap Form...". 
+* There are three menu items for CSharpToTypeScript on the popup menu: "Generate TypeScript...", "Generate React Hook Form Resolver...", "Generate React+Bootstrap Form...", "Generate Vuelidate Rules...", and "Generate Vue+Bootstrap Form...". 
     ![Poup menu](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
 
     * "Generate TypeScript..." will bring up Windows "Save as" dialog box, and prompt you to save the gnerated TypeScript file.
@@ -255,5 +255,184 @@
 			</div>
 		</form>;
 	  };
+	  ```
+	  * "Generate Vuelidate Rules..." will also bring up Windows "Save as" dialog box, and prompt you to save the gnerated TypeScript file. The difference is that in addition to saving the TypeScript for the class definition, it will also include a definition for a Vuelidate rule that is used for data validation in a Vue form.
+		```
+		import { useVuelidate, type ValidationArgs } from '@vuelidate/core';
+		import { required, email, minValue, maxValue, minLength, maxLength, helpers } from '@vuelidate/validators';
+
+		export class Person {
+			city: string | null;
+			firstName: string | null;
+			lastName: string | null;
+			state: string | null;
+			streetAddress: string | null;
+			zip: string | null;
+
+			constructor(city?: string | null, firstName?: string | null, lastName?: string | null, state?: string | null, streetAddress?: string | null, zip?: string | null) {
+				this.city = city ?? null;
+				this.firstName = firstName ?? null;
+				this.lastName = lastName ?? null;
+				this.state = state ?? null;
+				this.streetAddress = streetAddress ?? null;
+				this.zip = zip ?? null;
+			}
+
+			static ValidateZip(value: string, values : Person): boolean {
+				// {
+				//     if (value is string zip)
+				//     {
+				//         if (zip.Length != 5)
+				//         {
+				//             return ValidationResult.Success;
+				//         }
+				//         return new ValidationResult("Balance cannot be less than 0.");
+				//     }
+				//     return new ValidationResult("ZIP data type is incorrect.");
+				// }
+				// TODO: Please implement this function.
+				return true;
+			}
+
+			static ValidateZip2(value: string, values : Person): boolean {
+				if (values.zip?.length === 5 || (values.firstName === null && values.lastName === null))
+				{
+					return true;
+				}
+				return false;
+			}
+
+		}
+
+		export const PersonValidationRules: ValidationArgs<Person> = {
+			city: {
+				required, 
+				maxLength: maxLength(50)
+			},
+			firstName: {
+				required, 
+				maxLength: maxLength(50)
+			},
+			lastName: {
+				required, 
+				maxLength: maxLength(50)
+			},
+			state: {
+				required, 
+				maxLength: maxLength(50)
+			},
+			streetAddress: {
+				required, 
+				maxLength: maxLength(255)
+			},
+			zip: {
+				required, 
+				maxLength: maxLength(50), 
+				ValidateZip: helpers.withMessage('', (value, siblings) => Person.ValidateZip(value, siblings)), 
+				ValidateZip2: helpers.withMessage('', (value, siblings) => Person.ValidateZip2(value, siblings))
+			}
+		};
+		```
+	* "Generate Vue+Bootstrap Form..." will first bring up a dialog box to prompt you for the number of columns in the grid of the form to be created: 
+
+	  ![Set column count](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/ColumnCountDlgScreenshot.png)
+
+	  For the example above, we would enter 4 for the column count. `FirstName`, `LastName`, and `StreeAddress` each spans 4 columns, so each of them will occupy an entire row. On the fourth row, `City` occupies the first two columns, whereas `State` and `ZIP` would each occupy a single column.
+	  Once you have entered a column count, CSharpToTypeScript will bring up Windows "Save as" dialog box, and prompt you to save the gnerated Vue file and the Vuelidate rules TypeScript file.
+	  ```
+	  <script setup lang="ts">
+			import { ref, type PropType } from 'vue';
+			import { type Person, PersonRules } from './Person'
+			import { useVuelidate, type ValidationArgs } from '@vuelidate/core';
+
+			const inputData = defineModel<Person>('Person');
+
+			const props = defineProps({
+				formId: {
+					type: String,
+					default: 'Person'
+				});
+			});
+
+			const formData = ref<Person>(inputData ?? new Person())
+			const submitting = ref<boolean>(false);
+			const PersonForm = ref<HTMLFormElement | null>(null);
+			const v$ = useVuelidate<Person>(PersonRules, formData.value);
+
+			const getClassName = (dirty: boolean | undefined, hasError: boolean | undefined): string => hasError ? 'form-control is-invalid' : (dirty ? 'form-control is-valid' : 'form-control');
+			const getCheckBoxClassName = (dirty: boolean | undefined, hasError: boolean | undefined): string => hasError ? 'form-check-input is-invalid' : (dirty ? 'form-check-input is-valid' : 'form-check-input');
+
+			const onSubmit = async () => {
+				submitting.value = true;
+
+				v$.value.$touch();
+				if (v$.value.$error) {
+					console.log('Form is invalid');
+					return;
+				}
+				submitting.value = false;
+			};
+		</script>
+
+		<template>
+			<form @submit.prevent="onSubmit" ref="PersonForm" class="needs-validation">
+				<div className="row mb-3">
+					<div class="form-group col-md-12">
+						<label :for="formId + '-firstName'">First Name:</label>
+						<input type="text" :class="getClassName(v$.firstName.$dirty, v$.firstName.$error)" :id="formId + '-firstName'" @blur="v$.firstName.$touch"/>
+						<div v-if='v$.firstName.$dirty && v$.firstName.$error' class='form-error'>
+							<span v-for='rule in Object.keys($v.firstName)' :key='rule'>{{$v.firstName[rule].$message}}</span>
+						</div>
+					</div>
+				</div>
+				<div className="row mb-3">
+					<div class="form-group col-md-12">
+						<label :for="formId + '-lastName'">Last Name:</label>
+						<input type="text" :class="getClassName(v$.lastName.$dirty, v$.lastName.$error)" :id="formId + '-lastName'" @blur="v$.lastName.$touch"/>
+						<div v-if='v$.lastName.$dirty && v$.lastName.$error' class='form-error'>
+							<span v-for='rule in Object.keys($v.lastName)' :key='rule'>{{$v.lastName[rule].$message}}</span>
+						</div>
+					</div>
+				</div>
+				<div className="row mb-3">
+					<div class="form-group col-md-12">
+						<label :for="formId + '-streetAddress'">Street Address:</label>
+						<input type="text" :class="getClassName(v$.streetAddress.$dirty, v$.streetAddress.$error)" :id="formId + '-streetAddress'" @blur="v$.streetAddress.$touch"/>
+						<div v-if='v$.streetAddress.$dirty && v$.streetAddress.$error' class='form-error'>
+							<span v-for='rule in Object.keys($v.streetAddress)' :key='rule'>{{$v.streetAddress[rule].$message}}</span>
+						</div>
+					</div>
+				</div>
+				<div className="row mb-3">
+					<div class="form-group col-md-6">
+						<label :for="formId + '-city'">City:</label>
+						<input type="text" :class="getClassName(v$.city.$dirty, v$.city.$error)" :id="formId + '-city'" @blur="v$.city.$touch"/>
+						<div v-if='v$.city.$dirty && v$.city.$error' class='form-error'>
+							<span v-for='rule in Object.keys($v.city)' :key='rule'>{{$v.city[rule].$message}}</span>
+						</div>
+					</div>
+					<div class="form-group col-md-3">
+						<label :for="formId + '-state'">State:</label>
+						<input type="text" :class="getClassName(v$.state.$dirty, v$.state.$error)" :id="formId + '-state'" @blur="v$.state.$touch"/>
+						<div v-if='v$.state.$dirty && v$.state.$error' class='form-error'>
+							<span v-for='rule in Object.keys($v.state)' :key='rule'>{{$v.state[rule].$message}}</span>
+						</div>
+					</div>
+					<div class="form-group col-md-3">
+						<label :for="formId + '-zip'">ZIP:</label>
+						<input type="text" :class="getClassName(v$.zip.$dirty, v$.zip.$error)" :id="formId + '-zip'" @blur="v$.zip.$touch"/>
+						<div v-if='v$.zip.$dirty && v$.zip.$error' class='form-error'>
+							<span v-for='rule in Object.keys($v.zip)' :key='rule'>{{$v.zip[rule].$message}}</span>
+						</div>
+					</div>
+				</div>
+				<div className="row">
+					<div className="form-group col-md-12">
+						<button className="btn btn-primary" type="submit" :disabled="submitting">Submit</button>
+						<button className="btn btn-secondary mx-1" type="reset" :disabled="submitting">Reset</button>
+					</div>
+				</div>
+			</form>
+		</template>
 	  ```
 	  Please note that the `UIHint` attributes are optional. Without these `UIHint` attributes, each property will just occupy a single column in a grid of four columns. The number of rows depend on the number of properties in the class.

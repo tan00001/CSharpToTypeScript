@@ -157,7 +157,7 @@ This tool can be launched from the command line, or from Visual Studio via its p
 ![Visual Studio popup menu in C# source file for CSharpToTypeScript](https://github.com/tan00001/CSharpToTypeScript/blob/main/VSMenuScreenShot.png)
 
 ## Prerequisites
-1. **.NET Framework 4.8.1**. This is because Visual Studio Extension projects do not support .NET Core versions such as .NET 5, .NET 6, .NET 7, and .NET 8.
+1. **.NET Framework 4.8.1**. This is because Visual Studio Extension projects do not support .NET Core versions such as .NET 5, .NET 6, .NET 7, .NET 8, and .NET 9.
 2. **.NET 7 or Later**. In order to support all the latest C# syntax, we use .NET 7 or later for processing the C# type definitions.
 3. **Visual Studio 2022**. .NET 7 or later are only supported in Visual Studio 2022 and later.
 4. **React 18.0 or later**. CSharpToTypeScript uses `useId` from React to generate unique identifiers.
@@ -168,7 +168,7 @@ You can install CSharpToTypeScript by going to the "Extensions" menu on the Visu
 ![Download CSharpToTypeScript in Visual Studio](https://github.com/tan00001/CSharpToTypeScript/blob/main/docs/DownloadScreenshot.png)
 
 You may also download CSharpToTypeScript from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ProgramountInc.CSharpToTypeScript).
-You may also build everything from the source code in Visual Studio 2022. Although the CSharpToTypeScript.vsix project has a "net7" folder and a "net8" that contain some binary files, the files in the "net8" are auto generated from the CSharpToTypeScript project, and can be safely delete. The files in the "net7" were generated from earlier version of the CSharpToTypeScript project, and kept for compatibility with machines that only have .NET 7 installed. 
+You may also build everything from the source code in Visual Studio 2022. Although the CSharpToTypeScript.vsix project has a "net7" folder, a "net8" folder, and a "net9" folder that contain some binary files, the files in the "net9" are auto generated from the CSharpToTypeScript project, and can be safely delete. The files in the "net7", "net8", and "net9" folders were generated from earlier version of the CSharpToTypeScript project, and kept for compatibility with machines that only have .NET 7, .NET 8, or .NET 9 installed, respectively. 
 Once you have rebuilt everything locally, you can install from the file "CSharpToTypeScript.vsix\bin\Release\CSharpToTypeScript.vsix" that you have built.
 
 ## How it works
