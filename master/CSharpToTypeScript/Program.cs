@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using CSharpToTypeScript;
 using CSharpToTypeScript.AlternateGenerators;
+using CSharpToTypeScript.Properties;
 
 if (args.Length < 3)
 {
@@ -43,8 +44,8 @@ TsGenerator tsGenerator = args switch
 {
     _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[3], "withresolver") => new TsGeneratorWithResolver(enableNamespace),
     _ when args.Length > 3 && StringComparer.OrdinalIgnoreCase.Equals(args[3], "withvuelidate") => new TsGeneratorWithVuelidate(enableNamespace),
-    _ when args.Length > 3 && args[3].StartsWith("withform(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithForm(GetColCount(args[3]), GetReactstrapModalTitle(args[3]), enableNamespace),
-    _ when args.Length > 3 && args[3].StartsWith("withvue(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithVue(GetColCount(args[3]), GetReactstrapModalTitle(args[3]), enableNamespace),
+    _ when args.Length > 3 && args[3].StartsWith("withform(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithForm(GetColCount("withform(", args[3]), GetReactstrapModalTitle("withform(", args[3]), enableNamespace),
+    _ when args.Length > 3 && args[3].StartsWith("withvue(", StringComparison.OrdinalIgnoreCase) => new TsGeneratorWithVue(GetColCount("withvue(", args[3]), GetReactstrapModalTitle("withvue(", args[3]), enableNamespace),
     _ => new TsGenerator(enableNamespace)
 };
 
@@ -52,14 +53,20 @@ var ts = TypeScript.Definitions(tsGenerator)
     .For(typeToExport, true);
 
 var scriptsByNamespaces = ts.Generate();
+var directoryName = Path.GetDirectoryName(args[2]) ?? string.Empty;
 
 if (scriptsByNamespaces.Count == 1)
 {
-    File.WriteAllText(args[2], scriptsByNamespaces.Values.First().Script);
+    var output = scriptsByNamespaces.Values.First();
+    File.WriteAllText(args[2], output.Script);
+    foreach (var otherFileType in output.OtherFileTypes)
+    {
+        var filePath = Path.Combine(directoryName, otherFileType.Key);
+        File.WriteAllText(filePath, otherFileType.Value);
+    }
     return;
 }
 
-var directoryName = Path.GetDirectoryName(args[2]) ?? string.Empty;
 foreach (var script in scriptsByNamespaces)
 {
     if (ts.Member.NamespaceName == script.Key)
@@ -68,10 +75,7 @@ foreach (var script in scriptsByNamespaces)
         foreach (var otherFileType in script.Value.OtherFileTypes)
         {
             var filePath = Path.Combine(directoryName, otherFileType.Key);
-            if (!File.Exists(filePath))
-            {
-                File.WriteAllText(filePath, otherFileType.Value);
-            }
+            File.WriteAllText(filePath, otherFileType.Value);
         }
     }
     else
@@ -92,11 +96,11 @@ foreach (var script in scriptsByNamespaces)
     }
 }
 
-static int GetColCount(string formLayout)
+static int GetColCount(string typePrefix, string formLayout)
 {
-    const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>,<Reactstrap Modal title(optional, less than 256 characters, if Reactstrap Modal is to be used)>).";
+    string errorMessage = string.Format(Resources.GeneratorTypeSpecError, typePrefix);
 
-    var gridSize = formLayout.Substring("withform(".Length).TrimEnd(')');
+    var gridSize = formLayout.Substring(typePrefix.Length).TrimEnd(')');
 
     int separatorIndex = gridSize.IndexOf(',');
     if (separatorIndex > 0)
@@ -116,11 +120,11 @@ static int GetColCount(string formLayout)
     return colCount;
 }
 
-static string? GetReactstrapModalTitle(string formLayout)
+static string? GetReactstrapModalTitle(string typePrefix, string formLayout)
 {
-    const string errorMessage = "Invalid form layout. Expected a string with the format \"withform(<column count>,<Reactstrap Modal title(optional, less than 256 characters, if Reactstrap Modal is to be used)>).";
+    string errorMessage = string.Format(Resources.GeneratorTypeSpecError, typePrefix);
 
-    var reactstrapModalTitle = formLayout.Substring("withform(".Length).TrimEnd(')');
+    var reactstrapModalTitle = formLayout.Substring(typePrefix.Length).TrimEnd(')');
 
     int separatorIndex = reactstrapModalTitle.IndexOf(',');
     if (separatorIndex < 0)

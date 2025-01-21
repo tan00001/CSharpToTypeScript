@@ -21,8 +21,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-using System.Windows.Media;
+using System.Diagnostics;
 
 namespace CSharpToTypeScript
 {
@@ -57,6 +56,8 @@ namespace CSharpToTypeScript
         public const string DefaultGenerator = "default";
         public const string ResolverGenerator = "withresolver";
         public const string FormGenerator = "withform";
+        public const string VuelidateRulesGenerator = "withvuelidate";
+        public const string VueGenerator = "withvue";
 
         static readonly IReadOnlyDictionary<vsCMElement, string> _ElementNames = new Dictionary<vsCMElement, string>()
         {
@@ -67,7 +68,8 @@ namespace CSharpToTypeScript
         };
 
         const Int32 ProcessingWaitTime = 60 * 1000;
-        static readonly string ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net8\CSharpToTypeScript.exe");
+        static readonly string ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net9\CSharpToTypeScript.exe");
+        static readonly string Net8ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net8\CSharpToTypeScript.exe");
         static readonly string Net7ExeFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"net7\CSharpToTypeScript.exe");
 
         public static RatingPrompt RatingPrompt { get; private set; } = null!;
@@ -106,7 +108,9 @@ namespace CSharpToTypeScript
             var document = dte.ActiveDocument;
             if (document == null)
             {
-                dte.StatusBar.Text = "No selected doument was found.";
+                var messageBox = new MessageBox();
+                await messageBox.ShowAsync("Please open the document and place the cursor in a C# class definition first.", "",
+                    OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_OK);
                 return;
             }
 
@@ -141,16 +145,21 @@ namespace CSharpToTypeScript
             }
 
             var typeParamNames = GetTypeParamNames(typeName);
-            if ((typeParamNames.Count > 0 && generatorName == ResolverGenerator)
-                || generatorName == FormGenerator)
+            if ((typeParamNames.Count > 0 
+                    && (generatorName == ResolverGenerator 
+                        || generatorName == VuelidateRulesGenerator)) // Type selection when not using dialog box
+                || generatorName == FormGenerator
+                || generatorName == VueGenerator)
             {
-                ExportOptionsDlg formLayoutDlg = new(generatorName == FormGenerator, typeParamNames);
+                ExportOptionsDlg formLayoutDlg = new(generatorName == FormGenerator | generatorName == VueGenerator,
+                    generatorName == VueGenerator, typeParamNames);
                 if (await formLayoutDlg.ShowDialogAsync(WindowStartupLocation.CenterOwner) != true)
                 {
                     return;
                 }
                 typeName = ReplaceTypeParams(typeName, formLayoutDlg.TypeParams);
-                if (generatorName == FormGenerator)
+                if (generatorName == FormGenerator
+                    || generatorName == VueGenerator)
                 {
                     generatorName += '(' + formLayoutDlg.ColCount.ToString();
                     if (formLayoutDlg.UseReactstrapModal)
@@ -180,114 +189,183 @@ namespace CSharpToTypeScript
             {
                 DefaultExt = fileExtension,
                 FileName = Path.GetFileNameWithoutExtension(documentPath) + fileExtension,
-                Filter = fileExtension == ".tsx" ? "TypeScript XML Files | *.tsx" : "TypeScript Files | *.ts",
+                Filter = fileExtension == ".tsx" ? "TypeScript XML Files | *.tsx" :
+                    (fileExtension == ".vue" ? "Vue Files | *.vue" : "TypeScript Files | *.ts"),
                 InitialDirectory = scriptOutputFolder
             };
 
-            if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+            if (dialog.ShowDialog(Application.Current.MainWindow) != true)
             {
-                var directoryName = Path.GetDirectoryName(dialog.FileName);
-                if (string.Compare(directoryName, scriptOutputFolder.TrimEnd(Path.DirectorySeparatorChar,
-                        Path.AltDirectorySeparatorChar), true) != 0)
-                {
-                    using var projectSettings = new ProjectSettings(project.FullName);
-                    projectSettings.SetScriptOutputFolder(directoryName);
-                }
+                return;
+            }
 
+            var directoryName = Path.GetDirectoryName(dialog.FileName);
+            if (string.Compare(directoryName, scriptOutputFolder.TrimEnd(Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar), true) != 0)
+            {
+                using var projectSettings = new ProjectSettings(project.FullName);
+                projectSettings.SetScriptOutputFolder(directoryName);
+            }
+
+            string scriptFilePath = Path.Combine(directoryName, Path.GetFileNameWithoutExtension(dialog.FileName) + ".ts");
+            if (File.Exists(scriptFilePath))
+            {
+                var messageBox = new MessageBox();
+                if (await messageBox.ShowAsync($"The file \"{scriptFilePath}\" already exists. Overwrite?", "",
+                    OLEMSGICON.OLEMSGICON_WARNING, OLEMSGBUTTON.OLEMSGBUTTON_YESNO) == VSConstants.MessageBoxResult.IDNO)
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                // Start the new process
+                using Process process = new()
+                {
+#if __DEBUG__
+                    StartInfo = new()
+                    {
+                        FileName = ExeFilePath,
+                        Arguments = '"' + outputAssmblyPath + "\" "
+                            + typeName + " \""
+                            + dialog.FileName + "\" "
+                            + generatorName + " "
+                            + "enableNamespace=" + enableNamespace
+                            + " LaunchDebugger",
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
+                        UseShellExecute = true,
+                        CreateNoWindow = false
+                    }
+#else
+                    StartInfo = new()
+                    {
+                        FileName = ExeFilePath,
+                        Arguments = '"' + outputAssmblyPath + "\" "
+                            + typeName + " \""
+                            + dialog.FileName + "\" "
+                            + generatorName + " "
+                            + "enableNamespace=" + enableNamespace,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+#endif
+                };
                 try
                 {
-                    // Start the new process
-                    using Process process = new()
-                    {
+                    process.Start();
 #if __DEBUG__
-                        StartInfo = new()
-                        {
-                            FileName = ExeFilePath,
-                            Arguments = '"' + outputAssmblyPath + "\" "
-                                + typeName + " \""
-                                + dialog.FileName + "\" "
-                                + generatorName + " "
-                                + "enableNamespace=" + enableNamespace,
-                            RedirectStandardOutput = false,
-                            RedirectStandardError = false,
-                            UseShellExecute = true,
-                            CreateNoWindow = false
-                        }
-#else
-                        StartInfo = new()
-                        {
-                            FileName = ExeFilePath,
-                            Arguments = '"' + outputAssmblyPath + "\" "
-                                + typeName + " \""
-                                + dialog.FileName + "\" "
-                                + generatorName + " "
-                                + "enableNamespace=" + enableNamespace,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
-                        }
-#endif
-                    };
-                    try
-                    {
-                        process.Start();
-#if __DEBUG__
-                        System.Threading.Thread.Sleep(360000);
+                    System.Threading.Thread.Sleep(360000);
 #endif
 
-                        // Optionally, read the standard output and standard error streams if needed
-                        var readStdoutTask = process.StandardOutput.ReadToEndAsync();
-                        var readStdErrTask = process.StandardError.ReadToEndAsync();
+                    // Optionally, read the standard output and standard error streams if needed
+                    var readStdoutTask = process.StandardOutput.ReadToEndAsync();
+                    var readStdErrTask = process.StandardError.ReadToEndAsync();
 
-                        // Wait for the process to exit
-                        if (!process.WaitForExit(ProcessingWaitTime))
+                    // Wait for the process to exit
+                    if (!process.WaitForExit(ProcessingWaitTime))
+                    {
+                        var messageBox = new MessageBox();
+                        if (await messageBox.ShowAsync("The background process for generating TypeScript file is taking longer than expected. Continue waiting?", "",
+                            OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_YESNO) == VSConstants.MessageBoxResult.IDNO)
                         {
-                            var messageBox = new MessageBox();
-                            if (await messageBox.ShowAsync("The background process for generating TypeScript file is taking longer than expected. Continue waiting?", "",
-                                OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_YESNO) == VSConstants.MessageBoxResult.IDNO)
-                            {
-                                process.Kill();
-                                return;
-                            }
-                            process.WaitForExit();
+                            process.Kill();
+                            return;
                         }
+                        process.WaitForExit();
+                    }
 
-                        string output = await readStdoutTask;
-                        string error = await readStdErrTask;
+                    string output = await readStdoutTask;
+                    string error = await readStdErrTask;
 
-                        if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
+                    if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
+                    {
+                        if (output.Contains("You must install or update .NET to run this application."))
                         {
-                            if (output.Contains("You must install or update .NET to run this application."))
-                            {
-                                (output, error) = await RunNet7ProcessAsync(outputAssmblyPath, typeName, dialog.FileName,
-                                    generatorName, enableNamespace);
-                            }
+                            (output, error) = await RunNet8ProcessAsync(outputAssmblyPath, typeName, dialog.FileName,
+                                generatorName, enableNamespace);
 
                             if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
                             {
-                                var messageBox = new MessageBox();
-                                await messageBox.ShowErrorAsync(output, error);
-                                return;
+                                if (output.Contains("You must install or update .NET to run this application."))
+                                {
+                                    (output, error) = await RunNet7ProcessAsync(outputAssmblyPath, typeName, dialog.FileName,
+                                        generatorName, enableNamespace);
+                                }
                             }
                         }
 
-                        await VS.Documents.OpenAsync(dialog.FileName);
+                        if (!string.IsNullOrEmpty(output) || !string.IsNullOrEmpty(error))
+                        {
+                            var messageBox = new MessageBox();
+                            await messageBox.ShowErrorAsync(output, error);
+                            return;
+                        }
+                    }
 
-                        CSharpToTypeScriptPackage.RatingPrompt.RegisterSuccessfulUsage();
-                    }
-                    catch
-                    {
-                        process.Kill();
-                        throw;
-                    }
+                    await VS.Documents.OpenAsync(dialog.FileName);
+
+                    CSharpToTypeScriptPackage.RatingPrompt.RegisterSuccessfulUsage();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    var messageBox = new MessageBox();
-                    await messageBox.ShowErrorAsync(ex.Message, ex.InnerException != null ? ex.InnerException.Message : "");
+                    process.Kill();
+                    throw;
                 }
             }
+            catch (Exception ex)
+            {
+                var messageBox = new MessageBox();
+                await messageBox.ShowErrorAsync(ex.Message, ex.InnerException != null ? ex.InnerException.Message : "");
+            }
+        }
+
+        private static async Task<(string output, string error)> RunNet8ProcessAsync(string outputAssmblyPath, string typeName, string fileName,
+            string generatorName, bool enableNamespace)
+        {
+            using Process process8 = new()
+            {
+                StartInfo = new()
+                {
+                    FileName = Net8ExeFilePath,
+                    Arguments = '"' + outputAssmblyPath + "\" "
+                        + typeName + " \""
+                        + fileName + "\" "
+                        + generatorName + " "
+                        + "enableNamespace=" + enableNamespace,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process8.Start();
+
+            // Optionally, read the standard output and standard error streams if needed
+            var readStdoutTask = process8.StandardOutput.ReadToEndAsync();
+            var readStdErrTask = process8.StandardError.ReadToEndAsync();
+
+            // Wait for the process to exit
+            if (!process8.WaitForExit(ProcessingWaitTime))
+            {
+                var messageBox = new MessageBox();
+                if (await messageBox.ShowAsync("The background process for generating TypeScript file is taking longer than expected. Continue waiting?", "",
+                    OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_YESNO) == VSConstants.MessageBoxResult.IDNO)
+                {
+                    process8.Kill();
+                    return (string.Empty, "The background process for generating TypeScript file is cancelled.");
+                }
+                process8.WaitForExit();
+            }
+
+            var output = await readStdoutTask;
+            var error = await readStdErrTask;
+
+            return (output, error);
         }
 
         private static async Task<(string output, string error)> RunNet7ProcessAsync(string outputAssmblyPath, string typeName, string fileName,

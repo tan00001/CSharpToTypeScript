@@ -116,32 +116,34 @@ namespace CSharpToTypeScript
 
             if (results.Count() == 1 || this._scriptGenerator.EnableNamespaceInTypeScript)
             {
-                return string.Join("\r\n", results.Select(r =>
-                {
-                    string script = r.Value.Script;
-                    if (r.Value.OtherFileTypes.Count > 0)
-                    {
-                        script += "\r\n" + string.Join("\r\n", r.Value.OtherFileTypes.Values);
-                    }
-                    return script;
-                }));
+                return string.Join("\r\n", results.Select(r => r.Value.Script));
             }
 
-            return string.Join("\r\n", results.Select(r => "export namespace " + r.Key + " {\r\n" + GetAllLines(r.Value) + "\r\n}\r\n"));
+            return string.Join("\r\n", results.Select(r => "export namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value.Script) + "\r\n}\r\n"));
         }
 
-        private string GetAllLines(TsGeneratorOutput generatorOutput)
+        public virtual (string Script, string ScriptForOtherFileTypes) ToStringWithOtherFileTypes()
         {
-            string script = generatorOutput.Script;
-            if (generatorOutput.OtherFileTypes.Count > 0)
-            {
-                script += "\r\n" + string.Join("\r\n", generatorOutput.OtherFileTypes.Values);
-            }
+            var results = this.Generate().Where(r => !r.Value.ExcludeFromResultToString);
 
-            // Indent each line
-            return string.Join("\r\n", script.Split("\r\n")
-                .Select(l => string.IsNullOrWhiteSpace(l) ? l : (this._scriptGenerator.IndentationString + l)))
-                .TrimEnd();
+            string script = (results.Count() == 1 || this._scriptGenerator.EnableNamespaceInTypeScript) ?
+                string.Join("\r\n", results.Select(r => r.Value.Script))
+                : string.Join("\r\n", results.Select(r => "export namespace " + r.Key + " {\r\n" + IndentAllLines(r.Value.Script) + "\r\n}\r\n"));
+
+            int otherFileTypesCount = results.Sum(r => r.Value.OtherFileTypes.Count);
+            string scriptForOtherFileTypes = (otherFileTypesCount == 1 || this._scriptGenerator.EnableNamespaceInTypeScript) ?
+                string.Join("\r\n", results
+                    .Where(r => r.Value.OtherFileTypes.Count > 0)
+                    .Select(r => string.Join("\r\n", r.Value.OtherFileTypes.Values)))
+                : string.Join("\r\n", results
+                    .Where(r => r.Value.OtherFileTypes.Count > 0)
+                    .Select(r => "export namespace " + r.Key + " {\r\n" + IndentAllLines(string.Join("\r\n", r.Value.OtherFileTypes.Values)) + "\r\n}\r\n"));
+
+            return (script, scriptForOtherFileTypes);
         }
+
+        private string IndentAllLines(string lines) => string.Join("\r\n", lines.Split("\r\n")
+            .Select(l => string.IsNullOrWhiteSpace(l) ? l : (this._scriptGenerator.IndentationString + l)))
+            .TrimEnd();
     }
 }

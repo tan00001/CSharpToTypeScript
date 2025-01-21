@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v9.0": {
-      "CSharpToTypeScript/2.0.2": {
+      "CSharpToTypeScript/2.0.3": {
         "dependencies": {
           "System.Text.Json": "9.0.0"
         },
@@ -18,7 +18,7 @@
     }
   },
   "libraries": {
-    "CSharpToTypeScript/2.0.2": {
+    "CSharpToTypeScript/2.0.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

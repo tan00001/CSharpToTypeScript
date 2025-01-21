@@ -49,6 +49,9 @@
     <None Update="TestData\src\RequiredValidationRule\PersonRequiresBirthDateForm.tsx">
       <SubType>Code</SubType>
     </None>
+    <None Update="TestData\src\TsClass\PersonPlusCustomValidatorRelease.vue.ts">
+      <SubType>Code</SubType>
+    </None>
     <None Update="TestData\src\TsClass\PersonWithCreditCardNumberRules.ts">
       <SubType>Code</SubType>
     </None>

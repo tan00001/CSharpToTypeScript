@@ -125,45 +125,39 @@ export const PersonForm = (props: PersonFormData) => {
 
 	return <form onSubmit={handleSubmit(props.onSubmit)}>
 		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-firstName"}>First Name:</label>
 				<input type="text" className={getClassName(touchedFields.firstName, errors.firstName)} id={formId + "-firstName"} {...register("firstName")} />
 				{getErrorMessage(errors.firstName)}
 			</div>
-		</div>
-		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-lastName"}>Last Name:</label>
 				<input type="text" className={getClassName(touchedFields.lastName, errors.lastName)} id={formId + "-lastName"} {...register("lastName")} />
 				{getErrorMessage(errors.lastName)}
 			</div>
-		</div>
-		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<label htmlFor={formId + "-streetAddress"}>Street Address:</label>
 				<input type="text" className={getClassName(touchedFields.streetAddress, errors.streetAddress)} id={formId + "-streetAddress"} {...register("streetAddress")} />
 				{getErrorMessage(errors.streetAddress)}
 			</div>
 		</div>
 		<div className="row mb-3">
-			<div className="form-group col-md-6">
+			<div className="form-group col-md-2">
 				<label htmlFor={formId + "-city"}>City:</label>
 				<input type="text" className={getClassName(touchedFields.city, errors.city)} id={formId + "-city"} {...register("city")} />
 				{getErrorMessage(errors.city)}
 			</div>
-			<div className="form-group col-md-3">
+			<div className="form-group col-md-1">
 				<label htmlFor={formId + "-state"}>State:</label>
 				<input type="text" className={getClassName(touchedFields.state, errors.state)} id={formId + "-state"} {...register("state")} />
 				{getErrorMessage(errors.state)}
 			</div>
-			<div className="form-group col-md-3">
+			<div className="form-group col-md-1">
 				<label htmlFor={formId + "-zip"}>ZIP:</label>
 				<input type="text" className={getClassName(touchedFields.zip, errors.zip)} id={formId + "-zip"} {...register("zip")} />
 				{getErrorMessage(errors.zip)}
 			</div>
-		</div>
-		<div className="row mb-3">
-			<div className="form-group col-md-12">
+			<div className="form-group col-md-4">
 				<input type="checkbox" className={getCheckBoxClassName(touchedFields.isAddressResidential, errors.isAddressResidential)} id={formId + "-isAddressResidential"} {...register("isAddressResidential")} />
 				<label className="form-check-label ms-1" htmlFor={formId + "-isAddressResidential"}>Address is residential</label>
 				{getErrorMessage(errors.isAddressResidential)}

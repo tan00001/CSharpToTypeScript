@@ -16,37 +16,37 @@ namespace CSharpToTypeScript.Test.TsClass
         [Required]
         [StringLength(50)]
         [Display(Name = "First Name", Order = 1)]
-        [UIHint("", "HTML", new object[] { "colSpan", "12" })]
+        [UIHint("", "HTML", new object[] { "bsColSpan", "12" })]
         public string? FirstName { get; set; }
 
         [Required]
         [StringLength(50)]
         [Display(Name = "Last Name", Order = 2)]
-        [UIHint("", "HTML", new object[] { "colSpan", "12" })]
+        [UIHint("", "HTML", new object[] { "bsColSpan", "12" })]
         public string? LastName { get; set; }
 
         [Required]
         [StringLength(255)]
         [Display(Name = "Street Address", Order = 3)]
-        [UIHint("", "HTML", new object[] { "colSpan", "12" })]
+        [UIHint("", "HTML", new object[] { "bsColSpan", "12" })]
         public string? StreetAddress { get; set; }
 
         [Required]
         [StringLength(50)]
         [Display(Order = 4)]
-        [UIHint("", "HTML", new object[] { "colSpan", "6" })]
+        [UIHint("", "HTML", new object[] { "bsColSpan", "6" })]
         public string? City { get; set; }
 
         [Required]
         [StringLength(50)]
         [Display(Order = 5)]
-        [UIHint("", "HTML", new object[] { "colSpan", "3" })]
+        [UIHint("", "HTML", new object[] { "bsColSpan", "3" })]
         public string? State { get; set; }
 
         [Required]
         [StringLength(50)]
         [Display(Name = "ZIP", Order = 6)]
-        [UIHint("", "HTML", new object[] { "colSpan", "3" })]
+        [UIHint("", "HTML", new object[] { "bsColSpan", "3" })]
         [CustomValidation(typeof(PersonPlusCustomValidator), nameof(ValidateZip))]
         [CustomValidation(typeof(PersonPlusCustomValidator), nameof(ValidateZip2))]
         public string? Zip { get; set; }

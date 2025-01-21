@@ -51,6 +51,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Commands\GenerateVuelidateRulesCommand.cs" />
+    <Compile Include="Commands\GenerateVueFormCommand.cs" />
     <Compile Include="Commands\ModalDlgTitleValidationRule.cs" />
     <Compile Include="Commands\TypeParamValidationRule.cs" />
     <Compile Include="Commands\ExportOptionsDlg.xaml.cs">
@@ -101,9 +103,19 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="net9\CSharpToTypeScript.dll" />
-    <Content Include="net9\CSharpToTypeScript.exe" />
-    <Content Include="net9\CSharpToTypeScript.pdb" />
+    <Content Include="net9\CSharpToTypeScript.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="net9\CSharpToTypeScript.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="net9\CSharpToTypeScript.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\cmdIcons16.png" />
     <Content Include="Resources\icon.png">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -118,9 +130,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="Resources\react16.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="net8\CSharpToTypeScript.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -129,8 +138,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="net9\CSharpToTypeScript.deps.json" />
-    <None Include="net9\CSharpToTypeScript.runtimeconfig.json" />
+    <Content Include="net9\CSharpToTypeScript.deps.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="net9\CSharpToTypeScript.runtimeconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
       <Generator>VsixManifestGenerator</Generator>

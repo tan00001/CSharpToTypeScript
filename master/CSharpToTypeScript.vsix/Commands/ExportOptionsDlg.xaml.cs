@@ -81,6 +81,10 @@ namespace CSharpToTypeScript.Commands
             DependencyProperty.Register(nameof(UseReactstrapModal), typeof(bool), typeof(ExportOptionsDlg),
                 new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        public static readonly DependencyProperty UseModalCheckboxPromptProperty =
+            DependencyProperty.Register(nameof(UseModalCheckboxPrompt), typeof(string), typeof(ExportOptionsDlg),
+                new FrameworkPropertyMetadata("Use Reactstrap Modal", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         public static readonly DependencyProperty ReactstrapModalTitleProperty =
             DependencyProperty.Register(nameof(ReactstrapModalTitle), typeof(string), typeof(ExportOptionsDlg),
                 new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -97,6 +101,12 @@ namespace CSharpToTypeScript.Commands
             set { SetValue(UseReactstrapModalProperty, value); }
         }
 
+        public string UseModalCheckboxPrompt
+        {
+            get { return (string)GetValue(UseModalCheckboxPromptProperty); }
+            set { SetValue(UseModalCheckboxPromptProperty, value); }
+        }
+
         public string ReactstrapModalTitle
         {
             get { return (string)GetValue(ReactstrapModalTitleProperty); }
@@ -105,7 +115,7 @@ namespace CSharpToTypeScript.Commands
 
         private double _BaseDlgHeight = 0;
 
-        public ExportOptionsDlg(bool showColumnCount, IReadOnlyList<string> paramNames)
+        public ExportOptionsDlg(bool showColumnCount, bool usingVue, IReadOnlyList<string> paramNames)
         {
             InitializeComponent();
 
@@ -117,6 +127,11 @@ namespace CSharpToTypeScript.Commands
             {
                 LayoutGrid.RowDefinitions[0].Height = GridLength.Auto;
                 SetColCount = showColumnCount;
+            }
+
+            if (usingVue)
+            {
+                UseModalCheckboxPrompt = "Use Modal Dialog Box";
             }
 
             TypeParamCtrls = AddTypeParamSelections(paramNames);

@@ -33,14 +33,21 @@ namespace CSharpToTypeScript.Test.TsClass
             var ts = TypeScript.Definitions(new TsGeneratorWithVue(12, null, false))
                 .For<PersonPlusCustomValidator>();
 
-            string personTypeScript = ts.ToString();
+            (string personTypeScript, string personVueScript)= ts.ToStringWithOtherFileTypes();
 
             Assert.IsTrue(!string.IsNullOrEmpty(personTypeScript));
 
-            var expectedData = Utilities.GetTestVueFileContents("TsClass", nameof(PersonPlusCustomValidator));
-            var expectedDataRelease = Utilities.GetTestVueFileContents("TsClass", nameof(PersonPlusCustomValidator) + "Release");
+            Assert.IsTrue(!string.IsNullOrEmpty(personVueScript));
+
+            var expectedData = Utilities.GetTestDataFileContents("TsClass", nameof(PersonPlusCustomValidator) + ".vue");
+            var expectedDataRelease = Utilities.GetTestDataFileContents("TsClass", nameof(PersonPlusCustomValidator) + "Release.vue");
 
             Assert.IsTrue(expectedData == personTypeScript || expectedDataRelease == personTypeScript);
+
+            var expectedVueData = Utilities.GetTestVueFileContents("TsClass", nameof(PersonPlusCustomValidator));
+            var expectedVueDataRelease = Utilities.GetTestVueFileContents("TsClass", nameof(PersonPlusCustomValidator) + "Release");
+
+            Assert.IsTrue(expectedVueData == personVueScript || expectedVueDataRelease == personVueScript);
         }
 
         protected virtual void Dispose(bool disposing)

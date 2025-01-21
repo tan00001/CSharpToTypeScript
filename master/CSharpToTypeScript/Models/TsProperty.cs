@@ -14,6 +14,7 @@ namespace CSharpToTypeScript.Models
         public const string UiHintHidden = "hidden";
         public const string UiHintSelect = "select";
         public const string UiHintColSpan = "colSpan";
+        public const string UiHintBsColSpan = "bsColSpan";
         public const string UiHintTypeContainingOptions = "typeContainingOptions";
         public const string UiHintNameOfOptions = "nameOfOptions";
         public const string UiHintReadOnly = "readOnly";
@@ -206,12 +207,39 @@ namespace CSharpToTypeScript.Models
                     return defaultColSpan;
                 }
 
+                colSpan *= defaultColSpan;
+
                 if (colSpan > maxColSpan)
                 {
                     return maxColSpan;
                 }
 
-                return colSpan * defaultColSpan;
+                return colSpan;
+            }
+            else if (UiHint.ControlParameters.TryGetValue(UiHintBsColSpan, out object? bsColSpanSetting)
+                && bsColSpanSetting is string bsColSpanSettingString)
+            {
+                if (bsColSpanSettingString == "*")
+                {
+                    return null;
+                }
+
+                if (!Int32.TryParse(bsColSpanSettingString, out var bsColSpan))
+                {
+                    return defaultColSpan;
+                }
+
+                if (bsColSpan <= 0)
+                {
+                    return defaultColSpan;
+                }
+
+                if (bsColSpan > maxColSpan)
+                {
+                    return maxColSpan;
+                }
+
+                return bsColSpan;
             }
 
             return defaultColSpan;

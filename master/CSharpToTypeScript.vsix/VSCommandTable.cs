@@ -30,6 +30,12 @@ namespace CSharpToTypeScript
         public const string GenerateReactstrapFormCommandString = "255420d4-9cac-40a5-9281-2e4097233679";
         public static Guid GenerateReactstrapFormCommand = new Guid(GenerateReactstrapFormCommandString);
 
+        public const string GenerateVuelidateRulesCommandString = "eaf2e89b-99fd-4988-8f17-33c12615b99e";
+        public static Guid GenerateVuelidateCommand = new Guid(GenerateVuelidateRulesCommandString);
+
+        public const string GenerateVueFormCommandString = "888f23a9-4d3c-457a-97f3-fcd97117eea0";
+        public static Guid GenerateVueFormCommand = new Guid(GenerateVueFormCommandString);
+
         public const string CSharpEditorContextString = "d9d1b00b-46d3-4686-a211-b964aa334e0e";
         public static Guid CSharpEditorContext = new Guid(CSharpEditorContextString);
     }
@@ -42,7 +48,11 @@ namespace CSharpToTypeScript
         public const int GenerateTypeScriptCommandID = 0x0100;
         public const int GenerateReactFormResolverIconID = 0x0001;
         public const int GenerateReactstrapFormIconID = 0x0002;
+        public const int GenerateVuelidateRulesIconID = 0x0004;
+        public const int GenerateVueFormIconID = 0x0003;
         public const int GenerateReactFormResolverCommandID = 0x0101;
         public const int GenerateReactstrapFormCommandID = 0x0102;
+        public const int GenerateVuelidateRulesCommandID = 0x0103;
+        public const int GenerateVueFormCommandID = 0x0104;
     }
 }

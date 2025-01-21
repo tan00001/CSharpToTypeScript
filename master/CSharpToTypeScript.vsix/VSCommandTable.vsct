@@ -12,8 +12,8 @@
 			</Group>
 		</Groups>
 		<Bitmaps>
-			<Bitmap guid="CSharpToTypeScriptIcons" href="Resources\react16.png" usedList="GenerateReactFormResolverIconID, GenerateReactstrapFormIconID"/>		
-		</Bitmaps>
+			<Bitmap guid="CSharpToTypeScriptIcons" href="Resources\cmdIcons16.png" usedList="GenerateReactFormResolverIconID, GenerateReactstrapFormIconID, GenerateVueFormIconID, GenerateVuelidateRulesIconID"/>
+    </Bitmaps>
 		<Buttons>
 			<Button guid="GenerateTypeScriptCommand" id="GenerateTypeScriptCommandID" priority="0x0100" type="Button">
 				<Parent guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID"/>
@@ -40,13 +40,31 @@
 					<ButtonText>Generate React+Bootstrap Form...</ButtonText>
 				</Strings>
 			</Button>
-		</Buttons>
+      <Button guid="GenerateVuelidateRulesCommand" id="GenerateVuelidateRulesCommandID" priority="0x0100" type="Button">
+        <Parent guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID"/>
+        <Icon guid="CSharpToTypeScriptIcons" id="GenerateVuelidateRulesIconID" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Generate Vuelidate Rules...</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="GenerateVueFormCommand" id="GenerateVueFormCommandID" priority="0x0100" type="Button">
+        <Parent guid="CSharpToTypeScriptGroup" id="CSharpToTypeScriptGroupID"/>
+        <Icon guid="CSharpToTypeScriptIcons" id="GenerateVueFormIconID" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Generate Vue+Bootstrap Form...</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
 	</Commands>
 	<VisibilityConstraints>
 		<VisibilityItem guid="GenerateTypeScriptCommand" id="GenerateTypeScriptCommandID" context="CSharpEditorContext" />
 		<VisibilityItem guid="GenerateReactFormResolverCommand" id="GenerateReactFormResolverCommandID" context="CSharpEditorContext" />
 		<VisibilityItem guid="GenerateReactstrapFormCommand" id="GenerateReactstrapFormCommandID" context="CSharpEditorContext" />
-	</VisibilityConstraints>	
+    <VisibilityItem guid="GenerateVuelidateRulesCommand" id="GenerateVuelidateRulesCommandID" context="CSharpEditorContext" />
+    <VisibilityItem guid="GenerateVueFormCommand" id="GenerateVueFormCommandID" context="CSharpEditorContext" />
+  </VisibilityConstraints>	
 	<Symbols>
 		<GuidSymbol name="CSharpToTypeScriptPackage" value="{6b09e960-199a-4025-9920-d2355ce65333}">
 		</GuidSymbol>
@@ -59,14 +77,22 @@
 		<GuidSymbol name="CSharpToTypeScriptIcons" value="{D10A7AF3-AB4A-479A-A319-42083237CAB7}">
 			<IDSymbol name="GenerateReactFormResolverIconID" value="1" />
 			<IDSymbol name="GenerateReactstrapFormIconID" value="2" />
-		</GuidSymbol>
+      <IDSymbol name="GenerateVueFormIconID" value="3" />
+      <IDSymbol name="GenerateVuelidateRulesIconID" value="4" />
+    </GuidSymbol>
 		<GuidSymbol name="GenerateReactFormResolverCommand" value="{775109EB-85CC-473F-8D2F-32837B114BA6}">
 			<IDSymbol name="GenerateReactFormResolverCommandID" value="0x0101" />
 		</GuidSymbol>
 		<GuidSymbol name="GenerateReactstrapFormCommand" value="{255420D4-9CAC-40A5-9281-2E4097233679}">
 			<IDSymbol name="GenerateReactstrapFormCommandID" value="0x0102" />
 		</GuidSymbol>
-		<GuidSymbol name="CSharpEditorContext" value="{D9D1B00B-46D3-4686-A211-B964AA334E0E}" />
+    <GuidSymbol name="GenerateVuelidateRulesCommand" value="{EAF2E89B-99FD-4988-8F17-33C12615B99E}">
+      <IDSymbol name="GenerateVuelidateRulesCommandID" value="0x0103" />
+    </GuidSymbol>
+    <GuidSymbol name="GenerateVueFormCommand" value="{888F23A9-4D3C-457A-97F3-FCD97117EEA0}">
+      <IDSymbol name="GenerateVueFormCommandID" value="0x0104" />
+    </GuidSymbol>
+    <GuidSymbol name="CSharpEditorContext" value="{D9D1B00B-46D3-4686-A211-B964AA334E0E}" />
 	</Symbols>
 
 	<CommandPlacements>
